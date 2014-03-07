@@ -14,6 +14,6 @@ def zonmean(filenames, delete=False):
         os.system( catstring )
 
         if delete == True:
-            delstr = 'rm -f' + cfile
+            delstr = 'rm ' + cfile
 	    os.system( delstr )
  
