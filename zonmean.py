@@ -13,7 +13,7 @@ def zonmean(filenames, delete=False):
         catstring = 'cdo zonmean ' + infile + outfile 			
         os.system( catstring )
 
-        if delete == True
+        if delete == True:
             delstr = 'rm -f' + cfile
 	    os.system( delstr )
  
