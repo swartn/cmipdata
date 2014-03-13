@@ -6,12 +6,11 @@ os.system( 'rm -rf /tmp/cdo*') # clean out tmp to make space for CDO processing.
 
 def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=False):
         """  
-            var = loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=False)
-
             Load a CMIP5 netcdf variable "varname" from "ifile" and optionally 1) distance
             weighted remap to a given grid (e.g. 'r360x180), 2) select a date range between 
             start_date and end_date (format: 'YYYY-MM-DD') and 3) time-mean over the whole 
             record, or between the selected dates. Requires netCDF4, CDO and CDO python bindings.
+            Returns a masked array, var.
         """
 
         date_range = start_date + ',' + end_date
