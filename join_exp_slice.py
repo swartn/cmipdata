@@ -61,8 +61,20 @@ def match_exp( filenames , modelnames, rcpname='rcp45' ):
                modfiles = [ modfilename for modfilename in modfilesall if
                             modfilename.split( '_' )[4] == ensmem ]
 
+               modfiles_historical_em = [ filename for filename in modfiles if filename.split( '_' )[3] == 'historical' ]
+
                if any( ensmem in s for s in uniq_ensmems_rcp):
                    print "Historical - RCP match for: ", ensmem
+                   for cfile in modfiles_historical_em :
+	               end_date =  int( cfile.split( '_' )[5].split('-')[1].split('.')[0] )
+                       if end_date > 200512:
+                           print "WARNINING: enddate is: ", end_date, "for ", mod, ensmem
+                           print "time-limiting the file to end in 200512"
+                           tlim_str = 'cdo -seldate,1850-01-01,2005-12-31 ' + cfile + ' tl_' + cfile
+                           mv_str = 'mv tl_' + cfile + ' ' + cfile
+                           print tlim_str
+                           os.system(tlim_str)
+                           os.system(mv_str) 
                else:
                    print " NO match for: ", ensmem, "...deleting"
                    for cfile in modfiles:
