@@ -1,19 +1,8 @@
 import os
 import glob
-def remap_cmip_nc( start_date , end_date ):
-    """
-    Do a remap of multiple CMIP type nc files given in filenames using CDO, and do a smart naming of the output (give the correct year-range in the output file name) and remove the mess (input files).
+def remap_cmip_nc( filenames, remap='r360x180', start_date='' , end_date='', delete=False):
+    """ Do a remap using CDO of multiple CMIP type nc files, given in filenames, and do a smart naming of the output (give the correct year-range in the output file name) and remove the mess (input files). Optionally allow the selection of a start_date and end_date to time-limit the file before remapping.
     """ 
-
-    filenames = glob.glob("*.nc")
-    modelnames = [ filename.split( '_' )[2] for filename in filenames ]
-    uniq_mods = modelnames 
-    print
-    print "--------------------"
-    print "Number of models: " , len( uniq_mods )
-    print "--------------------"
-    print
-
     for cfile in filenames:
         print cfile
         varname = cfile.split('_')[0]
@@ -24,9 +13,25 @@ def remap_cmip_nc( start_date , end_date ):
 
         print mod
 
-        remapstr = 'cdo -remapdis,r360x180 -selvar,' + varname + ' -seldate,' + start_date + ',' + end_date + ' ' + cfile + ' ' + 'rm_' + varname + '_' + realm + '_'+ mod + '_' + exp + '_' + ensmember + '_' + start_date.replace('-','')[0:6] + '-' +  end_date.replace('-','')[0:6] + '.nc' 
-        
+        if ( start_date ) and ( remap ) :
+            print 'cmipdata.remap: remap and time limit'
+            remapstr = 'cdo -remapdis,' + remap + ' -selvar,' + varname + ' -seldate,' + start_date + ',' + end_date + ' ' + cfile + ' ' +\
+             'rm_' + varname + '_' + realm + '_'+ mod + '_' + exp + '_' + ensmember + '_' + start_date.replace('-','')[0:6] + '-' +\
+              end_date.replace('-','')[0:6] + '.nc' 
+        else:
+            print 'cmipdata.remap: remap only'
+            start_datep = cfile.split('_')[5].split('-')[0]
+            end_datep = cfile.split('_')[5].split('-')[1]
+            remapstr = 'cdo -remapdis,' + remap + ' -selvar,' + varname + ' ' + cfile + ' ' +\
+             'rm_' + varname + '_' + realm + '_'+ mod + '_' + exp + '_' + ensmember + '_' + start_datep + '-' +\
+              end_datep + '.nc' 
+
+        print
         os.system( remapstr )
 
+        if delete == True:
+            delstr = 'rm ' + cfile
+            os.system( delstr )
 
-remap_cmip_nc('1900-01-01', '2005-12-31' )
+
+
