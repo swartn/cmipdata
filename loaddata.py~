@@ -43,7 +43,7 @@ def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=Fals
         else :
             from netCDF4 import Dataset
             nc = Dataset( ifile , 'r' )
-            var = nc.variables[ varname ]
+            var = nc.variables[ varname ].squeeze()
             
         return var
         #return squeeze( var )
