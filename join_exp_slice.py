@@ -3,7 +3,7 @@ import glob
 
 def join_exp_slice( filenames , modelnames ):
     """
-    Do a concatenation of multiple time-slice CMIP type nc files using CDO, and do a smart naming of the output (give the correct year-range in the output file name) and remove the mess (input files). Should be made more general.
+    Do a concatenation of multiple time-slice CMIP type nc files using CDO, and do a smart naming of the output (give the correct year-range in the output file name) and remove the mess (input files). Use match_exp to make sure files exist for each realization if you are joining over two experiments.
     """ 
 
     for mod in modelnames:
@@ -42,7 +42,15 @@ def join_exp_slice( filenames , modelnames ):
 
 def match_exp( filenames , modelnames, rcpname='rcp45' ):
     """
-    Do a concatenation of multiple time-slice CMIP type nc files using CDO, and do a smart naming of the output (give the correct year-range in the output file name) and remove the mess (input files). Should be made more general.
+    Description:
+    For each model in modelnames, look through filenames and for each realization of the historical experiment check if
+    that realization exists for the RCP experiment, rcpname. If files exist for both historical and rcp experiments,
+    print out a message. If no match exists, delete all files for that realization. 
+    
+    Usage:
+    For a directory with .nc files from many models, many realizations, and two or more experiments (e.g. historical and rcp45),
+    you may want to keep only files for those models/realizations which have files for both experiments. For example, before
+    running join_exp_slice, which would join all time-slice (and experiment) files for each model/realization, run match_exp.
     """
 
     for mod in modelnames:
