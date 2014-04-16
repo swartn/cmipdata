@@ -1,51 +1,39 @@
-import cdo as cdo; cdo = cdo.Cdo() # recommended import
 import os
-from numpy import squeeze
+import numpy as np 
 
+from netCDF4 import Dataset
+import cdo as cdo; cdo = cdo.Cdo() # recommended import
 os.system( 'rm -rf /tmp/cdo*') # clean out tmp to make space for CDO processing.
 
-def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=False):
+def mload1d(ifiles, varname, tmean=''):
         """  
-            Load a CMIP5 netcdf variable "varname" from "ifile" and optionally 1) distance
-            weighted remap to a given grid (e.g. 'r360x180), 2) select a date range between 
-            start_date and end_date (format: 'YYYY-MM-DD') and 3) time-mean over the whole 
-            record, or between the selected dates. Requires netCDF4, CDO and CDO python bindings.
-            Returns a masked array, var.
-        """
-
-        date_range = start_date + ',' + end_date
-
-        if ( timmean == True ) and ( start_date ) and ( remap ) :
-            in_str = "-timmean -seldate," + date_range + " " + ifile
-            var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
-
-        elif ( timmean == True ) and ( remap ) :
-            in_str = "-timmean" + " " + ifile
-            var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
-
-        elif ( start_date ) and ( remap ) :
-            in_str = "-seldate," + date_range + " " + ifile
-            var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
-
-        elif  ( timmean == True ) and ( start_date ):
-            var = cdo.timmean( input = cdo.seldate( date_range, input=ifile ), 
-                               returnMaArray=varname )
-
-        elif ( remap ) :
-            var = cdo.remapdis( remap , input = ifile, returnMaArray=varname )
-
-        elif ( timmean == True ):
-            var = cdo.timmean( input=ifile, returnMaArray=varname ) 
-
-        elif ( start_date ):
-            var = cdo.seldate( date_range, input=ifile, returnMaArray=varname )
-
-        else :
-            from netCDF4 import Dataset
-            nc = Dataset( ifile , 'r' )
-            var = nc.variables[ varname ]
+            Load a netcdf variable "varname" from multiple files "ifiles", and load it into a matrix
+            where each row represents a new model (ifile) and each column represents the one dimension
+            of the variable being loaded. varname must have the same len in all ifiles. Optionally specify a
+            time-mean, e.g. tmean='yearmean', which will result in appropriately mean values being caculated 
+            via cdo and returned.
             
-        return var
-        #return squeeze( var )
+            Requires netCDF4, cdo bindings and numpy 
+            Returns a masked numpy array, varmat.
+        """
+        # Determine the dimensions of the matrix.
+        def loadvar( ifile, varname, tmean ):
+	      if ( tmean ):
+		  cdo_call = 'cdo.' + tmean + '(input=ifile, returnMaArray=varname ).squeeze()'
+                  var = eval( cdo_call )
+	      else:	
+	          nc = Dataset( ifile , 'r' )
+	          var = nc.variables[ varname ][:].squeeze()
+	      return var
+	      
+        vst = loadvar( ifiles[0], varname, tmean )
+        varmat = np.ones( ( len(ifiles), len(vst) ) )*999e99
+        
+        for k, ifile in enumerate( ifiles ):
+	    print ifile
+	    varmat[k,:] = loadvar( ifile, varname, tmean )
+
+        varmat = np.ma.masked_equal( varmat, 999e99 )
+        return varmat
          
 
