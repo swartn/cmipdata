@@ -18,13 +18,11 @@ or through the cdo python bindings in the case of 2) above. Plotting functionali
 
 WARNING: This package is in development and there are no guarantees whatsoever.
 
-Contributors
-============
+## Contributors
+
 Neil Swart, CCCma, Environment Canada: Neil.Swart@ec.gc.ca
 
-=====================
-Structure and content
-=====================
+## Structure and content
 cmipdata/
    - climatology.py      : Create a monthly climatology and optionally remap to a gieven resolution (e.g. remap='r360x180') and optionally first select he time-slice between "start_date" and "end_date".      
 
@@ -57,9 +55,7 @@ cmipdata/
        - zonmean         : not yet developed
        - areaint         : not yet developed
 
-=======
-LICENSE
-=======
+## LICENSE
 
 See the LICENSE.txt file in the cmipdata package. cmipdata is distributed
 under the GNU General Public License version 3, and the Open Government License - Canada 
