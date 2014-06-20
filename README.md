@@ -16,9 +16,11 @@ The most popular functionilty (from 1) is the ability to join multiple model tim
 cmipdata is a python wrapper which aims to ensure smart handling of the input files. All netcdf data processing is done by CDO, either as a system call,
 or through the cdo python bindings in the case of 2) above. Plotting functionality uses matplotlib and basemap.
 
+WARNING: This package is in development and there are no guarantees whatsoever.
+
 Contributors
 ============
-Neil Swart, CCCma, Environment Canada
+Neil Swart, CCCma, Environment Canada: Neil.Swart@ec.gc.ca
 
 =====================
 Structure and content
