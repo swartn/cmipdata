@@ -3,7 +3,6 @@ import os
 from numpy import squeeze
 from netCDF4 import Dataset
 
-
 os.system( 'rm -rf /tmp/cdo*') # clean out tmp to make space for CDO processing.
 
 def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=False, zonmean=False):
@@ -32,7 +31,7 @@ def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=Fals
 
         elif ( timmean == True ) and ( start_date ) and ( remap ) :
             in_str = "-timmean -seldate," + date_range + " " + ifile
-            var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
+            var = cdo.remapdis( remap, input = in_str, returnMaArray=varname )
   
         elif ( timmean == True ) and ( start_date ) and ( zonmean ) :
             in_str = "-timmean -seldate," + date_range + " -selvar," + varname + " " + ifile
@@ -84,7 +83,9 @@ def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=Fals
             var = cdo.zonmean( input=in_str, returnMaArray=varname )
 
         else :
-            var = ncvar[:]      
+            #var = cdo.zonmean( input=in_str, returnMaArray=varname )
+            var = cdo.setrtomiss(1e34,1.1e34, input=ifile, returnMaArray=varname)  
+            #var = ncvar[:]      
             
         # Apply any scaling and offsetting needed:
         try:
