@@ -10,7 +10,7 @@ os.system( 'rm -rf /tmp/cdo*') # clean out tmp to make space for CDO processing.
 
 # Define the location of the data
 rean_data_path = '/HOME/ncs/data/reanalyses/'
-infile = rean_data_path +  'R1_slp.mon.mean.nc'
+infile = rean_data_path +  'CFSR_slp.mon.mean.nc'
 
 # get out the latitudes
 nc = Dataset( infile , 'r' )
@@ -99,16 +99,10 @@ slpclim = cd.loadvar( infile, varname='slp' )
 print slpclim.shape
 
 
+plt.plot( lat, slpclim[0,:,0])
+
+dimensions = cd.get_dimensions( infile, 'slp')
+print dimensions.keys()
 
 
 
-
-
-
-
-
-
-
-
-
-#plt.plot( lat, slpclim)

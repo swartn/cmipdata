@@ -1,7 +1,7 @@
 import cdo as cdo; cdo = cdo.Cdo() # recommended import
 import os
 from numpy import squeeze
-from netCDF4 import Dataset
+from netCDF4 import Dataset,num2date,date2num
 
 os.system( 'rm -rf /tmp/cdo*') # clean out tmp to make space for CDO processing.
 
@@ -101,4 +101,30 @@ def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=Fals
         #return var
         return squeeze( var )
          
-
+def get_dimensions(ifile, varname, toDatetime=False):
+        """Returns the dimensions of variable varname in file ifile as a dictionary.
+        If one of the dimensions begins with lat (Lat, Latitude and Latitudes), it 
+        will be returned with a key of lat, and similarly for lon. If to a Datetime=True, 
+        the time dimension is converted to a datetime. 
+        """
+        
+        # Open the variable using NetCDF4 
+        nc = Dataset( ifile , 'r' )
+        ncvar = nc.variables[ varname ]
+             
+        dimensions={}
+        for dimension in ncvar.dimensions:
+	        if dimension.lower().startswith('lat'):
+		    dimensions['lat'] = nc.variables[ dimension ][:]
+		elif dimension.lower().startswith('lon'):
+		    dimensions['lon'] = nc.variables[ dimension ][:]
+	        elif dimension.lower().startswith('time'):
+		    dimensions['time'] = nc.variables[ dimension ][:]    
+		elif toDatetime==True and (dimension.lower().startswith('time') ):
+	            # Following Phil Austin's slice_nc
+                    nc_time = data_nc.variables['time']
+                    dimensions['time'] = num2date(time_nc[:], nc_time.units, nc_time.calendar)
+	        else:  
+	            dimensions[dimension] = nc.variables[ dimension ][:]
+	    
+	return dimensions
