@@ -1,6 +1,6 @@
 import cdo as cdo; cdo = cdo.Cdo() # recommended import
 import os
-from numpy import squeeze
+import numpy as np
 from netCDF4 import Dataset,num2date,date2num
 
 os.system( 'rm -rf /tmp/cdo*') # clean out tmp to make space for CDO processing.
@@ -99,8 +99,30 @@ def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=Fals
             
         var = var*var_scale + var_offset    
         #return var
-        return squeeze( var )
-         
+        return np.squeeze( var )
+
+def loadfiles(ifiles, varname, **kwargs):
+        """  
+            Load a netcdf variable "varname" from multiple files "ifiles", and load it into a matrix
+            where each row represents a new model (ifile) and each column represents the one dimension
+            of the variable being loaded. varname must have the same len in all ifiles. Optionally specify 
+            any kwargs valid for loadvar.
+            
+            Requires netCDF4, cdo bindings and numpy 
+            Returns a masked numpy array, varmat.
+        """
+        # Determine the dimensions of the matrix.      
+        vst = loadvar( ifiles[0], varname, **kwargs )
+        varmat = np.ones( (len(ifiles),) + vst.shape )*999e99
+
+        for i, ifile in enumerate(ifiles):
+	    print ifile
+	    varmat[i,:] = loadvar( ifile, varname, **kwargs ) 
+
+        varmat = np.ma.masked_equal( varmat, 999e99 )
+        return varmat
+        
+        
 def get_dimensions(ifile, varname, toDatetime=False):
         """Returns the dimensions of variable varname in file ifile as a dictionary.
         If one of the dimensions begins with lat (Lat, Latitude and Latitudes), it 
@@ -118,12 +140,17 @@ def get_dimensions(ifile, varname, toDatetime=False):
 		    dimensions['lat'] = nc.variables[ dimension ][:]
 		elif dimension.lower().startswith('lon'):
 		    dimensions['lon'] = nc.variables[ dimension ][:]
-	        elif dimension.lower().startswith('time'):
-		    dimensions['time'] = nc.variables[ dimension ][:]    
-		elif toDatetime==True and (dimension.lower().startswith('time') ):
-	            # Following Phil Austin's slice_nc
-                    nc_time = data_nc.variables['time']
-                    dimensions['time'] = num2date(time_nc[:], nc_time.units, nc_time.calendar)
+	        elif dimension.lower().startswith('time'):	    
+		    if toDatetime==True:
+	                # Following Phil Austin's slice_nc
+                        nc_time = nc.variables['time']
+                        try:
+			    cal = nc_time.calendar
+		        except:
+			    cal = 'standard'
+                        dimensions['time'] = num2date(nc_time[:], nc_time.units, cal)
+                    else:
+  		        dimensions['time'] = nc.variables[ dimension ][:]    
 	        else:  
 	            dimensions[dimension] = nc.variables[ dimension ][:]
 	    
