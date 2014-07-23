@@ -10,16 +10,7 @@ kwargs = {'separator':'_', 'variable':0, 'realm':1, 'model':2, 'experiment':3,
 ens = cd.mkensemble(filepattern, prefix=prefix, kwargs=kwargs)
 
 
-for model in ens.models:
-    print model.name +':'
-    for experiment in model.experiments:
-	print '\t' + experiment.name
-	for realization in experiment.realizations:
-	    print '\t\t' + realization.name
-	    for variable in realization.variables:
-	        print '\t\t\t' + variable.name
-	        for filename in variable.filenames:
-		    print '\t\t\t\t' + filename
+ens.fulldetails()
 
 
 

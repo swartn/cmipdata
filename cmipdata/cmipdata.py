@@ -17,14 +17,10 @@ class Ensemble(object):
     def __str__(self):
         return "Models in %s: \n %s" %(self.name, '\n'.join([m.name for m in self.models]))
         
-    def num_models(self):
-	""" Returns the number of models in the ensemble"""
-        return len(self.models)
-
     def add_model(self, model):
 	"""Adds the model object model to the ensemble"""
         self.models.append(model)
-        
+                    
     def get_model(self, modelname):
         """Finds and returns the model object corresponding
 	to modelname in the ensemble, or if no match is found, 
@@ -41,7 +37,45 @@ class Ensemble(object):
     def models(self):
 	"""Retuns the list of model objects in the ensemble"""
         return self.models
+
+    def num_models(self):
+	""" Returns the number of models in the ensemble"""
+        return len(self.models)
         
+    def sinfo(self):
+	""" Returns the number of models, experiments, realizations, variables and files 
+	in the ensemble"""
+        realizations=[] ; experiments=[]; variables=[]; files=[]
+      	for m in self.models:
+	    for e in m.experiments:
+		experiments.append(e.name)
+         	for r in e.realizations:
+                    realizations.append(r.name)
+		    for v in r.variables:
+			variables.append(v.name)
+		        for f in v.filenames:
+			    files.append(f)
+
+        rstring = "This ensemble contains: \n %s models \n %s realizations \n %s \
+                   experiments \n %s variables \n and \n %s associated files"   %( len(self.models) 
+                   , len(realizations), len(set(experiments)), len(set(variables)), len(files) ) 		
+                 
+        print rstring        
+       
+    
+    def fulldetails(self):
+	""" prints information about the number of models, experiments and realizations in an ensemble"""
+	for model in self.models:
+	    print model.name +':'
+	    for experiment in model.experiments:
+                print '\t' + experiment.name
+		for realization in experiment.realizations:
+		    print '\t\t' + realization.name
+	            for variable in realization.variables:
+		        print '\t\t\t' + variable.name
+			for filename in variable.filenames:
+			    print '\t\t\t\t' + filename     
+                
 class Model(object):
     """ Defines a model with a name.
     """
@@ -54,7 +88,13 @@ class Model(object):
 	models experiments
 	"""
         self.experiments.append(experiment)
-
+        
+    def del_experiment(self, experiment):
+	"""deletes the experiment object experiment from the 
+	models experiments
+	"""
+        self.experiments.remove(experiment)
+        
     def get_experiment(self, experimentname):
 	"""Finds and returns the experiment object corresponding
 	to experimnentname in the model experiment list, or if no 
@@ -70,6 +110,10 @@ class Model(object):
     
     def experiments(self):
         return self.experiments 
+        
+    def num_experiments(self):
+	""" Returns the number of experiments defined for the model"""
+        return len(self.experiments)     
 
 class Experiment(object):
     """ Defines an experiment for a given model, with a name and a list of
@@ -104,8 +148,13 @@ class Experiment(object):
 	return r            
         
     def realizations(self):
-        return self.realizations        
-                
+        return self.realizations     
+        
+    def num_realizations(self):
+	""" Returns the number of realizations defined for the 
+	experiment instance"""
+        return len(self.realizations)  
+        
 class Realization(object):
     """ Defines a realization for a given model and experiment, 
     with a name and a list of
@@ -139,6 +188,11 @@ class Realization(object):
     def variables(self):
         return self.variables
         
+    def num_variables(self):
+	""" Returns the number of variables defined for the 
+	realization instance"""
+        return len(self.realizations)
+        
 class Variable(object):
     """Defines a variable for a given model, experiment and realization,
     with a name, and an associated list of filenames, which can be retrieved 
@@ -148,15 +202,33 @@ class Variable(object):
     def __init__(self, variablename):
         self.name = variablename
         self.filenames = []
+        self.start_dates = []
+        self.end_dates = []
         
     def add_filename(self, filename):
 	"""Adds filname to the variable's list of files"""
         self.filenames.append(filename)
         
+    def add_realm(self, realm):
+	"""Adds realm to the variable"""
+        self.realm = realm  
+        
+    def add_start_date(self, start_date):
+	"""Adds start_dates to the variable's list of file start-dates"""
+        self.start_dates.append(start_date)  
+        
+    def add_end_date(self, end_date):
+	"""Adds end_date to the variable's list of file end-dates"""
+        self.end_dates.append(end_date) 
+        
     def filenames(self):
         """ Retuns a list of filenames associated with the variable"""	
         return self.filenames
         
+    def num_files(self):
+	""" Returns the number of files listed for the 
+        variable instance"""
+        return len(self.filenames)        
    
 def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
     """Creates and returns a cmipdata ensemble object from a list of 
@@ -232,24 +304,35 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
 	if m == []:
 	    m = Model(modelname)
 	    ens.add_model(m)
-	    # create the experiment if necessary    
-	    e = m.get_experiment(experiment)   
-	    if e == []:
-		e = Experiment(experiment)
-		m.add_experiment(e)
-		#create the realization if necessary
-		r = e.get_realization(realization)   
-		if r == []:
-		    r = Realization(realization)
-		    e.add_realization(r)
-		    # create the variable if necessary    
-		    v = r.get_variable(variablename)   
-		    if v == []:
-			v = Variable(variablename)
-			r.add_variable(v)
-	
+	    
+	# create the experiment if necessary    
+	e = m.get_experiment(experiment)
+	if e == []:
+	    e = Experiment(experiment)
+	    m.add_experiment(e)
+	    
+	#create the realization if necessary
+	r = e.get_realization(realization)   
+	if r == []:
+	    r = Realization(realization)
+            e.add_realization(r)
+		  
+        # create the variable if necessary    
+	v = r.get_variable(variablename)   
+	if v == []:
+	    v = Variable(variablename)
+	    v.add_realm(realm)
+	    r.add_variable(v)
+			
 	# Add the filename to the variable list
 	v.add_filename(name)
+	v.add_start_date(start_date)
+	v.add_end_date(end_date)
 		
     return ens    
-        
+
+    
+
+		    
+		    
+		    
