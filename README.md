@@ -31,16 +31,29 @@ Examples
                                 ts_Amon_HadCM3_historical_r1i1p1_195912-198411.nc
                                 ts_Amon_HadCM3_historical_r1i1p1_198412-200512.nc
 
-To join them we call cat_exp_slices, which we pass a cmipdata ensemble object.
+First we load the cmipdata package, and build an ensemble object, simply matching the filenames:
+     import cmipdata as cd
+     ens = cd.mkensemble('ts_Amon_HadCM3*')
 
+Next we use cat_exp_slices to join the sliced files:     
      ens = cd.cat_exp_slices(ens)         
 
 and the result is one unified file, which has been appropriately named:     
      
                                 ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc
-
+We were also returned an updated ensemble object, the structure of which we can view as follows:
+     ens.fulldetails()
+     HadCM3:
+         historical
+                 r1i1p1
+                         ts
+                                 ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc
+                                
 This example shows only one model, but the method works equally well for a large ensemble consisting
-of multple models, each with multiple realizations and hundreds of files. 
+of multple models, each with multiple realizations and hundreds of files. For example, using:
+     ens = cd.mkensemble('ts_Amon_*')
+would build an ensemble consisting of all files in the present directory starting with ts_Amon, and join_exp_slices
+would, on a per-realization basis, do the joining, when necessary.
 
 Disclaimer
 ----------
