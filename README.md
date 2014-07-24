@@ -43,17 +43,17 @@ This example shows only one model, but the method works equally well for a large
 of multple models, each with multiple realizations and hundreds of files. 
 
 Disclaimer
-==========
+----------
 WARNING: This package is in development and there are no guarantees whatsoever.
 
 Contributors
-============
+------------
 Neil Swart, CCCma, Environment Canada: Neil.Swart@ec.gc.ca
 
 
 
 LICENSE
-=======
+-------
 
 See the LICENSE.txt file in the cmipdata package. cmipdata is distributed
 under the GNU General Public License version 3, and the Open Government License - Canada 
