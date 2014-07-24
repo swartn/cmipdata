@@ -1,3 +1,17 @@
+"""preprocessing_tools
+======================
+
+The preprocessing_tools module of cmipdata is a set of functions which use 
+os.system calls to cdo to systematically apply a given processing on multiple 
+NetCDF files, which listed in cmipdata ensemble objects. Specific tools are:
+
+ - cat_exp_slices: For each realization and variable concatenate all 
+   files on a per-experiment basis.
+ - cat_experiments: For each realization and a given variable concatenate all 
+   files across two specified experiments.
+
+Neil Swart, 07/2014
+"""
 import os
 import glob
 from cd_classes import Ensemble, Model, Experiment, Realization, Variable
