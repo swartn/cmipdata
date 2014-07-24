@@ -43,6 +43,7 @@ and the result is one unified file, which has been appropriately named:
                                 ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc
 We were also returned an updated ensemble object, the structure of which we can view as follows:
      ens.fulldetails()
+
      HadCM3:
          historical
                  r1i1p1
