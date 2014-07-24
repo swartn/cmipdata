@@ -56,7 +56,9 @@ We were also returned an updated ensemble object, the structure of which we can 
                                 
 This example shows only one model, but the method works equally well for a large ensemble consisting
 of multple models, each with multiple realizations and hundreds of files. For example, using:
+
      ens = cd.mkensemble('ts_Amon_*')
+     
 would build an ensemble consisting of all files in the present directory starting with ts_Amon, and join_exp_slices
 would, on a per-realization basis, do the joining, when necessary.
 
