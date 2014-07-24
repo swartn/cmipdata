@@ -58,4 +58,3 @@ def plot_ens():
     plt.grid()
 
     
-plot_ens()
