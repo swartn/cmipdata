@@ -3,20 +3,33 @@
 
 The preprocessing_tools module of cmipdata is a set of functions which use 
 os.system calls to cdo to systematically apply a given processing on multiple 
-NetCDF files, which listed in cmipdata ensemble objects. Specific tools are:
+NetCDF files, which listed in cmipdata ensemble objects. Methods:
 
- - cat_exp_slices: For each realization and variable concatenate all 
-   files on a per-experiment basis.
- - cat_experiments: For each realization and a given variable concatenate all 
-   files across two specified experiments.
-
+Multi-file operators (cannot be chained):
+ - cat_exp_slices 
+ - cat_experiments
+ - ens_stats
+ 
+File-by-file operators (can be chained):
+ - area_intgral
+ - area_mean
+ - climatology
+ - zonal_integral
+ - zonal_mean
+ - remap
+ - time_slice
+ 
 Neil Swart, 07/2014
 """
 import os
 import glob
 from cd_classes import Ensemble, Model, Experiment, Realization, Variable
 import copy
-#from cmipdata import cmipdata
+import itertools
+
+#=======================================================================================================
+# The next three operators work on multiple files across the ensemble, and cannot be chained together.
+#=======================================================================================================
 
 def cat_exp_slices(ens, delete=True):
     """
@@ -164,11 +177,15 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
 		    
 		    # Concatenate all experiment 1 files, and time limit them to the correct end-year
 		    outfile = e1v.name + '_' + e1v.realm + '_'+ model.name + '_' + e1.name \
-		    + '_' + e1r.name + '_' + str(min(e1v.start_dates) ) + '-' + str(e1_end_year) + '-12-31' + '.nc'
+		    + '_' + e1r.name + '_' + str(min(e1v.start_dates) ) + '-' + str(e1_end_year) + '12' + '.nc'
 		    catstring = 'cdo -seldate,' + str(e1_start_year) + '-01-01' + ',' + str(e1_end_year) + '-12-31' + ' -cat ' + ' '.join(e1v.filenames) + ' ' + outfile
 		    os.system( catstring )
 		    e1v.filenames = [outfile]
 		    print '%s end date is now %s12 and %s start date is %s01 \n' % (e1.name, e1_end_year, e2.name, e2_start_year)  
+		    
+		    # Add the newly created file to the delete list
+		    del_ens.get_model(model.name).get_experiment(e1.name).get_realization(e1r.name).get_variable(e1v.name).add_filename(outfile)
+
 			      
 		# join the two experiments original filenames with a whitespace      
 		infiles = ' '.join( e1v.filenames + e2v.filenames )
@@ -185,7 +202,10 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
 		# Add a new joined experiment to ens, 
 		# with a newly minted realization, variable + filenames.
 		v = Variable(e1v.name)
+		v.add_realm(e1v.realm)	
 		v.add_filename(outfile)
+		v.add_start_date(min(e1v.start_dates))
+	        v.add_end_date(max(e2v.end_dates))
 		r = Realization(e1r.name)
 		r.add_variable(v)
 		joined_e = Experiment( e1.name + '-' + e2.name )
@@ -227,101 +247,329 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
     
     return ens		
 
-# Not working below here.    
+def ens_stats(ens, variable_name):
+    """ Calculate the ensemble mean and standard deviation over all models-realizations 
+    and experiments for variable variable_name in ens, such that each model has a weight 
+    of one. An output file is written containing the ensemble mean and another file is 
+    written with the standard deviation, containing the names '_ENS-MEAN_' and '_ENS-STD_'
+    in the place of the model-name. If the ensemble contains multiple experiments, files
+    are written for each experiment.
+    
+    The ensemble in ens must be homogenous. That is to say all files must be on the same
+    grid and span the same time-frame, within each experiment (see remap, and time_slice for more).
+    Additionally, variable_name should have only one filename per realization and experiment. That
+    is, join_exp_slice should have been applied.
+    
+    The calculation is done by, first computing the mean over all realizations for each model; 
+    then for the ensemble, calculating the mean over all models.
+    """
+
+    # figure out all the experiments in the ensemble 
+    experiment_list = []
+    for model in ens.models:
+	for experiment in model.experiments:
+	    experiment_list.append(experiment.name)
+    
+    experiment_list = set( experiment_list )
+
+    # Do the ensemble mean for each experiment separately
+    for experiment_name in experiment_list:
+        # Keep a record of all files to mean for this experiment
+        files_to_mean = []
+         
+        for model in ens.models:
+            # loop over all models, checking if they contain experiment. 
+            experiment = model.get_experiment(experiment_name)
+            
+            if experiment != [] :
+		#If model has experiment, add its files to the mean.
+                realizations = experiment.realizations
+                
+	        # Get all realization files for model and variable_name
+	        modfilesall = [ realization.get_variable(variable_name).filenames 
+	                        for realization in realizations ]
+	        modfilesall = list( itertools.chain.from_iterable(modfilesall) )        
+	        print modfilesall                
+	        # get an example variable for naming 
+	        variable = realizations[0].get_variable(variable_name)
+	   
+                # Check if there is more than one realization, if so, first mean these.
+                if len( realizations ) > 1:
+                    in_files = ' '.join( modfilesall )
+                    out_file = variable.name + '_' + variable.realm + '_' + model.name + '_' + experiment.name \
+                                      + '_R-MEAN_' + '_' + str(variable.start_dates[0]) + '-' + str(variable.end_dates[0]) + '.nc'
+                                 
+                    cdo_str = 'cdo ensmean ' + in_files + ' ' + out_file
+ 
+                    # If the realization mean already exists don't redo
+                    if os.path.isfile(out_file):
+                        files_to_mean.append( out_file )
+                    else:
+                        os.system( cdo_str )
+                        files_to_mean.append( out_file )
+                else:
+                    files_to_mean.append( modfilesall[0] )
+
+        # For this experiment make the mean over all models and for models with multitple 
+        # realizations, uses the mean of all these realizations.
+        in_files = ' '.join( files_to_mean )
+        
+        out_file = 'ENS-MEAN_' + variable.name + '_' + variable.realm + '_' + experiment_name + '_' + str(variable.start_dates[0])\
+                               + '-' + str(variable.end_dates[0]) + '.nc'
+                                
+        cdo_str = 'cdo ensmean ' + in_files + ' ' + out_file
+        os.system( cdo_str )
+
+        # Now do the standard deviation
+        out_file = 'ENS-STD_' + variable.name + '_' + variable.realm + '_' + experiment_name + '_' + str(variable.start_dates[0])\
+                              + '-' + str(variable.end_dates[0]) + '.nc'
+                                
+        cdo_str = 'cdo ensstd ' + in_files + ' ' + out_file
+        os.system( cdo_str )    
+    
+#===========================================================================================
+# The operators below this point work on a file-by-file basis and can be chained together 
+# (in principle, not implemented).
+#============================================================================================
+    
      
 def areaint():
     print "hello this is areaint"
     
+def areamean(ens, delete=True):
+    """
+    For each file in ens, calculate the area mean using CDO fldmean, 
+    and do a smart naming of the output and remove the input files 
+    if delete=True. An updated ensemble object is also returned.
     
-
-def climatology( filenames, remap='', start_date='' , end_date='', delete=False):
-    """ Create a monthly climatology from CMIP5 data using cdo. Optionaly also do a remap and allow the selection of a start_date and end_date to time-limit the file before remapping.
+    EXAMPLE:
+    
+    area_mean_ens = cd.areamean(ens)
+    
     """ 
-    for cfile in filenames:
-        print cfile
-        varname = cfile.split('_')[0]
-        mod = cfile.split( '_' )[2] 
-        realm = cfile.split('_')[1]
-        ensmember = cfile.split('_')[4]
-        exp = cfile.split('_')[3]
+    for model, experiment, realization, variable, files in ens.iterate():
+        for infile in files:
+            outfile = ' area-mean_' + infile
 
-        print mod
+            cdo_str = 'cdo fldmean ' + infile + outfile 			
+            os.system( cdo_str )
 
-        if ( start_date ) and ( remap ) :
-            print 'cmipdata.climatology: remap and time delimit before computing climatology'
-            climstr = 'cdo ymonmean -remapdis,' + remap + ' -selvar,' + varname + ' -seldate,' + start_date + ',' + end_date + ' ' + cfile + ' ' +\
-             'monclim_rm_' + varname + '_' + realm + '_'+ mod + '_' + exp + '_' + ensmember + '_' + start_date.replace('-','')[0:6] + '-' +\
-              end_date.replace('-','')[0:6] + '.nc' 
+            if delete == True:
+                delstr = 'rm ' + infile
+	        os.system( delstr )    
+	        
+	    variable.del_filename(infile)
+	    variable.add_filename(outfile)
+	    
+    return ens	    
+        
+def zonmean(ens, delete=True):
+    """
+    For each file in ens, calculate the zonal mean using CDO zonmean, 
+    and do a smart naming of the output and remove the input files 
+    if delete=True (default). An updated ensemble object is also returned.
+    
+    EXAMPLE:
+    
+    zonal_mean_ens = cd.zonmean(ens)
+    
+    """ 
+    for model, experiment, realization, variable, files in ens.iterate():
+        for infile in files:
+            outfile = ' zonal-mean_' + infile
 
-        elif (remap):
-            print 'cmipdata.climatology: remap before computing climatology'
-            start_datep = cfile.split('_')[5].split('-')[0]
-            end_datep = cfile.split('_')[5].split('-')[1]
-            climstr = 'cdo ymonmean -remapdis,' + remap + ' -selvar,' + varname + ' ' + cfile + ' ' +\
-             'monclim_rm_' + varname + '_' + realm + '_'+ mod + '_' + exp + '_' + ensmember + '_' + start_datep + '-' +\
-              end_datep + '.nc'
+            cdo_str = 'cdo zonmean ' + infile + ' ' + outfile 			
+            os.system( cdo_str )
 
-        elif ( start_date ):
-            print 'cmipdata.climatology: time delimit before computing climatology'
-            climstr = 'cdo ymonmean -selvar,' + varname + ' -seldate,' + start_date + ',' + end_date + ' ' + cfile + ' ' +\
-             'monclim_rm_' + varname + '_' + realm + '_'+ mod + '_' + exp + '_' + ensmember + '_' + start_date.replace('-','')[0:6] + '-' +\
-              end_date.replace('-','')[0:6] + '.nc'
- 
-        else:
-            print 'cmipdata.climatology: Computing climatology (no remap or time-delimit)'
-            start_datep = cfile.split('_')[5].split('-')[0]
-            end_datep = cfile.split('_')[5].split('-')[1]
-            climstr = 'cdo ymonmean -selvar,' + varname + ' ' + cfile + ' ' +\
-             'monclim_rm_' + varname + '_' + realm + '_'+ mod + '_' + exp + '_' + ensmember + '_' + start_datep + '-' +\
-              end_datep + '.nc'
+            if delete == True:
+                delstr = 'rm ' + infile
+	        os.system( delstr )    
+	        
+	    variable.del_filename(infile)
+	    variable.add_filename(outfile)
+	    
+    return ens	
+  
+
+def climatology(ens, delete=True):
+    """
+    For each file in ens, calculate the monthly climatology over the full file-length 
+    using CDO ymonmean, and do a smart naming of the output and remove the input files 
+    if delete=True (default). An updated ensemble object is also returned.
+    
+    If you want to compute the climatology over a specific time slice, use time_slice
+    before compute the climatology.
+    
+    EXAMPLE:
+    
+    climatology_ens = cd.climatology(ens)
+    
+    """ 
+    for model, experiment, realization, variable, files in ens.iterate():
+        for infile in files:
+            outfile = ' climatology_' + infile
+
+            cdo_str = 'cdo ymonmean -selvar,' + variable.name +' ' + infile + ' ' + outfile 			
+            os.system( cdo_str )
+
+            if delete == True:
+                delstr = 'rm ' + infile
+	        os.system( delstr )    
+	        
+	    variable.del_filename(infile)
+	    variable.add_filename(outfile)
+	    
+    return ens	
 
 
-        print
-        os.system( climstr )
+def remap(ens, remap='r360x180', method='remapdis', delete=True):
+    """
+    For each file in ens, remap to resolution remap='r_nlon_x_nlat_', where _nlon_, _nlat_ are the 
+    number of lat-lon points to use. The remap is done using cdo and a smart naming of the output and 
+    removal of the input files occurs if delete=True (default). An updated ensemble object is also returned.
+    
+    By default the distance weighted remapping is used, but any valid cdo remapping method can be used
+    by specifying the option argument 'method', e.g. method='remapdis'.
+    
+    EXAMPLE:
+       
+    """ 
+    for model, experiment, realization, variable, files in ens.iterate():
+        for infile in files:
+            outfile = ' remap_' + infile
 
-        if delete == True:
-            delstr = 'rm ' + cfile
-            os.system( delstr )
+            cdo_str = 'cdo ' + method + ',' + remap + ' -selvar,' + variable.name + ' ' + infile + ' ' + outfile 			
+            os.system( cdo_str )
+
+            if delete == True:
+                delstr = 'rm ' + infile
+	        os.system( delstr )    
+	        
+	    variable.del_filename(infile)
+	    variable.add_filename(outfile)
+	    
+    return ens	
+
+
+
+def time_slice(ens, start_date, end_date, delete=True):
+    """
+    For each file in ens, limit the date range to between start_date and end_date, 
+    do a smart naming of the output and remove the input files 
+    if delete=True. An updated ensemble object is also returned.
+    
+    start_date and end_date format is YYYY-MM-DD
+    
+    """ 
+    date_range = start_date + ',' + end_date
+    
+    start_yyymm = start_date.replace('-','')[0:6] # convert dates to CMIP YYYYMM format
+    end_yyymm   = end_date.replace('-','')[0:6]   
+    
+    for model, experiment, realization, variable, files in ens.iterate():
+        for infile in files:
+
+            # Do the time-slicing if the file is within the specified dates 
+            if ( min(variable.start_dates) <= int(start_yyymm) ) and ( max(variable.end_dates) >= int(end_yyymm) ):
+        
+                outfile =  variable.name + '_' + variable.realm + '_'+ model.name + '_' + experiment.name +\
+		                           '_' + realization.name + '_' + start_yyymm \
+		                               + '-' + end_yyymm + '.nc'
             
-def remap_cmip_nc( filenames, remap='r360x180', start_date='' , end_date='', delete=False):
-    """ Do a remap using CDO of multiple CMIP type nc files, given in filenames, and do a smart naming of the output (give the correct year-range in the output file name) and remove the mess (input files). Optionally allow the selection of a start_date and end_date to time-limit the file before remapping.
+                cdo_str = 'cdo seldate,' + date_range + '  -selvar,' + variable.name + ' ' + infile +  ' ' + outfile           
+                os.system( cdo_str )
+	        variable.add_filename(outfile)  # add the filename with new date-ranges to the variable in ens
+
+   	    variable.del_filename(infile) # delete the old filename from ens
+   	       
+            if delete == True:
+                delstr = 'rm ' + infile
+	        os.system( delstr )    
+	            	    
+    return ens	          
+
+def time_anomaly(ens, start_date, end_date, delete=False):
+    """
+    For each file in ens, compute the anomaly relative the period 
+    between start_date and end_date, do a smart naming of the output 
+    and remove the input files if delete=True. An updated ensemble 
+    object is also returned.
+    
+    start_date and end_date format is YYYY-MM-DD
+    
     """ 
-    for cfile in filenames:
-        print cfile
-        varname = cfile.split('_')[0]
-        mod = cfile.split( '_' )[2] 
-        realm = cfile.split('_')[1]
-        ensmember = cfile.split('_')[4]
-        exp = cfile.split('_')[3]
+    date_range = start_date + ',' + end_date
+    
+    start_yyymm = start_date.replace('-','')[0:6] # convert dates to CMIP YYYYMM format
+    end_yyymm   = end_date.replace('-','')[0:6]   
+    
+    for model, experiment, realization, variable, files in ens.iterate():
+        for infile in files:
 
-        print mod
-
-        if ( start_date ) and ( remap ) :
-            print 'cmipdata.remap: remap and time limit'
-            remapstr = 'cdo -remapdis,' + remap + ' -selvar,' + varname + ' -seldate,' + start_date + ',' + end_date + ' ' + cfile + ' ' +\
-             'rm_' + varname + '_' + realm + '_'+ mod + '_' + exp + '_' + ensmember + '_' + start_date.replace('-','')[0:6] + '-' +\
-              end_date.replace('-','')[0:6] + '.nc' 
-        else:
-            print 'cmipdata.remap: remap only'
-            start_datep = cfile.split('_')[5].split('-')[0]
-            end_datep = cfile.split('_')[5].split('-')[1]
-            remapstr = 'cdo -remapdis,' + remap + ' -selvar,' + varname + ' ' + cfile + ' ' +\
-             'rm_' + varname + '_' + realm + '_'+ mod + '_' + exp + '_' + ensmember + '_' + start_datep + '-' +\
-              end_datep + '.nc' 
-
-        print
-        os.system( remapstr )
-
-        if delete == True:
-            delstr = 'rm ' + cfile
-            os.system( delstr )
-
-
-
-
+            # Do the time-slicing if the file is within the specified dates 
+            if ( min(variable.start_dates) <= int(start_yyymm) ) and ( max(variable.end_dates) >= int(end_yyymm) ):
         
-        
-        
+                outfile = 'anomaly_' + variable.name + '_' + variable.realm + '_'+ model.name + '_' + experiment.name +\
+		                           '_' + realization.name + '_' +  str(variable.start_dates[0]) \
+                                               + '-' + str(variable.end_dates[0]) + '.nc'
+            
+                cdo_str = 'cdo sub ' + infile +  ' -timmean -seldate,' + date_range + '  -selvar,' + variable.name + ' ' + infile +  ' ' + outfile           
+                os.system( cdo_str )
+	        variable.add_filename(outfile)  # add the filename with new date-ranges to the variable in ens
+
+   	    variable.del_filename(infile) # delete the old filename from ens
+   	       
+            if delete == True:
+                delstr = 'rm ' + infile
+	        os.system( delstr )    
+	            	    
+    return ens	
+    
+def my_operator(ens, my_cdo_str, output_prefix='processed_', delete=False):
+    """
+    For each file in ens, apply the cdo command contained in
+    my_cdo_str, creating an output file appended by 'output_prefix'
+    which is 'processed_' by default. An updated ensemble object
+    is returned.
+    
+    Optionally delete the original input files if delete=True.
+    
+    EXAMPLE:
+    
+    my_ens = cd.my_operator(ens, 'cdo -yearmean', output_prefix='annual_')
+    
+    FUTURE EXPANSION:
+    can easily handle more complex cases by passing a dict to my_cdo_str
+    and mapping defined variables such as infile...
+    
+    e.g. my_cdo_str = {'cdo sub ':'infile', ' -timmean -seldate,1991-01-01,2000-12-31 ':'infile'}
+    
+    
+    and in the function:
+        for model, experiment, realization, variable, files in ens.iterate():
+            for infile in files:
+                for key,val in my_cdo_str.iteritems():
+                    s = key + eval(val)
+                    print s    
+    """ 
+    for model, experiment, realization, variable, files in ens.iterate():
+        for infile in files:
+            outfile = output_prefix + infile
+            
+            cdo_str = my_cdo_str + ' ' + infile + ' ' + outfile 	
+
+            print cdo_str
+
+            os.system( cdo_str )
+
+            if delete == True:
+                delstr = 'rm ' + infile
+	        os.system( delstr )    
+	        
+	    variable.del_filename(infile)
+	    variable.add_filename(outfile)
+	    
+    return ens	        
         
         
         

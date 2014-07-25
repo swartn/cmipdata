@@ -6,6 +6,7 @@ Neil Swart, 22/07/2014
 
 import os
 import glob
+import copy
 
 class Ensemble(object):
     """ Defines a cmipdata ensemble. The ensemble contains
@@ -37,7 +38,38 @@ class Ensemble(object):
 	else:
 	    m = []
 	return m
+
+    def iterate(self):
+	"""Returns a iterable, which is a tuple containing all the ensembles 
+	model, experiment, realization and variable objects and the list of filenames.
 	
+	EXAMPLE:
+	
+       for model, experiment, realization, variable, files in ens.iterate():
+           print model.name, experiment.name, realization.name, variable.name, files		
+	"""
+	output = []
+	for model in self.models:
+	    for experiment in model.experiments:
+		for realization in experiment.realizations:
+		    for variable in realization.variables:
+			output.append( (model, experiment, realization, variable, variable.filenames) )
+			
+        return iter(output)			
+			
+    def squeeze(self):
+	""" Remove any empty elements from the ensemble
+	WARNING: might not be working, because it modifies itself during iteration, which is almost
+	certainly a bad idea!
+	"""
+        for model, experiment, realization, variable, files in self.iterate():
+	    realization.del_variable(variable) if variable.filenames == [] else 0 # if the variable contains no files delete it
+   	    experiment.del_realization(realization) if realization.variables == [] else 0 # if the realization contains no variables delete it
+   	    model.del_experiment(experiment) if experiment.realizations == [] else 0 # if the experiment contains no realizations delete it
+   	    self.del_model(model) if model.experiments == [] else 0 # if the model contains no experiments delete it
+
+   	return self
+   	    
     def models(self):
 	"""Retuns the list of model objects in the ensemble"""
         return self.models
@@ -216,7 +248,7 @@ class Variable(object):
     variable.add_filename('filename.nc')
     """
     def __init__(self, variablename):
-        self.name = variablename
+        self.name = variablename      
         self.filenames = []
         self.start_dates = []
         self.end_dates = []
@@ -224,6 +256,10 @@ class Variable(object):
     def add_filename(self, filename):
 	"""Adds filname to the variable's list of files"""
         self.filenames.append(filename)
+        
+    def del_filename(self, filename):
+	"""Removes a filname from the variable's list of files"""
+        self.filenames.remove(filename)
         
     def add_realm(self, realm):
 	"""Adds realm to the variable"""
@@ -341,31 +377,12 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
 	    r.add_variable(v)
 			
 	# Add the filename to the variable list
-	v.add_filename(name)
+	v.add_filename(prefix + name)
 	v.add_start_date(start_date)
 	v.add_end_date(end_date)
 		
     return ens    
     
-def zonmean(filenames, remap='', delete=False):
-    """
-    Zonal mean each file in filenames using CDO, and do a smart naming of the output and remove the mess (input files) if delete=True. Optionally remapdis to a given grid, (e.g. remap='r360x180') before taking the mean.
-    """ 
 
-    for cfile in filenames:
-        print 'zonal mean of: ', cfile
-        infile = cfile
-        outfile = ' xm_' + cfile
-
-        if ( remap ):
-            catstring = 'cdo zonmean -remapdis,' + remap + ' ' + infile + outfile 			
-        else:
-            catstring = 'cdo zonmean ' + infile + outfile 			
-  
-        os.system( catstring )
-
-        if delete == True:
-            delstr = 'rm ' + cfile
-	    os.system( delstr )
  
 		    

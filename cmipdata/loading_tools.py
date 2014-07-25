@@ -1,7 +1,28 @@
+"""loading_tools
+======================
+
+The loading_tools module of cmipdata is a set of functions which use 
+the cdo python bindings and NetCDF4 to load data from input NetCDF
+files listed in a cmipdata ensemble object into python numpy arrays.
+Some processing can optionally be done during the loading, specifically
+remapping, time-slicing, time-averaging and zonal-averaging. Functions 
+are
+
+  - loadvar: loads a given variable from a given file, and optionally
+             does processing
+             
+  - loadfiles: loads data from multiple files.
+  
+  - get_dimensions: gets the dimensions from a netCDF files and returns
+                    them in a dict.
+
+Neil Swart, 07/2014
+"""
 import cdo as cdo; cdo = cdo.Cdo() # recommended import
 import os
 import numpy as np
 from netCDF4 import Dataset,num2date,date2num
+import datetime
 
 os.system( 'rm -rf /tmp/cdo*') # clean out tmp to make space for CDO processing.
 
@@ -83,9 +104,7 @@ def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=Fals
             var = cdo.zonmean( input=in_str, returnMaArray=varname )
 
         else :
-            #var = cdo.zonmean( input=in_str, returnMaArray=varname )
             var = cdo.setrtomiss(1e34,1.1e34, input=ifile, returnMaArray=varname)  
-            #var = ncvar[:]      
             
         # Apply any scaling and offsetting needed:
         try:
@@ -101,17 +120,23 @@ def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=Fals
         #return var
         return np.squeeze( var )
 
-def loadfiles(ifiles, varname, **kwargs):
+def loadfiles(ens, varname, **kwargs):
         """  
-            Load a netcdf variable "varname" from multiple files "ifiles", and load it into a matrix
-            where each row represents a new model (ifile) and each column represents the one dimension
-            of the variable being loaded. varname must have the same len in all ifiles. Optionally specify 
-            any kwargs valid for loadvar.
+            Load a variable "varname" from all files in ens, and load it into a matrix
+            where the zeroth dimensions represents an input file and dimensions 1 to n are
+            the dimensions of the input variable. Variable "varname" must have the same shape 
+            in all ifiles. Optionally specify any kwargs valid for loadvar.
             
             Requires netCDF4, cdo bindings and numpy 
             Returns a masked numpy array, varmat.
+
         """
-        # Determine the dimensions of the matrix.      
+        # Get all input files from the ensemble
+        ifiles = []
+        for model, experiment, realization, variable, files in ens.iterate():
+           ifiles = ifiles + files	
+           
+        # Determine the dimensions of the matrix.       
         vst = loadvar( ifiles[0], varname, **kwargs )
         varmat = np.ones( (len(ifiles),) + vst.shape )*999e99
 
@@ -149,6 +174,8 @@ def get_dimensions(ifile, varname, toDatetime=False):
 		        except:
 			    cal = 'standard'
                         dimensions['time'] = num2date(nc_time[:], nc_time.units, cal)
+                        dimensions['time'] = [datetime.datetime(*item.timetuple()[:6]) for item in dimensions['time'] ]
+                        dimensions['time'] = np.array(dimensions['time'])
                     else:
   		        dimensions['time'] = nc.variables[ dimension ][:]    
 	        else:  

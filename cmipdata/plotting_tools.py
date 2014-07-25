@@ -1,60 +1,64 @@
-import glob
-import slice_nc as slice
-import datetime
-import numpy as np
+"""plotting_tools
+======================
+
+The plotting_tools module of cmipdata is a set of functions which use 
+matplotlib to produce various common plots.
+
+The functions take an ensemble object and a data object. The ensemble
+object is a cmipdata ensemble, the data object is a numpy array
+generated using loading_tools.
+
+Currently not working
+=========================
+
+Neil Swart, 07/2014
+"""
 import matplotlib.pyplot as plt
-from netCDF4 import Dataset,num2date,date2num
-import cdo as cdo; cdo = cdo.Cdo() # recommended import
-plt.close('all')
-plt.ion()
+from loading_tools import loadvar, get_dimensions
+import scipy as sp
+from scipy import stats
+import numpy as np
 
-def plot_ens():
-    filenames = sorted( glob.glob("rm_*.nc") )
-
-    modelnames = [ filename.split( '_' )[2] for filename in filenames ]
-    uniq_mods = modelnames
-    print
-    print "--------------------"
-    print "Number of models: " , len( uniq_mods )
-    print "--------------------"
-    print
-
-    # set up the matrix
-    ofile = filenames[0]
-    nc = Dataset( ofile , 'r' )
-    fgco2 = nc.variables['fgco2']
-    sz = list( fgco2.shape )
-    sz.append( len( uniq_mods ) )
-    #fgco2_mat = np.empty( sz )
-
-    for k, cfile in enumerate( filenames ):
-      if k<2:
-	  ofile = cfile
-	  cfile = cfile.replace('rm_','')
-	  varname = cfile.split('_')[0]
-	  mod = cfile.split( '_' )[2]
-	  realm = cfile.split('_')[1]
-	  ensmember = cfile.split('_')[4]
-	  exp = cfile.split('_')[3]
-
-	  nc = Dataset( ofile , 'r' )
-	  lon = nc.variables['lon']
-	  lat = nc.variables['lat']
-	  time_nc = nc.variables['time']
-	  the_times = time_nc[...]
-	  dates_nc = num2date( the_times, time_nc.units, time_nc.calendar )
-	  
-	  print mod, fgco2.shape
-
-	  #mask = fgco2 == fgco2._FillValue
-	  #fgco2 = np.ma.MaskedArray( fgco2 , mask = mask )
-	  #fgco2_mat[ : , : , : , k ] = fgco2
-	  #xm_fgco2 = np.mean ( fgco2 , 2 )
-	  xm_fgco2 = cdo.zonmean(input=ofile,returnMaArray ='fgco2')
-	  plt.plot( lat , np.mean( xm_fgco2 , 0 ) ,'-', color = '0.25', alpha=0.25) # plot the time mean
+def plot_realization_timeseries(ens, data, varname, kwargs={'color':[0.5, 0.5, 0.5]} ):
+    """ For each realization in ens (and data, which is generated from ens
+    using loadfiles), plot the realization in color (grey by default)
+    for variable varname. kwargs is a dict of option to pass to plt,
+    e.g.: kwargs={'color':'r'}
+    """
     
-    plt.plot( [ -90, 90 ] , [0 , 0] , 'k--') 
-    plt.xlim( [ -90, 90 ] )
-    plt.grid()
-
+    # First get the dimensions: A bad hack right now. Shouldn't reference attributes directly - use a function.
+    v = ens.models[0].experiments[0].realizations[0].get_variable(varname)
+    infile= v.filenames[0]
+    dimensions = get_dimensions(infile, varname, toDatetime=True)
+    time = dimensions['time']
     
+    for r in range( data.shape[0] ):
+	plt.plot( time, data[r,:], **kwargs)
+	
+    plt.title(varname)	
+    
+def ensemble_envelope_timeseries(ens, meanfile, stdfile, varname, ax='', kwargs={'linewidth':3, 'color':'k'}):
+    """ For each realization in ens (and data, which is generated from ens
+    using loadfiles), plot the realization in color (grey by default)
+    for variable varname.
+    """
+    
+    # First get the dimensions: A bad hack right now. Shouldn't reference attributes directly - use a function.
+    dimensions = get_dimensions(meanfile, varname, toDatetime=True)
+    time = dimensions['time']
+
+    ens_mean = loadvar(meanfile, varname)
+    ens_std = loadvar(stdfile, varname)
+    
+    if ax == '' :
+	fig, ax = plt.subplots(1)
+	
+    num_models = ens.num_models()	
+    c = sp.stats.t.isf(0.025, num_models - 1 )             # the two-tailed 5% critical value from the t-dist
+    ci95p = ( c *  ens_std) / np.sqrt( num_models )     # the 95% confidence interval
+
+    ax.fill_between(time, (ens_mean- ci95p), (ens_mean +  ci95p) , color='k', alpha=0.25,edgecolor='none' )
+    ax.plot( time, ens_mean, **kwargs)
+    plt.draw()
+	
+    #ax.title(varname)		
