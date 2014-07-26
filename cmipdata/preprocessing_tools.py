@@ -542,25 +542,27 @@ def my_operator(ens, my_cdo_str, output_prefix='processed_', delete=False):
     can easily handle more complex cases by passing a dict to my_cdo_str
     and mapping defined variables such as infile...
     
-    e.g. my_cdo_str = {'cdo sub ':'infile', ' -timmean -seldate,1991-01-01,2000-12-31 ':'infile'}
+    e.g. my_cdo_str = 'cdo sub {infile} -timmean -seldate,1991-01-01,2000-12-31 {infile} {outfile}'
     
     
     and in the function:
         for model, experiment, realization, variable, files in ens.iterate():
             for infile in files:
-                for key,val in my_cdo_str.iteritems():
-                    s = key + eval(val)
-                    print s    
+               my_cdo_str.format(infile='file_input.nc',outfile='file_output.nc')
+
     """ 
     for model, experiment, realization, variable, files in ens.iterate():
         for infile in files:
             outfile = output_prefix + infile
+            cdo_str=''
+            values = {'model':model,'experiment':experiment,'realization':realization \
+                      , 'variable':variable, 'infile':infile, 'outfile':outfile}
+
             
-            cdo_str = my_cdo_str + ' ' + infile + ' ' + outfile 	
-
+            cdo_str = my_cdo_str.format(**values)
+                    
             print cdo_str
-
-            os.system( cdo_str )
+            #os.system( cdo_str )
 
             if delete == True:
                 delstr = 'rm ' + infile
