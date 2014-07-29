@@ -175,17 +175,45 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
 		    e1_end_year = e2_start_year - 1                 # Experiment 1 should end 1 year before
 		    
 		    
-		    # Concatenate all experiment 1 files, and time limit them to the correct end-year
-		    outfile = e1v.name + '_' + e1v.realm + '_'+ model.name + '_' + e1.name \
-		    + '_' + e1r.name + '_' + str(min(e1v.start_dates) ) + '-' + str(e1_end_year) + '12' + '.nc'
-		    catstring = 'cdo -seldate,' + str(e1_start_year) + '-01-01' + ',' + str(e1_end_year) + '-12-31' + ' -cat ' + ' '.join(e1v.filenames) + ' ' + outfile
-		    os.system( catstring )
-		    e1v.filenames = [outfile]
-		    print '%s end date is now %s12 and %s start date is %s01 \n' % (e1.name, e1_end_year, e2.name, e2_start_year)  
+		    # First concatenate all experiment 1 files, if there is more than one
+		    if len(e1v.filenames) > 1:
+		        procfile = e1v.name + '_' + e1v.realm + '_'+ model.name + '_' + e1.name \
+		                           + '_' + e1r.name + '_' + str(min(e1v.start_dates) ) + '-' + str(max(e1v.end_dates) ) + '.nc'
 		    
-		    # Add the newly created file to the delete list
-		    del_ens.get_model(model.name).get_experiment(e1.name).get_realization(e1r.name).get_variable(e1v.name).add_filename(outfile)
+		        catstring = 'cdo cat ' + ' '.join(e1v.filenames) + ' ' + procfile
+		        ex = os.system( catstring )
+		    else:
+			procfile = ' '.join(e1v.filenames)
+		    
+		    """If the initial join of e1 files worked, time-slice the result with an appropriate end-date"""
+		    outfile = e1v.name + '_' + e1v.realm + '_'+ model.name + '_' + e1.name \
+		                             + '_' + e1r.name + '_' + str(min(e1v.start_dates) ) + '-' + str(e1_end_year) + '12' + '.nc'
+		    
+		    catstring = 'cdo -seldate,' + str(e1_start_year) + '-01-01' + ',' + str(e1_end_year) + '-12-31' + ' ' + procfile + ' ' + outfile	    
+		    ex = os.system( catstring )
+		        
+  		    if ex == 0:
+			"""If the fix was sucessfull, add the new file name to ens"""
+		        e1v.filenames = [outfile]
+		        print '\n %s end date is now %s12 and %s start date is %s01 \n' % (e1.name, e1_end_year, e2.name, e2_start_year)  
+		    
+		        # Add the newly created processing files to the delete list
+		        del_ens.get_model(model.name).get_experiment(e1.name).get_realization(e1r.name).get_variable(e1v.name).add_filename(outfile)
+		        del_ens.get_model(model.name).get_experiment(e1.name).get_realization(e1r.name).get_variable(e1v.name).add_filename(procfile)
+		        
+		    else:
+			"""print warning and delete the realization from the two experiments in ens"""
+			print '\n fix failed, deleting realization \n'.upper()
+			e1.del_realization(e1r)
+			e2.del_realization(e2r)
+		        if realization_misses:
+			    """Add to the list if it exists"""
+		            realizations_to_delete[model.name] = list(realization_misses) + e1r.name
+		        else:
+		            realizations_to_delete[model.name] = [e1r.name]
 
+			continue # if this failed to fix the problem, return to the top of the realization for loop.
+			
 			      
 		# join the two experiments original filenames with a whitespace      
 		infiles = ' '.join( e1v.filenames + e2v.filenames )
@@ -245,6 +273,7 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
     for key, value in realizations_to_delete.iteritems():
 	print '\t %s \t %s' % (key, ' '.join(value) )
     
+    ens = ens.squeeze()
     return ens		
 
 def ens_stats(ens, variable_name):
@@ -479,6 +508,9 @@ def time_slice(ens, start_date, end_date, delete=True):
                 cdo_str = 'cdo seldate,' + date_range + '  -selvar,' + variable.name + ' ' + infile +  ' ' + outfile           
                 os.system( cdo_str )
 	        variable.add_filename(outfile)  # add the filename with new date-ranges to the variable in ens
+                variable.start_dates=[]; variable.end_dates=[]
+	        variable.add_start_date(int(start_yyymm)) # add the start-date with new date-ranges to the variable in ens
+	        variable.add_end_date(int(end_yyymm)) # add the end-date with new date-ranges to the variable in ens
 
    	    variable.del_filename(infile) # delete the old filename from ens
    	       
@@ -542,8 +574,10 @@ def my_operator(ens, my_cdo_str, output_prefix='processed_', delete=False):
     can easily handle more complex cases by passing a dict to my_cdo_str
     and mapping defined variables such as infile...
     
-    e.g. my_cdo_str = 'cdo sub {infile} -timmean -seldate,1991-01-01,2000-12-31 {infile} {outfile}'
+    defined variables are:
+    model, experiment, realization, variable, infile, outfile
     
+    e.g. my_cdo_str = 'cdo sub {infile} -timmean -seldate,1991-01-01,2000-12-31 {infile} {outfile}'
     
     and in the function:
         for model, experiment, realization, variable, files in ens.iterate():
@@ -558,11 +592,10 @@ def my_operator(ens, my_cdo_str, output_prefix='processed_', delete=False):
             values = {'model':model,'experiment':experiment,'realization':realization \
                       , 'variable':variable, 'infile':infile, 'outfile':outfile}
 
-            
+           
             cdo_str = my_cdo_str.format(**values)
-                    
-            print cdo_str
-            #os.system( cdo_str )
+
+            os.system( cdo_str )
 
             if delete == True:
                 delstr = 'rm ' + infile

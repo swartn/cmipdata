@@ -146,7 +146,25 @@ def loadfiles(ens, varname, **kwargs):
 
         varmat = np.ma.masked_equal( varmat, 999e99 )
         return varmat
-        
+
+def loadens(ens, **kwargs):
+        """  
+            Load all variables in all files in ens into a numpy array which is
+            save in the the variable object under variable.data. Currently
+            loadens expects there to only be one filename per variable object 
+            (i.e. per realization).
+            
+            Optionally specify any kwargs valid for loadvar.
+
+        """
+        # For each variable, load all the files into a numpy array named varname_startdate_enddate
+        for model, experiment, realization, variable, files in ens.iterate():
+	    for ifile in files:
+	        print ifile
+	        variable.data = loadvar( ifile, variable.name, **kwargs ) 
+	        variable.dimensions = get_dimensions(ifile, variable.name, toDatime=True)
+
+        return ens 
         
 def get_dimensions(ifile, varname, toDatetime=False):
         """Returns the dimensions of variable varname in file ifile as a dictionary.
