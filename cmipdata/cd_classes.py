@@ -92,9 +92,8 @@ class Ensemble(object):
 		        for f in v.filenames:
 			    files.append(f)
 
-        rstring = "This ensemble contains: \n %s models \n %s realizations \n %s \
-                   experiments \n %s variables \n and \n %s associated files"   %( len(self.models) 
-                   , len(realizations), len(set(experiments)), len(set(variables)), len(files) ) 		
+        rstring = "This ensemble contains:\n %s models \n %s realizations \n %s experiments \n %s variables \n %s associated files"\
+            %( len(self.models), len(realizations), len(set(experiments)), len(set(variables)), len(files) ) 		
                  
         print rstring        
        

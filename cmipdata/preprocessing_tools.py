@@ -498,26 +498,32 @@ def time_slice(ens, start_date, end_date, delete=True):
     for model, experiment, realization, variable, files in ens.iterate():
         for infile in files:
 
-            # Do the time-slicing if the file is within the specified dates 
-            if ( min(variable.start_dates) <= int(start_yyymm) ) and ( max(variable.end_dates) >= int(end_yyymm) ):
-        
-                outfile =  variable.name + '_' + variable.realm + '_'+ model.name + '_' + experiment.name +\
-		                           '_' + realization.name + '_' + start_yyymm \
-		                               + '-' + end_yyymm + '.nc'
             
-                cdo_str = 'cdo seldate,' + date_range + '  -selvar,' + variable.name + ' ' + infile +  ' ' + outfile           
-                os.system( cdo_str )
-	        variable.add_filename(outfile)  # add the filename with new date-ranges to the variable in ens
-                variable.start_dates=[]; variable.end_dates=[]
-	        variable.add_start_date(int(start_yyymm)) # add the start-date with new date-ranges to the variable in ens
-	        variable.add_end_date(int(end_yyymm)) # add the end-date with new date-ranges to the variable in ens
-
-   	    variable.del_filename(infile) # delete the old filename from ens
+            if ( min(variable.start_dates) != int(start_yyymm) ) and ( max(variable.end_dates) != int(end_yyymm) ):
+		# Only yf the file doesnlt already have the correct date-range		
+		if ( min(variable.start_dates) <= int(start_yyymm) ) and ( max(variable.end_dates) >= int(end_yyymm) ):
+		    # Do the time-slicing if the file is within the specified dates
+		    outfile =  variable.name + '_' + variable.realm + '_'+ model.name + '_' + experiment.name +\
+		    '_' + realization.name + '_' + start_yyymm \
+		    + '-' + end_yyymm + '.nc'
+		    
+		    cdo_str = 'cdo seldate,' + date_range + '  -selvar,' + variable.name + ' ' + infile +  ' ' + outfile           
+		    os.system( cdo_str )
+		    variable.add_filename(outfile)  # add the filename with new date-ranges to the variable in ens
+		    variable.start_dates=[]; variable.end_dates=[]
+		    variable.add_start_date(int(start_yyymm)) # add the start-date with new date-ranges to the variable in ens
+		    variable.add_end_date(int(end_yyymm)) # add the end-date with new date-ranges to the variable in ens		    
+		else:
+		    #If the file does not containt he desired dates, print a warning and delete
+	            print "%s %s is not in the date-range...deleting" %(model.name, realization.name)
+	            
+		variable.del_filename(infile) # delete the old filename from ens
    	       
-            if delete == True:
-                delstr = 'rm ' + infile
-	        os.system( delstr )    
-	            	    
+                if delete == True:
+                    delstr = 'rm ' + infile
+	            os.system( delstr ) 
+	        
+    ens = ens.squeeze()	            	    
     return ens	          
 
 def time_anomaly(ens, start_date, end_date, delete=False):
