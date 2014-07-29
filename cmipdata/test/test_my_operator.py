@@ -2,7 +2,8 @@ import cmipdata as cd
 import os
 
 # Link the data into the PWD
-#os.chdir('/home/ncs/ra40/cmipdata/areamean')
+#os.chdir('/home/ncs/ra40/cmipdata/areamean/my_operator')
+os.system('ln -s ../ts_Amon* .')
 
 
 # Create a cmipdata ensemble 
@@ -16,6 +17,4 @@ ens.sinfo()
 
 # apply my_operator
 my_cdo_str = 'cdo sub {infile} -timmean -seldate,1991-01-01,2000-12-31 {infile} {outfile}'
-
-
 cd.my_operator(ens, my_cdo_str, output_prefix='test_', delete=False)

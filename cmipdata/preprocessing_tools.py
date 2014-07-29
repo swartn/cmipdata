@@ -11,13 +11,15 @@ Multi-file operators (cannot be chained):
  - ens_stats
  
 File-by-file operators (can be chained):
- - area_intgral
+ - area_intgral*
  - area_mean
  - climatology
- - zonal_integral
+ - zonal_integral*
  - zonal_mean
  - remap
  - time_slice
+ 
+ * to come
  
 Neil Swart, 07/2014
 """
@@ -600,16 +602,20 @@ def my_operator(ens, my_cdo_str, output_prefix='processed_', delete=False):
 
            
             cdo_str = my_cdo_str.format(**values)
-
-            os.system( cdo_str )
-
+            ex = os.system( cdo_str )
+	    
+	    if ex == 0:
+		""" Add the filename for the newly processed file, if
+		processing was sucessfull"""
+	        variable.add_filename(outfile)
+            
+	    variable.del_filename(infile) # remove original filename from the ensemble.
+            
             if delete == True:
                 delstr = 'rm ' + infile
 	        os.system( delstr )    
 	        
-	    variable.del_filename(infile)
-	    variable.add_filename(outfile)
-	    
+    ens  = ens.squeeze()	        	    
     return ens	        
         
         
