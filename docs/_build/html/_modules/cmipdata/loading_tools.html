@@ -1,0 +1,294 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cmipdata.loading_tools &mdash; cmipdata  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="cmipdata  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">cmipdata  documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cmipdata.loading_tools</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;loading_tools</span>
+<span class="sd">======================</span>
+
+<span class="sd">The loading_tools module of cmipdata is a set of functions which use </span>
+<span class="sd">the cdo python bindings and NetCDF4 to load data from input NetCDF</span>
+<span class="sd">files listed in a cmipdata ensemble object into python numpy arrays.</span>
+<span class="sd">Some processing can optionally be done during the loading, specifically</span>
+<span class="sd">remapping, time-slicing, time-averaging and zonal-averaging. Functions </span>
+<span class="sd">are</span>
+
+<span class="sd">  - loadvar: loads a given variable from a given file, and optionally</span>
+<span class="sd">             does processing</span>
+<span class="sd">             </span>
+<span class="sd">  - loadfiles: loads data from multiple files.</span>
+<span class="sd">  </span>
+<span class="sd">  - get_dimensions: gets the dimensions from a netCDF files and returns</span>
+<span class="sd">                    them in a dict.</span>
+
+<span class="sd">Neil Swart, 07/2014</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">cdo</span> <span class="kn">as</span> <span class="nn">cdo</span><span class="p">;</span> <span class="n">cdo</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">Cdo</span><span class="p">()</span> <span class="c"># recommended import</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">netCDF4</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span><span class="n">num2date</span><span class="p">,</span><span class="n">date2num</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="s">&#39;rm -rf /tmp/cdo*&#39;</span><span class="p">)</span> <span class="c"># clean out tmp to make space for CDO processing.</span>
+
+<div class="viewcode-block" id="loadvar"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.loading_tools.loadvar">[docs]</a><span class="k">def</span> <span class="nf">loadvar</span><span class="p">(</span> <span class="n">ifile</span> <span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">remap</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">timmean</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">zonmean</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;  </span>
+<span class="sd">            Load a CMIP5 netcdf variable &quot;varname&quot; from &quot;ifile&quot; and optionally 1) distance</span>
+<span class="sd">            weighted remap to a given grid (e.g. &#39;r360x180), 2) select a date range between </span>
+<span class="sd">            start_date and end_date (format: &#39;YYYY-MM-DD&#39;), 3) time-mean over the whole </span>
+<span class="sd">            record, or between the selected dates and 4) zonal mean. Requires netCDF4, CDO </span>
+<span class="sd">            and CDO python bindings. Returns a masked array, var.</span>
+<span class="sd">            </span>
+<span class="sd">            If zonmean=True and remap=True, the zonal mean is done first, so the remap</span>
+<span class="sd">            will in that case only specify the latitude-grid, with 1-point in x, e.g.: </span>
+<span class="sd">            remap=r180x1.</span>
+<span class="sd">          &quot;&quot;&quot;</span>
+          
+        <span class="c"># Open the variable using NetCDF4 to get scale and offset attributes.  </span>
+        <span class="n">nc</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span> <span class="n">ifile</span> <span class="p">,</span> <span class="s">&#39;r&#39;</span> <span class="p">)</span>
+        <span class="n">ncvar</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span> <span class="n">varname</span> <span class="p">]</span>
+        
+        <span class="n">date_range</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span> <span class="o">+</span> <span class="n">end_date</span>
+
+        <span class="c"># parse through all options, and load the data using CDO.</span>
+        <span class="k">if</span> <span class="p">(</span> <span class="n">timmean</span> <span class="o">==</span> <span class="bp">True</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">start_date</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">remap</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">zonmean</span> <span class="o">==</span> <span class="bp">True</span><span class="p">)</span> <span class="p">:</span>
+            <span class="n">in_str</span> <span class="o">=</span> <span class="s">&quot;-zonmean -timmean -seldate,&quot;</span> <span class="o">+</span> <span class="n">date_range</span> <span class="o">+</span> <span class="s">&quot;  -selvar,&quot;</span> <span class="o">+</span> <span class="n">varname</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">ifile</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">remapdis</span><span class="p">(</span> <span class="n">remap</span> <span class="p">,</span> <span class="nb">input</span> <span class="o">=</span> <span class="n">in_str</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="p">(</span> <span class="n">timmean</span> <span class="o">==</span> <span class="bp">True</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">start_date</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">remap</span> <span class="p">)</span> <span class="p">:</span>
+            <span class="n">in_str</span> <span class="o">=</span> <span class="s">&quot;-timmean -seldate,&quot;</span> <span class="o">+</span> <span class="n">date_range</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">ifile</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">remapdis</span><span class="p">(</span> <span class="n">remap</span><span class="p">,</span> <span class="nb">input</span> <span class="o">=</span> <span class="n">in_str</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>
+  
+        <span class="k">elif</span> <span class="p">(</span> <span class="n">timmean</span> <span class="o">==</span> <span class="bp">True</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">start_date</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">zonmean</span> <span class="p">)</span> <span class="p">:</span>
+            <span class="n">in_str</span> <span class="o">=</span> <span class="s">&quot;-timmean -seldate,&quot;</span> <span class="o">+</span> <span class="n">date_range</span> <span class="o">+</span> <span class="s">&quot; -selvar,&quot;</span> <span class="o">+</span> <span class="n">varname</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">ifile</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">zonmean</span><span class="p">(</span> <span class="nb">input</span> <span class="o">=</span> <span class="n">in_str</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>           
+    
+        <span class="k">elif</span> <span class="p">(</span> <span class="n">timmean</span> <span class="o">==</span> <span class="bp">True</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">zonmean</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">remap</span> <span class="p">)</span> <span class="p">:</span>
+            <span class="n">in_str</span> <span class="o">=</span> <span class="s">&quot;-zonmean -timmean -selvar,&quot;</span> <span class="o">+</span> <span class="n">varname</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">ifile</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">remapdis</span><span class="p">(</span> <span class="n">remap</span> <span class="p">,</span> <span class="nb">input</span> <span class="o">=</span> <span class="n">in_str</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>     
+  
+        <span class="k">elif</span> <span class="p">(</span> <span class="n">zonmean</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">start_date</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">remap</span> <span class="p">)</span> <span class="p">:</span>
+            <span class="n">in_str</span> <span class="o">=</span> <span class="s">&quot;-zonmean -seldate,&quot;</span> <span class="o">+</span> <span class="n">date_range</span> <span class="o">+</span> <span class="s">&quot; -selvar,&quot;</span> <span class="o">+</span> <span class="n">varname</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">ifile</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">remapdis</span><span class="p">(</span> <span class="n">remap</span> <span class="p">,</span> <span class="nb">input</span> <span class="o">=</span> <span class="n">in_str</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>   
+  
+        <span class="k">elif</span> <span class="p">(</span> <span class="n">timmean</span> <span class="o">==</span> <span class="bp">True</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">remap</span> <span class="p">)</span> <span class="p">:</span>
+            <span class="n">in_str</span> <span class="o">=</span> <span class="s">&quot;-timmean&quot;</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">ifile</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">remapdis</span><span class="p">(</span> <span class="n">remap</span> <span class="p">,</span> <span class="nb">input</span> <span class="o">=</span> <span class="n">in_str</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="p">(</span> <span class="n">start_date</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">remap</span> <span class="p">)</span> <span class="p">:</span>
+            <span class="n">in_str</span> <span class="o">=</span> <span class="s">&quot;-seldate,&quot;</span> <span class="o">+</span> <span class="n">date_range</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">ifile</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">remapdis</span><span class="p">(</span> <span class="n">remap</span> <span class="p">,</span> <span class="nb">input</span> <span class="o">=</span> <span class="n">in_str</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>
+
+        <span class="k">elif</span>  <span class="p">(</span> <span class="n">timmean</span> <span class="o">==</span> <span class="bp">True</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">start_date</span> <span class="p">):</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">timmean</span><span class="p">(</span> <span class="nb">input</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">seldate</span><span class="p">(</span> <span class="n">date_range</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">ifile</span> <span class="p">),</span> 
+                               <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>
+                               
+        <span class="k">elif</span>  <span class="p">(</span> <span class="n">timmean</span> <span class="o">==</span> <span class="bp">True</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">zonmean</span> <span class="o">==</span> <span class="bp">True</span> <span class="p">):</span>
+	    <span class="n">in_str</span> <span class="o">=</span> <span class="s">&quot;-timmean -selvar,&quot;</span> <span class="o">+</span> <span class="n">varname</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">ifile</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">zonmean</span><span class="p">(</span> <span class="nb">input</span><span class="o">=</span><span class="n">in_str</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>       
+            
+        <span class="k">elif</span>  <span class="p">(</span> <span class="n">start_date</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="n">zonmean</span> <span class="o">==</span> <span class="bp">True</span> <span class="p">):</span>
+	    <span class="n">in_str</span> <span class="o">=</span> <span class="s">&quot;-seldate,&quot;</span> <span class="o">+</span> <span class="n">date_range</span> <span class="o">+</span>  <span class="s">&quot; -selvar,&quot;</span> <span class="o">+</span> <span class="n">varname</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">ifile</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">zonmean</span><span class="p">(</span> <span class="nb">input</span><span class="o">=</span><span class="n">in_str</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>    
+            
+        <span class="k">elif</span>  <span class="p">(</span> <span class="n">remap</span> <span class="p">)</span> <span class="ow">and</span>  <span class="p">(</span> <span class="n">zonmean</span> <span class="o">==</span> <span class="bp">True</span> <span class="p">):</span>
+            <span class="n">in_str</span> <span class="o">=</span> <span class="s">&quot;-zonmean -selvar,&quot;</span> <span class="o">+</span> <span class="n">varname</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">ifile</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">remapdis</span><span class="p">(</span> <span class="n">remap</span> <span class="p">,</span> <span class="nb">input</span> <span class="o">=</span> <span class="n">in_str</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>            
+            
+        <span class="k">elif</span> <span class="p">(</span> <span class="n">remap</span> <span class="p">)</span> <span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">remapdis</span><span class="p">(</span> <span class="n">remap</span> <span class="p">,</span> <span class="nb">input</span> <span class="o">=</span> <span class="n">ifile</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="p">(</span> <span class="n">timmean</span> <span class="o">==</span> <span class="bp">True</span> <span class="p">):</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">timmean</span><span class="p">(</span> <span class="nb">input</span><span class="o">=</span><span class="n">ifile</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span> 
+
+        <span class="k">elif</span> <span class="p">(</span> <span class="n">start_date</span> <span class="p">):</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">seldate</span><span class="p">(</span> <span class="n">date_range</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">ifile</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="p">(</span> <span class="n">zonmean</span> <span class="o">==</span> <span class="bp">True</span> <span class="p">):</span>
+            <span class="n">in_str</span> <span class="o">=</span>  <span class="s">&quot;-selvar,&quot;</span> <span class="o">+</span> <span class="n">varname</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">ifile</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">zonmean</span><span class="p">(</span> <span class="nb">input</span><span class="o">=</span><span class="n">in_str</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span> <span class="p">)</span>
+
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cdo</span><span class="o">.</span><span class="n">setrtomiss</span><span class="p">(</span><span class="mf">1e34</span><span class="p">,</span><span class="mf">1.1e34</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">ifile</span><span class="p">,</span> <span class="n">returnMaArray</span><span class="o">=</span><span class="n">varname</span><span class="p">)</span>  
+            
+        <span class="c"># Apply any scaling and offsetting needed:</span>
+        <span class="k">try</span><span class="p">:</span>
+	    <span class="n">var_offset</span> <span class="o">=</span> <span class="n">ncvar</span><span class="o">.</span><span class="n">add_offset</span>
+        <span class="k">except</span><span class="p">:</span>
+	    <span class="n">var_offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">try</span><span class="p">:</span>
+	    <span class="n">var_scale</span> <span class="o">=</span> <span class="n">ncvar</span><span class="o">.</span><span class="n">scale_factor</span>
+        <span class="k">except</span><span class="p">:</span>
+	    <span class="n">var_scale</span> <span class="o">=</span> <span class="mi">1</span>	
+            
+        <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">*</span><span class="n">var_scale</span> <span class="o">+</span> <span class="n">var_offset</span>    
+        <span class="c">#return var</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span> <span class="n">var</span> <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="loadfiles"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.loading_tools.loadfiles">[docs]</a><span class="k">def</span> <span class="nf">loadfiles</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;  </span>
+<span class="sd">            Load a variable &quot;varname&quot; from all files in ens, and load it into a matrix</span>
+<span class="sd">            where the zeroth dimensions represents an input file and dimensions 1 to n are</span>
+<span class="sd">            the dimensions of the input variable. Variable &quot;varname&quot; must have the same shape </span>
+<span class="sd">            in all ifiles. Optionally specify any kwargs valid for loadvar.</span>
+<span class="sd">            </span>
+<span class="sd">            Requires netCDF4, cdo bindings and numpy </span>
+<span class="sd">            Returns a masked numpy array, varmat.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Get all input files from the ensemble</span>
+        <span class="n">ifiles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">realization</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">iterate</span><span class="p">():</span>
+           <span class="n">ifiles</span> <span class="o">=</span> <span class="n">ifiles</span> <span class="o">+</span> <span class="n">files</span>	
+           
+        <span class="c"># Determine the dimensions of the matrix.       </span>
+        <span class="n">vst</span> <span class="o">=</span> <span class="n">loadvar</span><span class="p">(</span> <span class="n">ifiles</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">varname</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">)</span>
+        <span class="n">varmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ifiles</span><span class="p">),)</span> <span class="o">+</span> <span class="n">vst</span><span class="o">.</span><span class="n">shape</span> <span class="p">)</span><span class="o">*</span><span class="mf">999e99</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ifile</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ifiles</span><span class="p">):</span>
+	    <span class="k">print</span> <span class="n">ifile</span>
+	    <span class="n">varmat</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">loadvar</span><span class="p">(</span> <span class="n">ifile</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">)</span> 
+
+        <span class="n">varmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span> <span class="n">varmat</span><span class="p">,</span> <span class="mf">999e99</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">varmat</span>
+</div>
+<div class="viewcode-block" id="loadens"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.loading_tools.loadens">[docs]</a><span class="k">def</span> <span class="nf">loadens</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;  </span>
+<span class="sd">            Load all variables in all files in ens into a numpy array which is</span>
+<span class="sd">            save in the the variable object under variable.data. Currently</span>
+<span class="sd">            loadens expects there to only be one filename per variable object </span>
+<span class="sd">            (i.e. per realization).</span>
+<span class="sd">            </span>
+<span class="sd">            Optionally specify any kwargs valid for loadvar.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># For each variable, load all the files into a numpy array named varname_startdate_enddate</span>
+        <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">realization</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">iterate</span><span class="p">():</span>
+	    <span class="k">for</span> <span class="n">ifile</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+	        <span class="k">print</span> <span class="n">ifile</span>
+	        <span class="n">variable</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">loadvar</span><span class="p">(</span> <span class="n">ifile</span><span class="p">,</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">)</span> 
+	        <span class="n">variable</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">=</span> <span class="n">get_dimensions</span><span class="p">(</span><span class="n">ifile</span><span class="p">,</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">toDatime</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ens</span> 
+        </div>
+<div class="viewcode-block" id="get_dimensions"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.loading_tools.get_dimensions">[docs]</a><span class="k">def</span> <span class="nf">get_dimensions</span><span class="p">(</span><span class="n">ifile</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">toDatetime</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the dimensions of variable varname in file ifile as a dictionary.</span>
+<span class="sd">        If one of the dimensions begins with lat (Lat, Latitude and Latitudes), it </span>
+<span class="sd">        will be returned with a key of lat, and similarly for lon. If to a Datetime=True, </span>
+<span class="sd">        the time dimension is converted to a datetime. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c"># Open the variable using NetCDF4 </span>
+        <span class="n">nc</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span> <span class="n">ifile</span> <span class="p">,</span> <span class="s">&#39;r&#39;</span> <span class="p">)</span>
+        <span class="n">ncvar</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span> <span class="n">varname</span> <span class="p">]</span>
+             
+        <span class="n">dimensions</span><span class="o">=</span><span class="p">{}</span>
+        <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">ncvar</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+	        <span class="k">if</span> <span class="n">dimension</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;lat&#39;</span><span class="p">):</span>
+		    <span class="n">dimensions</span><span class="p">[</span><span class="s">&#39;lat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span> <span class="n">dimension</span> <span class="p">][:]</span>
+		<span class="k">elif</span> <span class="n">dimension</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;lon&#39;</span><span class="p">):</span>
+		    <span class="n">dimensions</span><span class="p">[</span><span class="s">&#39;lon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span> <span class="n">dimension</span> <span class="p">][:]</span>
+	        <span class="k">elif</span> <span class="n">dimension</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;time&#39;</span><span class="p">):</span>	    
+		    <span class="k">if</span> <span class="n">toDatetime</span><span class="o">==</span><span class="bp">True</span><span class="p">:</span>
+	                <span class="c"># Following Phil Austin&#39;s slice_nc</span>
+                        <span class="n">nc_time</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span>
+                        <span class="k">try</span><span class="p">:</span>
+			    <span class="n">cal</span> <span class="o">=</span> <span class="n">nc_time</span><span class="o">.</span><span class="n">calendar</span>
+		        <span class="k">except</span><span class="p">:</span>
+			    <span class="n">cal</span> <span class="o">=</span> <span class="s">&#39;standard&#39;</span>
+                        <span class="n">dimensions</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">num2date</span><span class="p">(</span><span class="n">nc_time</span><span class="p">[:],</span> <span class="n">nc_time</span><span class="o">.</span><span class="n">units</span><span class="p">,</span> <span class="n">cal</span><span class="p">)</span>
+                        <span class="n">dimensions</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">item</span><span class="o">.</span><span class="n">timetuple</span><span class="p">()[:</span><span class="mi">6</span><span class="p">])</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dimensions</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span> <span class="p">]</span>
+                        <span class="n">dimensions</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dimensions</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+  		        <span class="n">dimensions</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span> <span class="n">dimension</span> <span class="p">][:]</span>    
+	        <span class="k">else</span><span class="p">:</span>  
+	            <span class="n">dimensions</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span> <span class="n">dimension</span> <span class="p">][:]</span>
+	    
+	<span class="k">return</span> <span class="n">dimensions</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">cmipdata  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Neil Swart.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+  </body>
+</html>

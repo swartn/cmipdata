@@ -59,8 +59,7 @@ class Ensemble(object):
 			
     def squeeze(self):
 	""" Remove any empty elements from the ensemble
-	WARNING: might not be working, because it modifies itself during iteration, which is almost
-	certainly a bad idea!
+	WARNING: since ens is modifying itself in the loop, something could go wrong!
 	"""
         for model, experiment, realization, variable, files in self.iterate():
 	    realization.del_variable(variable) if variable.filenames == [] else 0 # if the variable contains no files delete it
@@ -379,7 +378,9 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
 	v.add_filename(prefix + name)
 	v.add_start_date(start_date)
 	v.add_end_date(end_date)
-		
+	
+    ens.sinfo()
+    print('\n For more details use ens.fulldetails() \n')
     return ens    
     
 

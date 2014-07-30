@@ -1,0 +1,733 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cmipdata.preprocessing_tools &mdash; cmipdata  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="cmipdata  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">cmipdata  documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cmipdata.preprocessing_tools</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;:mod:`preprocessing_tools` -- Preprocesses data before loading</span>
+<span class="sd">=================================================================</span>
+<span class="sd">.. module:: </span>
+<span class="sd">   :platform: Unix</span>
+<span class="sd">   :synopsis: Perform Climate Data Operator type processing systematically on large ensembles of files.</span>
+<span class="sd">.. moduleauthor:: Neil Swart &lt;neil.swart@ec.gc.ca&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">classes</span> <span class="kn">import</span> <span class="n">Ensemble</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">Realization</span><span class="p">,</span> <span class="n">Variable</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="c">#=======================================================================================================</span>
+<span class="c"># The next three operators work on multiple files across the ensemble, and cannot be chained together.</span>
+<span class="c">#=======================================================================================================</span>
+
+<div class="viewcode-block" id="cat_exp_slices"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.preprocessing_tools.cat_exp_slices">[docs]</a><span class="k">def</span> <span class="nf">cat_exp_slices</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For models which divide their output into multiple files per experiment (time-slices), cat_exp_slices concatenates</span>
+<span class="sd">    the files into one unified file using CDO, and deletes the individual slices, unless delete=False. As input </span>
+<span class="sd">    cat_exp_slices takes a cmipdata ensemble object (see mkensemble). Unified experiment files are written to the </span>
+<span class="sd">    current working directory, and an updated ensemble object is returned</span>
+<span class="sd">    </span>
+<span class="sd">    The input ensemble can contain multiple models, experiments, realizations and variables, which cat_exp_slices </span>
+<span class="sd">    will process independently. In other words, files are joined per-model, per-experiment, per-relization, per-variable.</span>
+<span class="sd">    For example, if the ensemble contains two experiments for many models/realizations for variable psl, two unified</span>
+<span class="sd">    files will be produced per realization: one for the historical and one for the rcp45 experiment. To join files</span>
+<span class="sd">    over experiments (e.g. to concatenate historical and rcp45) see cat_experiments.  </span>
+<span class="sd">    </span>
+<span class="sd">    EXAMPLE::</span>
+<span class="sd">    </span>
+<span class="sd">    # For a simple ensemble comprized of only 1 model, 1 experiment and one realization. </span>
+<span class="sd">    </span>
+<span class="sd">    # Look at the ensemble structure before the concatenation</span>
+<span class="sd">    ens.fulldetails()</span>
+<span class="sd">    HadCM3:</span>
+<span class="sd">        historical</span>
+<span class="sd">                r1i1p1</span>
+<span class="sd">                        ts</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_185912-188411.nc</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_188412-190911.nc</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_190912-193411.nc</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_193412-195911.nc</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_195912-198411.nc</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_198412-200512.nc</span>
+
+<span class="sd">     #=======================</span>
+<span class="sd">     # Do the concantenation</span>
+<span class="sd">     #=======================</span>
+<span class="sd">     ens = cd.cat_exp_slices(ens)         </span>
+
+<span class="sd">    # Look at the ensemble structure before the concatenation</span>
+<span class="sd">    ens.fulldetails()</span>
+<span class="sd">    HadCM3:</span>
+<span class="sd">        historical</span>
+<span class="sd">                r1i1p1</span>
+<span class="sd">                        ts</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc</span>
+<span class="sd">                               </span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="c"># Loop over all models, experiments, realizations and variables</span>
+    <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">experiment</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
+	    <span class="k">for</span> <span class="n">realization</span> <span class="ow">in</span> <span class="n">experiment</span><span class="o">.</span><span class="n">realizations</span><span class="p">:</span>
+		<span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">realization</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+		    <span class="n">modfiles</span> <span class="o">=</span> <span class="n">variable</span><span class="o">.</span><span class="n">filenames</span>
+       
+                    <span class="c"># if there are multiple files (time-slices) concatenate them</span>
+	            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span> <span class="n">modfiles</span> <span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+		        <span class="k">print</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s"> joining... &quot;</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">experiment</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">realization</span><span class="o">.</span><span class="n">name</span>
+		        
+                        <span class="n">infiles</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">modfiles</span> <span class="p">)</span>
+                        
+                        <span class="n">outfile</span> <span class="o">=</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">realm</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span><span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">experiment</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span>\
+		        <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">realization</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">start_dates</span><span class="p">)</span> <span class="p">)</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span> <span class="nb">max</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">end_dates</span><span class="p">)</span> <span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.nc&#39;</span>
+		        
+		        <span class="n">catstring</span> <span class="o">=</span> <span class="s">&#39;cdo cat &#39;</span> <span class="o">+</span> <span class="n">infiles</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">outfile</span>			
+		        
+		        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">catstring</span> <span class="p">)</span>
+		            
+		        <span class="c"># update the filenames in the variable object    </span>
+		        <span class="n">variable</span><span class="o">.</span><span class="n">filenames</span> <span class="o">=</span> <span class="p">[]</span>
+		        <span class="n">variable</span><span class="o">.</span><span class="n">add_filename</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+		        
+		        <span class="c"># delete the individual slices from the directory</span>
+		        <span class="k">if</span> <span class="n">delete</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+		            <span class="k">for</span> <span class="n">cfile</span> <span class="ow">in</span> <span class="n">modfiles</span><span class="p">:</span>
+		                <span class="n">delstr</span> <span class="o">=</span> <span class="s">&#39;rm &#39;</span> <span class="o">+</span> <span class="n">cfile</span>
+		                <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">delstr</span> <span class="p">)</span> 
+    <span class="k">return</span> <span class="n">ens</span>		        
+</div>
+<div class="viewcode-block" id="cat_experiments"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.preprocessing_tools.cat_experiments">[docs]</a><span class="k">def</span> <span class="nf">cat_experiments</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">variable_name</span><span class="p">,</span> <span class="n">exp1_name</span><span class="p">,</span> <span class="n">exp2_name</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; For variable (named variable_name) concatenate experiments exp1 and exp2 </span>
+<span class="sd">    into a single file for each realization of each model listed in ensemble ens, and </span>
+<span class="sd">    return an updated ensemble object.</span>
+<span class="sd">    </span>
+<span class="sd">    - ens is a cmipdata ensemble object (see mkensemble).</span>
+<span class="sd">    - variable_name is a string corresponding to a variable in ens.</span>
+<span class="sd">    - exp1 and exp2 are strings defining the two experiments to be concatenated </span>
+<span class="sd">      (e.g. exp1=&#39;historical&#39;, exp2=&#39;rcp45&#39;).</span>
+<span class="sd">      </span>
+<span class="sd">    For each realization, the concatenated file for variable variable_name is written </span>
+<span class="sd">    to the current working directory and the input files are deleted by default, </span>
+<span class="sd">    unless delete=False.</span>
+<span class="sd">    </span>
+<span class="sd">    The concatenation occurs for each realization for which input files</span>
+<span class="sd">    exist for both exp1 and exp2.  If no match is found for the realization </span>
+<span class="sd">    in exp1 (i.e. there is no corresponding realization in exp2), then the files </span>
+<span class="sd">    for both experiments are deleted from the path (unless delete=False) and </span>
+<span class="sd">    the realization is removed from ens. Similarly if exp2 is missing for a </span>
+<span class="sd">    given model, that model is deleted from ens.     </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Create a copy of ens to use later for deleting input files if delete=True</span>
+    <span class="n">del_ens</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ens</span><span class="p">)</span>
+
+    <span class="c"># a list of models to remove from ens, if one experiment is missing completely from the model</span>
+    <span class="n">models_to_delete</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c"># a list of realizations to remove from ens, if the realization is missing from one experiment</span>
+    <span class="n">realizations_to_delete</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="c"># Loop over all models</span>
+    <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
+        <span class="n">e1</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">exp1_name</span><span class="p">)</span>
+        <span class="n">e2</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">exp2_name</span><span class="p">)</span>
+
+        <span class="c"># if the model is missing one experiment, remove that model from ens.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">e1</span> <span class="o">!=</span> <span class="p">[])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">e2</span> <span class="o">!=</span> <span class="p">[]):</span>
+	    <span class="c"># Get a list of realizations names in the two experiments.</span>
+	    <span class="n">e1_r_names</span> <span class="o">=</span> <span class="p">[</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">e1</span><span class="o">.</span><span class="n">realizations</span> <span class="p">]</span>
+	    <span class="n">e2_r_names</span> <span class="o">=</span> <span class="p">[</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">e2</span><span class="o">.</span><span class="n">realizations</span> <span class="p">]</span>
+	    
+	    <span class="c"># Find matching realizations btwn the two experiments.</span>
+	    <span class="n">realization_matches</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span> <span class="n">e1_r_names</span> <span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span> <span class="n">e2_r_names</span> <span class="p">)</span>
+            <span class="n">realization_misses</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span> <span class="n">e1_r_names</span> <span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span> <span class="n">e2_r_names</span> <span class="p">)</span>
+            
+            <span class="c"># add non-matching realizations to the realizations_deleted dict for printing later</span>
+	    <span class="k">if</span> <span class="n">realization_misses</span><span class="p">:</span>
+		<span class="n">realizations_to_delete</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">realization_misses</span>
+	    
+	    <span class="c"># Delete non-matching realizations from ens, and do the join for matching ones.</span>
+	    <span class="k">for</span> <span class="n">realization_name</span> <span class="ow">in</span> <span class="n">realization_matches</span><span class="p">:</span>
+		<span class="c"># Get the realizations</span>
+		<span class="n">e1r</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">get_realization</span><span class="p">(</span><span class="n">realization_name</span><span class="p">)</span>
+		<span class="n">e2r</span> <span class="o">=</span> <span class="n">e2</span><span class="o">.</span><span class="n">get_realization</span><span class="p">(</span><span class="n">realization_name</span><span class="p">)</span>
+		
+		<span class="c"># Get the variable objects from the two experiments</span>
+		<span class="n">e1v</span> <span class="o">=</span> <span class="n">e1r</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">variable_name</span><span class="p">)</span>
+		<span class="n">e2v</span> <span class="o">=</span> <span class="n">e2r</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">variable_name</span><span class="p">)</span>
+		
+		<span class="c"># Check if the end of e1 and the beggining of e2 seem to line up</span>
+		<span class="c"># if not, attempt to limit the e1 file endpoint</span>
+		<span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">end_dates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">min</span><span class="p">(</span><span class="n">e2v</span><span class="o">.</span><span class="n">start_dates</span><span class="p">):</span>
+		    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s"> WARNING: </span><span class="si">%s</span><span class="s"> end date is after </span><span class="si">%s</span><span class="s"> start date for </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">, attempting correction with cdo... </span><span class="se">\n</span><span class="s">&#39;</span> \
+		    <span class="o">%</span> <span class="p">(</span><span class="n">e1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">e1r</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+		    
+		    <span class="n">e1_start_year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="nb">min</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">start_dates</span><span class="p">)</span><span class="o">/</span><span class="mi">100</span> <span class="p">)</span> <span class="c"># Experiment 2 starts on this year: get year assuming YYYYMM format      			     </span>
+		    <span class="n">e2_start_year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="nb">min</span><span class="p">(</span><span class="n">e2v</span><span class="o">.</span><span class="n">start_dates</span><span class="p">)</span><span class="o">/</span><span class="mi">100</span> <span class="p">)</span> <span class="c"># Experiment 2 starts on this year: get year assuming YYYYMM format      </span>
+		    <span class="n">e1_end_year</span> <span class="o">=</span> <span class="n">e2_start_year</span> <span class="o">-</span> <span class="mi">1</span>                 <span class="c"># Experiment 1 should end 1 year before</span>
+		    
+		    
+		    <span class="c"># First concatenate all experiment 1 files, if there is more than one</span>
+		    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">filenames</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+		        <span class="n">procfile</span> <span class="o">=</span> <span class="n">e1v</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">e1v</span><span class="o">.</span><span class="n">realm</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span><span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">e1</span><span class="o">.</span><span class="n">name</span> \
+		                           <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">e1r</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">start_dates</span><span class="p">)</span> <span class="p">)</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">end_dates</span><span class="p">)</span> <span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.nc&#39;</span>
+		    
+		        <span class="n">catstring</span> <span class="o">=</span> <span class="s">&#39;cdo cat &#39;</span> <span class="o">+</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">filenames</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">procfile</span>
+		        <span class="n">ex</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">catstring</span> <span class="p">)</span>
+		    <span class="k">else</span><span class="p">:</span>
+			<span class="n">procfile</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">filenames</span><span class="p">)</span>
+		    
+		    <span class="sd">&quot;&quot;&quot;If the initial join of e1 files worked, time-slice the result with an appropriate end-date&quot;&quot;&quot;</span>
+		    <span class="n">outfile</span> <span class="o">=</span> <span class="n">e1v</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">e1v</span><span class="o">.</span><span class="n">realm</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span><span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">e1</span><span class="o">.</span><span class="n">name</span> \
+		                             <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">e1r</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">start_dates</span><span class="p">)</span> <span class="p">)</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e1_end_year</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;12&#39;</span> <span class="o">+</span> <span class="s">&#39;.nc&#39;</span>
+		    
+		    <span class="n">catstring</span> <span class="o">=</span> <span class="s">&#39;cdo -seldate,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e1_start_year</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;-01-01&#39;</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e1_end_year</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;-12-31&#39;</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">procfile</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">outfile</span>	    
+		    <span class="n">ex</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">catstring</span> <span class="p">)</span>
+		        
+  		    <span class="k">if</span> <span class="n">ex</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+			<span class="sd">&quot;&quot;&quot;If the fix was sucessfull, add the new file name to ens&quot;&quot;&quot;</span>
+		        <span class="n">e1v</span><span class="o">.</span><span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">outfile</span><span class="p">]</span>
+		        <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s"> </span><span class="si">%s</span><span class="s"> end date is now </span><span class="si">%s</span><span class="s">12 and </span><span class="si">%s</span><span class="s"> start date is </span><span class="si">%s</span><span class="s">01 </span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">e1_end_year</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">e2_start_year</span><span class="p">)</span>  
+		    
+		        <span class="c"># Add the newly created processing files to the delete list</span>
+		        <span class="n">del_ens</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">e1</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">get_realization</span><span class="p">(</span><span class="n">e1r</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">add_filename</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+		        <span class="n">del_ens</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">e1</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">get_realization</span><span class="p">(</span><span class="n">e1r</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">add_filename</span><span class="p">(</span><span class="n">procfile</span><span class="p">)</span>
+		        
+		    <span class="k">else</span><span class="p">:</span>
+			<span class="sd">&quot;&quot;&quot;print warning and delete the realization from the two experiments in ens&quot;&quot;&quot;</span>
+			<span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s"> fix failed, deleting realization </span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+			<span class="n">e1</span><span class="o">.</span><span class="n">del_realization</span><span class="p">(</span><span class="n">e1r</span><span class="p">)</span>
+			<span class="n">e2</span><span class="o">.</span><span class="n">del_realization</span><span class="p">(</span><span class="n">e2r</span><span class="p">)</span>
+		        <span class="k">if</span> <span class="n">realization_misses</span><span class="p">:</span>
+			    <span class="sd">&quot;&quot;&quot;Add to the list if it exists&quot;&quot;&quot;</span>
+		            <span class="n">realizations_to_delete</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">realization_misses</span><span class="p">)</span> <span class="o">+</span> <span class="n">e1r</span><span class="o">.</span><span class="n">name</span>
+		        <span class="k">else</span><span class="p">:</span>
+		            <span class="n">realizations_to_delete</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">e1r</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+
+			<span class="k">continue</span> <span class="c"># if this failed to fix the problem, return to the top of the realization for loop.</span>
+			
+			      
+		<span class="c"># join the two experiments original filenames with a whitespace      </span>
+		<span class="n">infiles</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">e1v</span><span class="o">.</span><span class="n">filenames</span> <span class="o">+</span> <span class="n">e2v</span><span class="o">.</span><span class="n">filenames</span> <span class="p">)</span>
+		
+		<span class="c"># construct the output filename</span>
+		<span class="n">outfile</span> <span class="o">=</span> <span class="n">e1v</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">e1v</span><span class="o">.</span><span class="n">realm</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span><span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">e1</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="n">e2</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span>\
+		<span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">e1r</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">start_dates</span><span class="p">)</span> <span class="p">)</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span> <span class="nb">max</span><span class="p">(</span><span class="n">e2v</span><span class="o">.</span><span class="n">end_dates</span><span class="p">)</span> <span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.nc&#39;</span>
+		
+		<span class="c"># do the concatenation using CDO</span>
+		<span class="k">print</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s"> joining &quot;</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">e1r</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">e1</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39; to &#39;</span> <span class="o">+</span> <span class="n">e2</span><span class="o">.</span><span class="n">name</span>  
+		<span class="n">catstring</span> <span class="o">=</span> <span class="s">&#39;cdo cat &#39;</span> <span class="o">+</span> <span class="n">infiles</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">outfile</span>			    
+		<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">catstring</span> <span class="p">)</span>
+		
+		<span class="c"># Add a new joined experiment to ens, </span>
+		<span class="c"># with a newly minted realization, variable + filenames.</span>
+		<span class="n">v</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+		<span class="n">v</span><span class="o">.</span><span class="n">add_realm</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">realm</span><span class="p">)</span>	
+		<span class="n">v</span><span class="o">.</span><span class="n">add_filename</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+		<span class="n">v</span><span class="o">.</span><span class="n">add_start_date</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">e1v</span><span class="o">.</span><span class="n">start_dates</span><span class="p">))</span>
+	        <span class="n">v</span><span class="o">.</span><span class="n">add_end_date</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">e2v</span><span class="o">.</span><span class="n">end_dates</span><span class="p">))</span>
+		<span class="n">r</span> <span class="o">=</span> <span class="n">Realization</span><span class="p">(</span><span class="n">e1r</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+		<span class="n">r</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+		<span class="n">joined_e</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span> <span class="n">e1</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="n">e2</span><span class="o">.</span><span class="n">name</span> <span class="p">)</span>
+		<span class="n">joined_e</span><span class="o">.</span><span class="n">add_realization</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+		<span class="n">model</span><span class="o">.</span><span class="n">add_experiment</span><span class="p">(</span><span class="n">joined_e</span><span class="p">)</span>
+		    
+            <span class="c"># delete e1 and e2, which have been replaced with joined_e</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">del_experiment</span><span class="p">(</span><span class="n">e1</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">del_experiment</span><span class="p">(</span><span class="n">e2</span><span class="p">)</span>
+            
+        <span class="k">elif</span> <span class="p">(</span><span class="n">e1</span> <span class="o">!=</span> <span class="p">[]):</span>
+            <span class="n">models_to_delete</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">e2</span> <span class="o">!=</span> <span class="p">[]):</span>
+            <span class="n">models_to_delete</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">e2</span><span class="o">.</span><span class="n">name</span>
+            
+    <span class="c"># If delete=True, delete the original files for variable_name, </span>
+    <span class="c"># leaving only the newly joined ones behind. 		    </span>
+    <span class="k">if</span> <span class="n">delete</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>		    
+        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">del_ens</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
+	    <span class="k">for</span> <span class="n">experiment</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
+		<span class="k">for</span> <span class="n">realization</span> <span class="ow">in</span> <span class="n">experiment</span><span class="o">.</span><span class="n">realizations</span><span class="p">:</span>
+		    <span class="n">variable</span> <span class="o">=</span> <span class="n">realization</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">variable_name</span><span class="p">)</span>
+		    <span class="k">for</span> <span class="n">cfile</span> <span class="ow">in</span> <span class="n">variable</span><span class="o">.</span><span class="n">filenames</span><span class="p">:</span>
+		        <span class="n">delstr</span> <span class="o">=</span> <span class="s">&#39;rm &#39;</span> <span class="o">+</span> <span class="n">cfile</span>
+		        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">delstr</span> <span class="p">)</span> 
+		        
+    <span class="c"># Remove models with missing experiments from ens, and then return ens</span>
+    <span class="k">print</span> <span class="s">&#39; </span><span class="se">\n\n</span><span class="s"> Models deleted from ensemble (missing one experiment completely): </span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s"> Model </span><span class="se">\t</span><span class="s"> Experiment </span><span class="se">\n</span><span class="s">&#39;</span>
+    
+    <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">missing_experiment</span> <span class="ow">in</span> <span class="n">models_to_delete</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">ens</span><span class="o">.</span><span class="n">del_model</span><span class="p">(</span> <span class="n">ens</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="se">\t</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">missing_experiment</span><span class="p">)</span>
+
+    <span class="k">print</span> <span class="s">&#39; </span><span class="se">\n\n</span><span class="s"> Realizations deleted (missing from one experiment): </span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s"> Model </span><span class="se">\t</span><span class="s"> Realizations </span><span class="se">\n</span><span class="s">&#39;</span>    
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">realizations_to_delete</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+	<span class="k">print</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="se">\t</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="p">)</span>
+    
+    <span class="n">ens</span> <span class="o">=</span> <span class="n">ens</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">ens</span>		
+</div>
+<div class="viewcode-block" id="ens_stats"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.preprocessing_tools.ens_stats">[docs]</a><span class="k">def</span> <span class="nf">ens_stats</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">variable_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Calculate the ensemble mean and standard deviation over all models-realizations </span>
+<span class="sd">    and experiments for variable variable_name in ens, such that each model has a weight </span>
+<span class="sd">    of one. An output file is written containing the ensemble mean and another file is </span>
+<span class="sd">    written with the standard deviation, containing the names &#39;_ENS-MEAN_&#39; and &#39;_ENS-STD_&#39;</span>
+<span class="sd">    in the place of the model-name. If the ensemble contains multiple experiments, files</span>
+<span class="sd">    are written for each experiment.</span>
+<span class="sd">    </span>
+<span class="sd">    The ensemble in ens must be homogenous. That is to say all files must be on the same</span>
+<span class="sd">    grid and span the same time-frame, within each experiment (see remap, and time_slice for more).</span>
+<span class="sd">    Additionally, variable_name should have only one filename per realization and experiment. That</span>
+<span class="sd">    is, join_exp_slice should have been applied.</span>
+<span class="sd">    </span>
+<span class="sd">    The calculation is done by, first computing the mean over all realizations for each model; </span>
+<span class="sd">    then for the ensemble, calculating the mean over all models.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># figure out all the experiments in the ensemble </span>
+    <span class="n">experiment_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
+	<span class="k">for</span> <span class="n">experiment</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
+	    <span class="n">experiment_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    
+    <span class="n">experiment_list</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span> <span class="n">experiment_list</span> <span class="p">)</span>
+
+    <span class="c"># Do the ensemble mean for each experiment separately</span>
+    <span class="k">for</span> <span class="n">experiment_name</span> <span class="ow">in</span> <span class="n">experiment_list</span><span class="p">:</span>
+        <span class="c"># Keep a record of all files to mean for this experiment</span>
+        <span class="n">files_to_mean</span> <span class="o">=</span> <span class="p">[]</span>
+         
+        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
+            <span class="c"># loop over all models, checking if they contain experiment. </span>
+            <span class="n">experiment</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">(</span><span class="n">experiment_name</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">experiment</span> <span class="o">!=</span> <span class="p">[]</span> <span class="p">:</span>
+		<span class="c">#If model has experiment, add its files to the mean.</span>
+                <span class="n">realizations</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">realizations</span>
+                
+	        <span class="c"># Get all realization files for model and variable_name</span>
+	        <span class="n">modfilesall</span> <span class="o">=</span> <span class="p">[</span> <span class="n">realization</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">variable_name</span><span class="p">)</span><span class="o">.</span><span class="n">filenames</span> 
+	                        <span class="k">for</span> <span class="n">realization</span> <span class="ow">in</span> <span class="n">realizations</span> <span class="p">]</span>
+	        <span class="n">modfilesall</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">modfilesall</span><span class="p">)</span> <span class="p">)</span>        
+	        <span class="k">print</span> <span class="n">modfilesall</span>                
+	        <span class="c"># get an example variable for naming </span>
+	        <span class="n">variable</span> <span class="o">=</span> <span class="n">realizations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">variable_name</span><span class="p">)</span>
+	   
+                <span class="c"># Check if there is more than one realization, if so, first mean these.</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span> <span class="n">realizations</span> <span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">in_files</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">modfilesall</span> <span class="p">)</span>
+                    <span class="n">out_file</span> <span class="o">=</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">realm</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">experiment</span><span class="o">.</span><span class="n">name</span> \
+                                      <span class="o">+</span> <span class="s">&#39;_R-MEAN_&#39;</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">start_dates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">end_dates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;.nc&#39;</span>
+                                 
+                    <span class="n">cdo_str</span> <span class="o">=</span> <span class="s">&#39;cdo ensmean &#39;</span> <span class="o">+</span> <span class="n">in_files</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">out_file</span>
+ 
+                    <span class="c"># If the realization mean already exists don&#39;t redo</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">out_file</span><span class="p">):</span>
+                        <span class="n">files_to_mean</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">out_file</span> <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">cdo_str</span> <span class="p">)</span>
+                        <span class="n">files_to_mean</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">out_file</span> <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">files_to_mean</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">modfilesall</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">)</span>
+
+        <span class="c"># For this experiment make the mean over all models and for models with multitple </span>
+        <span class="c"># realizations, uses the mean of all these realizations.</span>
+        <span class="n">in_files</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">files_to_mean</span> <span class="p">)</span>
+        
+        <span class="n">out_file</span> <span class="o">=</span> <span class="s">&#39;ENS-MEAN_&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">realm</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">experiment_name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">start_dates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>\
+                               <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">end_dates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;.nc&#39;</span>
+                                
+        <span class="n">cdo_str</span> <span class="o">=</span> <span class="s">&#39;cdo ensmean &#39;</span> <span class="o">+</span> <span class="n">in_files</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">out_file</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">cdo_str</span> <span class="p">)</span>
+
+        <span class="c"># Now do the standard deviation</span>
+        <span class="n">out_file</span> <span class="o">=</span> <span class="s">&#39;ENS-STD_&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">realm</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">experiment_name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">start_dates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>\
+                              <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">end_dates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;.nc&#39;</span>
+                                
+        <span class="n">cdo_str</span> <span class="o">=</span> <span class="s">&#39;cdo ensstd &#39;</span> <span class="o">+</span> <span class="n">in_files</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">out_file</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">cdo_str</span> <span class="p">)</span>    
+    
+<span class="c">#===========================================================================================</span>
+<span class="c"># The operators below this point work on a file-by-file basis and can be chained together </span>
+<span class="c"># (in principle, not implemented).</span>
+<span class="c">#============================================================================================</span>
+    
+     </div>
+<div class="viewcode-block" id="areaint"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.preprocessing_tools.areaint">[docs]</a><span class="k">def</span> <span class="nf">areaint</span><span class="p">():</span>
+    <span class="k">print</span> <span class="s">&quot;hello this is areaint&quot;</span>
+    </div>
+<div class="viewcode-block" id="areamean"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.preprocessing_tools.areamean">[docs]</a><span class="k">def</span> <span class="nf">areamean</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For each file in ens, calculate the area mean using CDO fldmean, </span>
+<span class="sd">    and do a smart naming of the output and remove the input files </span>
+<span class="sd">    if delete=True. An updated ensemble object is also returned.</span>
+<span class="sd">    </span>
+<span class="sd">    EXAMPLE:</span>
+<span class="sd">    </span>
+<span class="sd">    area_mean_ens = cd.areamean(ens)</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">realization</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">iterate</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">infile</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="s">&#39; area-mean_&#39;</span> <span class="o">+</span> <span class="n">infile</span>
+
+            <span class="n">cdo_str</span> <span class="o">=</span> <span class="s">&#39;cdo fldmean &#39;</span> <span class="o">+</span> <span class="n">infile</span> <span class="o">+</span> <span class="n">outfile</span> 			
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">cdo_str</span> <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">delete</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">delstr</span> <span class="o">=</span> <span class="s">&#39;rm &#39;</span> <span class="o">+</span> <span class="n">infile</span>
+	        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">delstr</span> <span class="p">)</span>    
+	        
+	    <span class="n">variable</span><span class="o">.</span><span class="n">del_filename</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+	    <span class="n">variable</span><span class="o">.</span><span class="n">add_filename</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+	    
+    <span class="k">return</span> <span class="n">ens</span>	    
+        </div>
+<div class="viewcode-block" id="zonmean"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.preprocessing_tools.zonmean">[docs]</a><span class="k">def</span> <span class="nf">zonmean</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For each file in ens, calculate the zonal mean using CDO zonmean, </span>
+<span class="sd">    and do a smart naming of the output and remove the input files </span>
+<span class="sd">    if delete=True (default). An updated ensemble object is also returned.</span>
+<span class="sd">    </span>
+<span class="sd">    EXAMPLE:</span>
+<span class="sd">    </span>
+<span class="sd">    zonal_mean_ens = cd.zonmean(ens)</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">realization</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">iterate</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">infile</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="s">&#39;zonal-mean_&#39;</span> <span class="o">+</span> <span class="n">infile</span>
+
+            <span class="n">cdo_str</span> <span class="o">=</span> <span class="s">&#39;cdo zonmean &#39;</span> <span class="o">+</span> <span class="n">infile</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">outfile</span> 			
+            <span class="n">ex</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">cdo_str</span> <span class="p">)</span>
+            <span class="k">if</span> <span class="n">ex</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>                
+	        <span class="n">variable</span><span class="o">.</span><span class="n">add_filename</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+	    <span class="k">else</span><span class="p">:</span>
+		<span class="k">try</span><span class="p">:</span>
+		    <span class="c"># if zonmean aborted part-way, </span>
+		    <span class="c"># delete the uncompleted outfile.</span>
+       		    <span class="k">print</span> <span class="s">&#39;deleting &#39;</span> <span class="o">+</span> <span class="n">outfile</span>
+		    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;rm -f &#39;</span> <span class="o">+</span> <span class="n">outfile</span> <span class="p">)</span>
+		<span class="k">except</span><span class="p">:</span>
+		    <span class="k">pass</span>
+
+	    <span class="n">variable</span><span class="o">.</span><span class="n">del_filename</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+	        
+            <span class="k">if</span> <span class="n">delete</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">delstr</span> <span class="o">=</span> <span class="s">&#39;rm &#39;</span> <span class="o">+</span> <span class="n">infile</span>
+	        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">delstr</span> <span class="p">)</span>    
+	        
+    <span class="n">ens</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>	       
+    <span class="k">return</span> <span class="n">ens</span>	
+  
+</div>
+<div class="viewcode-block" id="climatology"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.preprocessing_tools.climatology">[docs]</a><span class="k">def</span> <span class="nf">climatology</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For each file in ens, calculate the monthly climatology over the full file-length </span>
+<span class="sd">    using CDO ymonmean, and do a smart naming of the output and remove the input files </span>
+<span class="sd">    if delete=True (default). An updated ensemble object is also returned.</span>
+<span class="sd">    </span>
+<span class="sd">    If you want to compute the climatology over a specific time slice, use time_slice</span>
+<span class="sd">    before compute the climatology.</span>
+<span class="sd">    </span>
+<span class="sd">    EXAMPLE:</span>
+<span class="sd">    </span>
+<span class="sd">    climatology_ens = cd.climatology(ens)</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">realization</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">iterate</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">infile</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="s">&#39; climatology_&#39;</span> <span class="o">+</span> <span class="n">infile</span>
+
+            <span class="n">cdo_str</span> <span class="o">=</span> <span class="s">&#39;cdo ymonmean -selvar,&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span><span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">infile</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">outfile</span> 			
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">cdo_str</span> <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">delete</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">delstr</span> <span class="o">=</span> <span class="s">&#39;rm &#39;</span> <span class="o">+</span> <span class="n">infile</span>
+	        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">delstr</span> <span class="p">)</span>    
+	        
+	    <span class="n">variable</span><span class="o">.</span><span class="n">del_filename</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+	    <span class="n">variable</span><span class="o">.</span><span class="n">add_filename</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+	    
+    <span class="k">return</span> <span class="n">ens</span>	
+
+</div>
+<div class="viewcode-block" id="remap"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.preprocessing_tools.remap">[docs]</a><span class="k">def</span> <span class="nf">remap</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">remap</span><span class="o">=</span><span class="s">&#39;r360x180&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;remapdis&#39;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For each file in ens, remap to resolution remap=&#39;r_nlon_x_nlat_&#39;, where _nlon_, _nlat_ are the </span>
+<span class="sd">    number of lat-lon points to use. The remap is done using cdo and a smart naming of the output and </span>
+<span class="sd">    removal of the input files occurs if delete=True (default). An updated ensemble object is also returned.</span>
+<span class="sd">    </span>
+<span class="sd">    By default the distance weighted remapping is used, but any valid cdo remapping method can be used</span>
+<span class="sd">    by specifying the option argument &#39;method&#39;, e.g. method=&#39;remapdis&#39;.</span>
+<span class="sd">    </span>
+<span class="sd">    EXAMPLE:</span>
+<span class="sd">       </span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">realization</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">iterate</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">infile</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="s">&#39; remap_&#39;</span> <span class="o">+</span> <span class="n">infile</span>
+
+            <span class="n">cdo_str</span> <span class="o">=</span> <span class="s">&#39;cdo &#39;</span> <span class="o">+</span> <span class="n">method</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span> <span class="o">+</span> <span class="n">remap</span> <span class="o">+</span> <span class="s">&#39; -selvar,&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">infile</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">outfile</span> 	
+            <span class="k">print</span> <span class="n">cdo_str</span>
+            <span class="n">ex</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">cdo_str</span> <span class="p">)</span>
+            <span class="k">if</span> <span class="n">ex</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    	        <span class="n">variable</span><span class="o">.</span><span class="n">add_filename</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+
+            <span class="n">variable</span><span class="o">.</span><span class="n">del_filename</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+                
+            <span class="k">if</span> <span class="n">delete</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">delstr</span> <span class="o">=</span> <span class="s">&#39;rm &#39;</span> <span class="o">+</span> <span class="n">infile</span>
+	        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">delstr</span> <span class="p">)</span>    
+	    
+    <span class="k">return</span> <span class="n">ens</span>	
+
+</div>
+<div class="viewcode-block" id="time_slice"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.preprocessing_tools.time_slice">[docs]</a><span class="k">def</span> <span class="nf">time_slice</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For each file in ens, limit the date range to between start_date and end_date, </span>
+<span class="sd">    do a smart naming of the output and remove the input files </span>
+<span class="sd">    if delete=True. An updated ensemble object is also returned.</span>
+<span class="sd">    </span>
+<span class="sd">    start_date and end_date format is YYYY-MM-DD</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="n">date_range</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span> <span class="o">+</span> <span class="n">end_date</span>
+    
+    <span class="n">start_yyymm</span> <span class="o">=</span> <span class="n">start_date</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span><span class="s">&#39;&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="c"># convert dates to CMIP YYYYMM format</span>
+    <span class="n">end_yyymm</span>   <span class="o">=</span> <span class="n">end_date</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span><span class="s">&#39;&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>   
+    
+    <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">realization</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">iterate</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">infile</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+
+            
+            <span class="k">if</span> <span class="p">(</span> <span class="nb">min</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">start_dates</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start_yyymm</span><span class="p">)</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="nb">max</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">end_dates</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">end_yyymm</span><span class="p">)</span> <span class="p">):</span>
+		<span class="c"># Only yf the file doesnlt already have the correct date-range		</span>
+		<span class="k">if</span> <span class="p">(</span> <span class="nb">min</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">start_dates</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start_yyymm</span><span class="p">)</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="nb">max</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">end_dates</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">end_yyymm</span><span class="p">)</span> <span class="p">):</span>
+		    <span class="c"># Do the time-slicing if the file is within the specified dates</span>
+		    <span class="n">outfile</span> <span class="o">=</span>  <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">realm</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span><span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">experiment</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span>\
+		    <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">realization</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">start_yyymm</span> \
+		    <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="n">end_yyymm</span> <span class="o">+</span> <span class="s">&#39;.nc&#39;</span>
+		    
+		    <span class="n">cdo_str</span> <span class="o">=</span> <span class="s">&#39;cdo seldate,&#39;</span> <span class="o">+</span> <span class="n">date_range</span> <span class="o">+</span> <span class="s">&#39;  -selvar,&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">infile</span> <span class="o">+</span>  <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">outfile</span>           
+		    <span class="n">ex</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">cdo_str</span> <span class="p">)</span>
+		    <span class="k">if</span> <span class="n">ex</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+		        <span class="n">variable</span><span class="o">.</span><span class="n">add_filename</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>  <span class="c"># add the filename with new date-ranges to the variable in ens</span>
+		        <span class="n">variable</span><span class="o">.</span><span class="n">start_dates</span><span class="o">=</span><span class="p">[];</span> <span class="n">variable</span><span class="o">.</span><span class="n">end_dates</span><span class="o">=</span><span class="p">[]</span>
+		        <span class="n">variable</span><span class="o">.</span><span class="n">add_start_date</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start_yyymm</span><span class="p">))</span> <span class="c"># add the start-date with new date-ranges to the variable in ens</span>
+		        <span class="n">variable</span><span class="o">.</span><span class="n">add_end_date</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">end_yyymm</span><span class="p">))</span> <span class="c"># add the end-date with new date-ranges to the variable in ens		    </span>
+		<span class="k">else</span><span class="p">:</span>
+		    <span class="c">#If the file does not containt he desired dates, print a warning and delete</span>
+	            <span class="k">print</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> is not in the date-range...deleting&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">realization</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+	            
+		<span class="n">variable</span><span class="o">.</span><span class="n">del_filename</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span> <span class="c"># delete the old filename from ens</span>
+   	       
+                <span class="k">if</span> <span class="n">delete</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+                    <span class="n">delstr</span> <span class="o">=</span> <span class="s">&#39;rm &#39;</span> <span class="o">+</span> <span class="n">infile</span>
+	            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">delstr</span> <span class="p">)</span> 
+	        
+    <span class="n">ens</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>	            	    
+    <span class="k">return</span> <span class="n">ens</span>	          
+</div>
+<div class="viewcode-block" id="time_anomaly"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.preprocessing_tools.time_anomaly">[docs]</a><span class="k">def</span> <span class="nf">time_anomaly</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For each file in ens, compute the anomaly relative the period </span>
+<span class="sd">    between start_date and end_date, do a smart naming of the output </span>
+<span class="sd">    and remove the input files if delete=True. An updated ensemble </span>
+<span class="sd">    object is also returned.</span>
+<span class="sd">    </span>
+<span class="sd">    start_date and end_date format is YYYY-MM-DD</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="n">date_range</span> <span class="o">=</span> <span class="n">start_date</span> <span class="o">+</span> <span class="s">&#39;,&#39;</span> <span class="o">+</span> <span class="n">end_date</span>
+    
+    <span class="n">start_yyymm</span> <span class="o">=</span> <span class="n">start_date</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span><span class="s">&#39;&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="c"># convert dates to CMIP YYYYMM format</span>
+    <span class="n">end_yyymm</span>   <span class="o">=</span> <span class="n">end_date</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span><span class="s">&#39;&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>   
+    
+    <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">realization</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">iterate</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">infile</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+
+            <span class="c"># Do the time-slicing if the file is within the specified dates </span>
+            <span class="k">if</span> <span class="p">(</span> <span class="nb">min</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">start_dates</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start_yyymm</span><span class="p">)</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="nb">max</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">end_dates</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">end_yyymm</span><span class="p">)</span> <span class="p">):</span>
+        
+                <span class="n">outfile</span> <span class="o">=</span> <span class="s">&#39;anomaly_&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">realm</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span><span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">experiment</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span>\
+		                           <span class="s">&#39;_&#39;</span> <span class="o">+</span> <span class="n">realization</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39;_&#39;</span> <span class="o">+</span>  <span class="nb">str</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">start_dates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> \
+                                               <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">end_dates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s">&#39;.nc&#39;</span>
+            
+                <span class="n">cdo_str</span> <span class="o">=</span> <span class="s">&#39;cdo sub &#39;</span> <span class="o">+</span> <span class="n">infile</span> <span class="o">+</span>  <span class="s">&#39; -timmean -seldate,&#39;</span> <span class="o">+</span> <span class="n">date_range</span> <span class="o">+</span> <span class="s">&#39;  -selvar,&#39;</span> <span class="o">+</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">infile</span> <span class="o">+</span>  <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">outfile</span>           
+                <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">cdo_str</span> <span class="p">)</span>
+	        <span class="n">variable</span><span class="o">.</span><span class="n">add_filename</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>  <span class="c"># add the filename with new date-ranges to the variable in ens</span>
+
+   	    <span class="n">variable</span><span class="o">.</span><span class="n">del_filename</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span> <span class="c"># delete the old filename from ens</span>
+   	       
+            <span class="k">if</span> <span class="n">delete</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">delstr</span> <span class="o">=</span> <span class="s">&#39;rm &#39;</span> <span class="o">+</span> <span class="n">infile</span>
+	        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">delstr</span> <span class="p">)</span>    
+	            	    
+    <span class="k">return</span> <span class="n">ens</span>	
+    </div>
+<div class="viewcode-block" id="my_operator"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.preprocessing_tools.my_operator">[docs]</a><span class="k">def</span> <span class="nf">my_operator</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">my_cdo_str</span><span class="p">,</span> <span class="n">output_prefix</span><span class="o">=</span><span class="s">&#39;processed_&#39;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For each file in ens, apply the cdo command contained in</span>
+<span class="sd">    my_cdo_str, creating an output file appended by &#39;output_prefix&#39;</span>
+<span class="sd">    which is &#39;processed_&#39; by default. An updated ensemble object</span>
+<span class="sd">    is returned.</span>
+<span class="sd">    </span>
+<span class="sd">    Optionally delete the original input files if delete=True.</span>
+<span class="sd">    </span>
+<span class="sd">    EXAMPLE:</span>
+<span class="sd">    </span>
+<span class="sd">    my_ens = cd.my_operator(ens, &#39;cdo -yearmean&#39;, output_prefix=&#39;annual_&#39;)</span>
+<span class="sd">    </span>
+<span class="sd">    FUTURE EXPANSION:</span>
+<span class="sd">    can easily handle more complex cases by passing a dict to my_cdo_str</span>
+<span class="sd">    and mapping defined variables such as infile...</span>
+<span class="sd">    </span>
+<span class="sd">    defined variables are:</span>
+<span class="sd">    model, experiment, realization, variable, infile, outfile</span>
+<span class="sd">    </span>
+<span class="sd">    e.g. my_cdo_str = &#39;cdo sub {infile} -timmean -seldate,1991-01-01,2000-12-31 {infile} {outfile}&#39;</span>
+<span class="sd">    </span>
+<span class="sd">    and in the function:</span>
+<span class="sd">        for model, experiment, realization, variable, files in ens.iterate():</span>
+<span class="sd">            for infile in files:</span>
+<span class="sd">               my_cdo_str.format(infile=&#39;file_input.nc&#39;,outfile=&#39;file_output.nc&#39;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="k">if</span> <span class="n">delete</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+	<span class="c"># Take a copy of the original ensemble before we modify it below</span>
+        <span class="n">del_ens</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ens</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">realization</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">iterate</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">infile</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="n">output_prefix</span> <span class="o">+</span> <span class="n">infile</span>
+            <span class="n">cdo_str</span><span class="o">=</span><span class="s">&#39;&#39;</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;model&#39;</span><span class="p">:</span><span class="n">model</span><span class="p">,</span><span class="s">&#39;experiment&#39;</span><span class="p">:</span><span class="n">experiment</span><span class="p">,</span><span class="s">&#39;realization&#39;</span><span class="p">:</span><span class="n">realization</span> \
+                      <span class="p">,</span> <span class="s">&#39;variable&#39;</span><span class="p">:</span><span class="n">variable</span><span class="p">,</span> <span class="s">&#39;infile&#39;</span><span class="p">:</span><span class="n">infile</span><span class="p">,</span> <span class="s">&#39;outfile&#39;</span><span class="p">:</span><span class="n">outfile</span><span class="p">}</span>
+
+           
+            <span class="n">cdo_str</span> <span class="o">=</span> <span class="n">my_cdo_str</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">ex</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">cdo_str</span> <span class="p">)</span>
+	    
+	    <span class="k">if</span> <span class="n">ex</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+		<span class="c">#Add the filename for the newly processed file, if</span>
+		<span class="c"># processing was sucessfull</span>
+	        <span class="n">variable</span><span class="o">.</span><span class="n">add_filename</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+	    <span class="k">else</span><span class="p">:</span>
+		<span class="k">try</span><span class="p">:</span>
+		    <span class="c"># if processing aborted part-way, </span>
+		    <span class="c"># delete the uncompleted outfile.</span>
+		    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;rm -f &#39;</span> <span class="o">+</span> <span class="n">outfile</span> <span class="p">)</span>
+       		    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s"> Failed processing...deleting &#39;</span> <span class="o">+</span> <span class="n">outfile</span>
+		<span class="k">except</span><span class="p">:</span>
+		    <span class="k">pass</span>	        
+            
+	    <span class="n">variable</span><span class="o">.</span><span class="n">del_filename</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span> <span class="c"># remove original filename from the ensemble.</span>
+            
+    <span class="k">if</span> <span class="n">delete</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">del_ens_files</span><span class="p">(</span><span class="n">del_ens</span><span class="p">)</span>   
+	        
+    <span class="n">ens</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>	        	    
+    <span class="k">return</span> <span class="n">ens</span>	        
+        </div>
+<div class="viewcode-block" id="del_ens_files"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.preprocessing_tools.del_ens_files">[docs]</a><span class="k">def</span> <span class="nf">del_ens_files</span><span class="p">(</span><span class="n">ens</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; delete all files in ensemble ens&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">realization</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">iterate</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">infile</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+	        <span class="n">delstr</span> <span class="o">=</span> <span class="s">&#39;rm &#39;</span> <span class="o">+</span> <span class="n">infile</span>
+	        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span> <span class="n">delstr</span> <span class="p">)</span> 
+	    
+        
+        
+        
+        
+        
+        
+        
+        
+        </div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">cmipdata  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Neil Swart.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+  </body>
+</html>

@@ -1,31 +1,13 @@
-"""preprocessing_tools
-======================
-
-The preprocessing_tools module of cmipdata is a set of functions which use 
-os.system calls to cdo to systematically apply a given processing on multiple 
-NetCDF files, which listed in cmipdata ensemble objects. Methods:
-
-Multi-file operators (cannot be chained):
- - cat_exp_slices 
- - cat_experiments
- - ens_stats
- 
-File-by-file operators (can be chained):
- - area_intgral*
- - area_mean
- - climatology
- - zonal_integral*
- - zonal_mean
- - remap
- - time_slice
- 
- * to come
- 
-Neil Swart, 07/2014
+""":mod:`preprocessing_tools` -- Preprocesses data before loading
+=================================================================
+.. module:: 
+   :platform: Unix
+   :synopsis: Perform Climate Data Operator type processing systematically on large ensembles of files.
+.. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
 """
 import os
 import glob
-from cd_classes import Ensemble, Model, Experiment, Realization, Variable
+from classes import Ensemble, Model, Experiment, Realization, Variable
 import copy
 import itertools
 
@@ -46,7 +28,7 @@ def cat_exp_slices(ens, delete=True):
     files will be produced per realization: one for the historical and one for the rcp45 experiment. To join files
     over experiments (e.g. to concatenate historical and rcp45) see cat_experiments.  
     
-    EXAMPLE:
+    EXAMPLE::
     
     # For a simple ensemble comprized of only 1 model, 1 experiment and one realization. 
     
@@ -407,18 +389,28 @@ def zonmean(ens, delete=True):
     """ 
     for model, experiment, realization, variable, files in ens.iterate():
         for infile in files:
-            outfile = ' zonal-mean_' + infile
+            outfile = 'zonal-mean_' + infile
 
             cdo_str = 'cdo zonmean ' + infile + ' ' + outfile 			
-            os.system( cdo_str )
+            ex = os.system( cdo_str )
+            if ex == 0:                
+	        variable.add_filename(outfile)
+	    else:
+		try:
+		    # if zonmean aborted part-way, 
+		    # delete the uncompleted outfile.
+       		    print 'deleting ' + outfile
+		    os.system('rm -f ' + outfile )
+		except:
+		    pass
 
+	    variable.del_filename(infile)
+	        
             if delete == True:
                 delstr = 'rm ' + infile
 	        os.system( delstr )    
 	        
-	    variable.del_filename(infile)
-	    variable.add_filename(outfile)
-	    
+    ens.squeeze()	       
     return ens	
   
 
@@ -469,18 +461,19 @@ def remap(ens, remap='r360x180', method='remapdis', delete=True):
         for infile in files:
             outfile = ' remap_' + infile
 
-            cdo_str = 'cdo ' + method + ',' + remap + ' -selvar,' + variable.name + ' ' + infile + ' ' + outfile 			
-            os.system( cdo_str )
+            cdo_str = 'cdo ' + method + ',' + remap + ' -selvar,' + variable.name + ' ' + infile + ' ' + outfile 	
+            print cdo_str
+            ex = os.system( cdo_str )
+            if ex == 0:
+    	        variable.add_filename(outfile)
 
+            variable.del_filename(infile)
+                
             if delete == True:
                 delstr = 'rm ' + infile
 	        os.system( delstr )    
-	        
-	    variable.del_filename(infile)
-	    variable.add_filename(outfile)
 	    
     return ens	
-
 
 
 def time_slice(ens, start_date, end_date, delete=True):
@@ -510,11 +503,12 @@ def time_slice(ens, start_date, end_date, delete=True):
 		    + '-' + end_yyymm + '.nc'
 		    
 		    cdo_str = 'cdo seldate,' + date_range + '  -selvar,' + variable.name + ' ' + infile +  ' ' + outfile           
-		    os.system( cdo_str )
-		    variable.add_filename(outfile)  # add the filename with new date-ranges to the variable in ens
-		    variable.start_dates=[]; variable.end_dates=[]
-		    variable.add_start_date(int(start_yyymm)) # add the start-date with new date-ranges to the variable in ens
-		    variable.add_end_date(int(end_yyymm)) # add the end-date with new date-ranges to the variable in ens		    
+		    ex = os.system( cdo_str )
+		    if ex == 0:
+		        variable.add_filename(outfile)  # add the filename with new date-ranges to the variable in ens
+		        variable.start_dates=[]; variable.end_dates=[]
+		        variable.add_start_date(int(start_yyymm)) # add the start-date with new date-ranges to the variable in ens
+		        variable.add_end_date(int(end_yyymm)) # add the end-date with new date-ranges to the variable in ens		    
 		else:
 		    #If the file does not containt he desired dates, print a warning and delete
 	            print "%s %s is not in the date-range...deleting" %(model.name, realization.name)
@@ -525,7 +519,7 @@ def time_slice(ens, start_date, end_date, delete=True):
                     delstr = 'rm ' + infile
 	            os.system( delstr ) 
 	        
-    ens = ens.squeeze()	            	    
+    ens.squeeze()	            	    
     return ens	          
 
 def time_anomaly(ens, start_date, end_date, delete=False):
@@ -593,6 +587,10 @@ def my_operator(ens, my_cdo_str, output_prefix='processed_', delete=False):
                my_cdo_str.format(infile='file_input.nc',outfile='file_output.nc')
 
     """ 
+    if delete == True:
+	# Take a copy of the original ensemble before we modify it below
+        del_ens = copy.deepcopy(ens)
+    
     for model, experiment, realization, variable, files in ens.iterate():
         for infile in files:
             outfile = output_prefix + infile
@@ -605,20 +603,33 @@ def my_operator(ens, my_cdo_str, output_prefix='processed_', delete=False):
             ex = os.system( cdo_str )
 	    
 	    if ex == 0:
-		""" Add the filename for the newly processed file, if
-		processing was sucessfull"""
+		#Add the filename for the newly processed file, if
+		# processing was sucessfull
 	        variable.add_filename(outfile)
+	    else:
+		try:
+		    # if processing aborted part-way, 
+		    # delete the uncompleted outfile.
+		    os.system('rm -f ' + outfile )
+       		    print '\n Failed processing...deleting ' + outfile
+		except:
+		    pass	        
             
 	    variable.del_filename(infile) # remove original filename from the ensemble.
             
-            if delete == True:
-                delstr = 'rm ' + infile
-	        os.system( delstr )    
+    if delete == True:
+        del_ens_files(del_ens)   
 	        
-    ens  = ens.squeeze()	        	    
+    ens.squeeze()	        	    
     return ens	        
         
-        
+def del_ens_files(ens):
+    """ delete all files in ensemble ens"""
+    for model, experiment, realization, variable, files in ens.iterate():
+        for infile in files:
+	        delstr = 'rm ' + infile
+	        os.system( delstr ) 
+	    
         
         
         

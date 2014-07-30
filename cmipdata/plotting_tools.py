@@ -25,15 +25,32 @@ def plot_realization_timeseries(ens, data, varname, kwargs={'color':[0.5, 0.5, 0
     for variable varname. kwargs is a dict of option to pass to plt,
     e.g.: kwargs={'color':'r'}
     """
+    plot_realizations_1d(ens, data, varname, dimension='time', kwargs=kwargs)
+  	
+    
+def plot_realizations_1d(ens, data, varname, dimension, kwargs={'color':[0.5, 0.5, 0.5]} ):
+    """ For each realization in ens (and data, which is generated from ens
+    using loadfiles), plot the realization in color (grey by default)
+    for variable varname. Data should be 1-d for each realization, along the 
+    dimension specified (time, lon, lat etc).
+    
+    kwargs is a dict of option to pass to plt,
+    e.g.: kwargs={'color':'r'}
+    
+    EXAMPLES:
+    
+    # plot the uas data against latitude in red
+    cd.plot_realizations_1d(ens, data, varname='uas', dimension='lat', kwargs={'color':'r'})
+    """
     
     # First get the dimensions: A bad hack right now. Shouldn't reference attributes directly - use a function.
     v = ens.models[0].experiments[0].realizations[0].get_variable(varname)
     infile= v.filenames[0]
     dimensions = get_dimensions(infile, varname, toDatetime=True)
-    time = dimensions['time']
+    x = dimensions[dimension]
     
     for r in range( data.shape[0] ):
-	plt.plot( time, data[r,:], **kwargs)
+	plt.plot( x, data[r,:], **kwargs)
 	
     plt.title(varname)	
     

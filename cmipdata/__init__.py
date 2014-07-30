@@ -1,9 +1,14 @@
+"""
+cmipdata
+========
+
+"""
 import os
 import glob
 
 #__all__ = ["join_exp_slice", "zonmean", "loaddata", "match_exp", "remap_timelim", "remap_cmip_nc" ,"mload1d", "climatology", "areaint"]
 
-from cd_classes import *
+from classes import *
 from preprocessing_tools import *
 
 # Requires cdo python bindings and netcdf4
