@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Overview: module code &mdash; cmipdata 0.0 documentation</title>
+    <title>cmipdata &mdash; cmipdata 0.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -24,7 +24,8 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="cmipdata 0.0 documentation" href="../index.html" /> 
+    <link rel="top" title="cmipdata 0.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,7 +37,8 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../index.html">cmipdata 0.0 documentation</a> &raquo;</li> 
+        <li><a href="../index.html">cmipdata 0.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -45,14 +47,32 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <h1>All modules for which code is available</h1>
-<ul><li><a href="cmipdata.html">cmipdata</a></li>
-<ul><li><a href="cmipdata/classes.html">cmipdata.classes</a></li>
-<li><a href="cmipdata/loading_tools.html">cmipdata.loading_tools</a></li>
-<li><a href="cmipdata/plotting_tools.html">cmipdata.plotting_tools</a></li>
-<li><a href="cmipdata/preprocessing_tools.html">cmipdata.preprocessing_tools</a></li>
-<li><a href="cmipdata/slice_nc.html">cmipdata.slice_nc</a></li>
-</ul></ul>
+  <h1>Source code for cmipdata</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">cmipdata</span>
+<span class="sd">========</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+
+<span class="c">#__all__ = [&quot;join_exp_slice&quot;, &quot;zonmean&quot;, &quot;loaddata&quot;, &quot;match_exp&quot;, &quot;remap_timelim&quot;, &quot;remap_cmip_nc&quot; ,&quot;mload1d&quot;, &quot;climatology&quot;, &quot;areaint&quot;]</span>
+
+<span class="kn">from</span> <span class="nn">classes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">preprocessing_tools</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c"># Requires cdo python bindings and netcdf4</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">loading_tools</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="c"># Requires matplotlib</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">plotting_tools</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
 
           </div>
         </div>
@@ -85,7 +105,8 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../index.html">cmipdata 0.0 documentation</a> &raquo;</li> 
+        <li><a href="../index.html">cmipdata 0.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

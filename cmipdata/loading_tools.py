@@ -5,18 +5,9 @@ The loading_tools module of cmipdata is a set of functions which use
 the cdo python bindings and NetCDF4 to load data from input NetCDF
 files listed in a cmipdata ensemble object into python numpy arrays.
 Some processing can optionally be done during the loading, specifically
-remapping, time-slicing, time-averaging and zonal-averaging. Functions 
-are
+remapping, time-slicing, time-averaging and zonal-averaging. 
 
-  - loadvar: loads a given variable from a given file, and optionally
-             does processing
-             
-  - loadfiles: loads data from multiple files.
-  
-  - get_dimensions: gets the dimensions from a netCDF files and returns
-                    them in a dict.
-
-Neil Swart, 07/2014
+  .. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
 """
 import cdo as cdo; cdo = cdo.Cdo() # recommended import
 import os

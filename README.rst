@@ -5,13 +5,14 @@ cmipdata
 Introduction
 ------------
 
-cmipdata is a python package designed to facilliate preprocessing, analysis and plotting of climate model data
+cmipdata is a Python package for preprocessing, analysis and plotting of climate model data
 in standardized NetCDF files, such as those used in the Coupled Model Intercomparison Project (CMIP). 
-It contains three basic toolsets: 
+With cmipdata processing hundreds of NetCDF files that make up a large model ensemble is easy 
+and efficient. It contains three basic toolsets: 
 
 1) *preprocessing_tools* allow a standard processing (e.g. remapping, concatenating time-slices, zonal-mean) to be 
    systematically applied across an ensemble of models, consisting of many realizations and individual files and 
-   produces properly-named output files. The processing is done efficiently using climate data operators. 
+   produces properly-named output files. The processing is done efficiently using Climate Data Operators (cdo). 
 
 2) *loading_tools* facillitates loading data from the multiple files comprising the model ensemble into a single, logical
    numpy-based data-structure in python. 
@@ -19,10 +20,10 @@ It contains three basic toolsets:
 3) *plotting_tools* provides quick methods for common plotting tasks (e.g. ensemble mean with envelope) using matplotlib.
 
 
-Examples
+Example
 --------
 
-1) The surface temperature files of HadCM3 are provided in multiple slices for the historical experiment::
+The surface temperature files of HadCM3 are provided in multiple slices for the historical experiment::
 
     >ls
     ts_Amon_HadCM3_historical_r1i1p1_185912-188411.nc

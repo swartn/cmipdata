@@ -1,9 +1,11 @@
-""":mod:`preprocessing_tools` -- Preprocesses data before loading
-=================================================================
-.. module:: 
-   :platform: Unix
-   :synopsis: Perform Climate Data Operator type processing systematically on large ensembles of files.
-.. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
+"""preprocessing_tools
+======================
+ The preprocessing_tools module of cmipdata is a set of functions which use 
+ os.system calls to Climate Data Operators (cdo) to systematically apply a 
+ given processing on multiple NetCDF files, which are listed in cmipdata 
+ ensemble objects.
+
+  .. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
 """
 import os
 import glob
@@ -28,7 +30,7 @@ def cat_exp_slices(ens, delete=True):
     files will be produced per realization: one for the historical and one for the rcp45 experiment. To join files
     over experiments (e.g. to concatenate historical and rcp45) see cat_experiments.  
     
-    EXAMPLE::
+    EXAMPLE:
     
     # For a simple ensemble comprized of only 1 model, 1 experiment and one realization. 
     

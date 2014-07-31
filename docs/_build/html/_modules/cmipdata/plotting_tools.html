@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>cmipdata.plotting_tools &mdash; cmipdata  documentation</title>
+    <title>cmipdata.plotting_tools &mdash; cmipdata 0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '',
+        VERSION:     '0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,8 +23,9 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="cmipdata  documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cmipdata 0.0 documentation" href="../../index.html" />
+    <link rel="up" title="cmipdata" href="../cmipdata.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,8 +37,9 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">cmipdata  documentation</a> &raquo;</li>
-          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+        <li><a href="../../index.html">cmipdata 0.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../cmipdata.html" accesskey="U">cmipdata</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -57,10 +59,7 @@
 <span class="sd">object is a cmipdata ensemble, the data object is a numpy array</span>
 <span class="sd">generated using loading_tools.</span>
 
-<span class="sd">Currently not working</span>
-<span class="sd">=========================</span>
-
-<span class="sd">Neil Swart, 07/2014</span>
+<span class="sd">  .. moduleauthor:: Neil Swart &lt;neil.swart@ec.gc.ca&gt;</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">loading_tools</span> <span class="kn">import</span> <span class="n">loadvar</span><span class="p">,</span> <span class="n">get_dimensions</span>
@@ -68,7 +67,7 @@
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
-<div class="viewcode-block" id="plot_realization_timeseries"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.plotting_tools.plot_realization_timeseries">[docs]</a><span class="k">def</span> <span class="nf">plot_realization_timeseries</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]}</span> <span class="p">):</span>
+<div class="viewcode-block" id="plot_realization_timeseries"><a class="viewcode-back" href="../../api.html#cmipdata.plotting_tools.plot_realization_timeseries">[docs]</a><span class="k">def</span> <span class="nf">plot_realization_timeseries</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]}</span> <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; For each realization in ens (and data, which is generated from ens</span>
 <span class="sd">    using loadfiles), plot the realization in color (grey by default)</span>
 <span class="sd">    for variable varname. kwargs is a dict of option to pass to plt,</span>
@@ -77,7 +76,7 @@
     <span class="n">plot_realizations_1d</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="s">&#39;time&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
   	
     </div>
-<div class="viewcode-block" id="plot_realizations_1d"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.plotting_tools.plot_realizations_1d">[docs]</a><span class="k">def</span> <span class="nf">plot_realizations_1d</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]}</span> <span class="p">):</span>
+<div class="viewcode-block" id="plot_realizations_1d"><a class="viewcode-back" href="../../api.html#cmipdata.plotting_tools.plot_realizations_1d">[docs]</a><span class="k">def</span> <span class="nf">plot_realizations_1d</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]}</span> <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; For each realization in ens (and data, which is generated from ens</span>
 <span class="sd">    using loadfiles), plot the realization in color (grey by default)</span>
 <span class="sd">    for variable varname. Data should be 1-d for each realization, along the </span>
@@ -103,7 +102,7 @@
 	
     <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">varname</span><span class="p">)</span>	
     </div>
-<div class="viewcode-block" id="ensemble_envelope_timeseries"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.plotting_tools.ensemble_envelope_timeseries">[docs]</a><span class="k">def</span> <span class="nf">ensemble_envelope_timeseries</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">meanfile</span><span class="p">,</span> <span class="n">stdfile</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;linewidth&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span><span class="s">&#39;k&#39;</span><span class="p">}):</span>
+<div class="viewcode-block" id="ensemble_envelope_timeseries"><a class="viewcode-back" href="../../api.html#cmipdata.plotting_tools.ensemble_envelope_timeseries">[docs]</a><span class="k">def</span> <span class="nf">ensemble_envelope_timeseries</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">meanfile</span><span class="p">,</span> <span class="n">stdfile</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;linewidth&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span><span class="s">&#39;k&#39;</span><span class="p">}):</span>
     <span class="sd">&quot;&quot;&quot; For each realization in ens (and data, which is generated from ens</span>
 <span class="sd">    using loadfiles), plot the realization in color (grey by default)</span>
 <span class="sd">    for variable varname.</span>
@@ -161,8 +160,9 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">cmipdata  documentation</a> &raquo;</li>
-          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+        <li><a href="../../index.html">cmipdata 0.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../cmipdata.html" >cmipdata</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

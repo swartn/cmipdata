@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>cmipdata.slice_nc &mdash; cmipdata  documentation</title>
+    <title>cmipdata.slice_nc &mdash; cmipdata 0.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '',
+        VERSION:     '0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,8 +23,9 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="cmipdata  documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cmipdata 0.0 documentation" href="../../index.html" />
+    <link rel="up" title="cmipdata" href="../cmipdata.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,8 +37,9 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">cmipdata  documentation</a> &raquo;</li>
-          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+        <li><a href="../../index.html">cmipdata 0.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../cmipdata.html" accesskey="U">cmipdata</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -55,7 +57,7 @@
 <span class="kn">import</span> <span class="nn">datetime</span> <span class="kn">as</span> <span class="nn">dt</span>
 <span class="kn">import</span> <span class="nn">nose</span>
 
-<div class="viewcode-block" id="find_index"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.slice_nc.find_index">[docs]</a><span class="k">def</span> <span class="nf">find_index</span><span class="p">(</span><span class="n">vec_vals</span><span class="p">,</span><span class="n">target</span><span class="p">):</span>
+<div class="viewcode-block" id="find_index"><a class="viewcode-back" href="../../api.html#cmipdata.slice_nc.find_index">[docs]</a><span class="k">def</span> <span class="nf">find_index</span><span class="p">(</span><span class="n">vec_vals</span><span class="p">,</span><span class="n">target</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    returns the first index of vec_vals that contains the value</span>
@@ -92,7 +94,7 @@
     <span class="k">return</span> <span class="n">index_list</span>
 
 </div>
-<div class="viewcode-block" id="get_var_2D"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.slice_nc.get_var_2D">[docs]</a><span class="k">def</span> <span class="nf">get_var_2D</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span><span class="n">var_name</span><span class="p">,</span><span class="n">corners</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">start_date</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">stop_date</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<div class="viewcode-block" id="get_var_2D"><a class="viewcode-back" href="../../api.html#cmipdata.slice_nc.get_var_2D">[docs]</a><span class="k">def</span> <span class="nf">get_var_2D</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span><span class="n">var_name</span><span class="p">,</span><span class="n">corners</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">start_date</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">stop_date</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                 <span class="n">time_name</span><span class="o">=</span><span class="s">&#39;time&#39;</span><span class="p">,</span><span class="n">lat_name</span><span class="o">=</span><span class="s">&#39;lat&#39;</span><span class="p">,</span><span class="n">lon_name</span><span class="o">=</span><span class="s">&#39;lon&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
@@ -190,7 +192,7 @@
     <span class="n">var_array</span><span class="o">=</span><span class="n">var_nc</span><span class="p">[</span><span class="n">time_slice</span><span class="p">,</span><span class="n">lat_slice</span><span class="p">,</span><span class="n">lon_slice</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">data_nc</span><span class="p">,</span><span class="n">var_nc</span><span class="p">,</span><span class="n">the_times</span><span class="p">,</span><span class="n">the_lats</span><span class="p">,</span><span class="n">the_lons</span><span class="p">,</span><span class="n">var_array</span>
 </div>
-<div class="viewcode-block" id="test_get_var_2D"><a class="viewcode-back" href="../../cmipdata.html#cmipdata.slice_nc.test_get_var_2D">[docs]</a><span class="k">def</span> <span class="nf">test_get_var_2D</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">test_get_var_2D</span><span class="p">():</span>
     <span class="kn">from</span> <span class="nn">constants</span> <span class="kn">import</span> <span class="n">warm_pool</span> <span class="k">as</span> <span class="n">wp</span>
     <span class="kn">import</span> <span class="nn">numpy.testing</span> <span class="kn">as</span> <span class="nn">nt</span>
     <span class="n">in_file</span><span class="o">=</span><span class="s">&#39;tos_AMSRE_L3_v7_200206-201012.nc&#39;</span>
@@ -220,7 +222,7 @@
     
     <span class="n">result</span><span class="o">=</span><span class="n">sst</span><span class="p">[:</span><span class="mi">3</span><span class="p">,:</span><span class="mi">3</span><span class="p">,:</span><span class="mi">3</span><span class="p">]</span>
     <span class="n">nt</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="n">answer</span><span class="p">)</span>
-</div>
+
 <span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="c">#https://nose.readthedocs.org/en/latest/usage.html</span>
     <span class="c">#flags -vv verbose</span>
@@ -266,8 +268,9 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">cmipdata  documentation</a> &raquo;</li>
-          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+        <li><a href="../../index.html">cmipdata 0.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../cmipdata.html" >cmipdata</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to cmipdata’s documentation! &mdash; cmipdata  documentation</title>
+    <title>Welcome to cmipdata’s documentation! &mdash; cmipdata 0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '',
+        VERSION:     '0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,8 +23,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="cmipdata  documentation" href="#" />
-    <link rel="next" title="cmipdata package" href="cmipdata.html" /> 
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cmipdata 0.0 documentation" href="#" />
+    <link rel="next" title="classes" href="api.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,9 +38,9 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="cmipdata.html" title="cmipdata package"
+          <a href="api.html" title="classes"
              accesskey="N">next</a> |</li>
-        <li><a href="#">cmipdata  documentation</a> &raquo;</li> 
+        <li><a href="#">cmipdata 0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -50,70 +51,79 @@
             
   <div class="section" id="welcome-to-cmipdata-s-documentation">
 <h1>Welcome to cmipdata&#8217;s documentation!<a class="headerlink" href="#welcome-to-cmipdata-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Welcome to cmipdata&#8217;s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#summary">Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#see-also">See Also</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#preprocessing-tools">preprocessing_tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#loading-tools">loading_tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#plotting-tools">plotting_tools</a></li>
+</ul>
+</div>
 <div class="section" id="cmipdata">
 <h2>cmipdata<a class="headerlink" href="#cmipdata" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="introduction">
 <h3>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h3>
-<p>cmipdata is a python package designed to facilliate preprocessing, analysis and plotting of climate model data
+<p>cmipdata is a Python package for preprocessing, analysis and plotting of climate model data
 in standardized NetCDF files, such as those used in the Coupled Model Intercomparison Project (CMIP).
-It contains three basic toolsets:</p>
+With cmipdata processing hundreds of NetCDF files that make up a large model ensemble is easy
+and efficient. It contains three basic toolsets:</p>
 <ol class="arabic simple">
 <li><em>preprocessing_tools</em> allow a standard processing (e.g. remapping, concatenating time-slices, zonal-mean) to be
 systematically applied across an ensemble of models, consisting of many realizations and individual files and
-produces properly-named output files. The processing is done efficiently using climate data operators.</li>
+produces properly-named output files. The processing is done efficiently using Climate Data Operators (cdo).</li>
 <li><em>loading_tools</em> facillitates loading data from the multiple files comprising the model ensemble into a single, logical
 numpy-based data-structure in python.</li>
 <li><em>plotting_tools</em> provides quick methods for common plotting tasks (e.g. ensemble mean with envelope) using matplotlib.</li>
 </ol>
 </div>
-<div class="section" id="examples">
-<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
-<ol class="arabic">
-<li><p class="first">The surface temperature files of HadCM3 are provided in multiple slices for the historical experiment:</p>
-<blockquote>
-<div><p>ts_Amon_HadCM3_historical_r1i1p1_185912-188411.nc
+<div class="section" id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<p>The surface temperature files of HadCM3 are provided in multiple slices for the historical experiment:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;ls
+ts_Amon_HadCM3_historical_r1i1p1_185912-188411.nc
 ts_Amon_HadCM3_historical_r1i1p1_188412-190911.nc
 ts_Amon_HadCM3_historical_r1i1p1_190912-193411.nc
 ts_Amon_HadCM3_historical_r1i1p1_193412-195911.nc
 ts_Amon_HadCM3_historical_r1i1p1_195912-198411.nc
-ts_Amon_HadCM3_historical_r1i1p1_198412-200512.nc</p>
-</div></blockquote>
-</li>
-</ol>
+ts_Amon_HadCM3_historical_r1i1p1_198412-200512.nc
+</pre></div>
+</div>
 <p>First we load the cmipdata package, and build an ensemble object, simply matching the filenames:</p>
-<blockquote>
-<div>import cmipdata as cd
-ens = cd.mkensemble(&#8216;ts_Amon_HadCM3*&#8217;)</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">cmipdata</span> <span class="kn">as</span> <span class="nn">cd</span>
+<span class="n">ens</span> <span class="o">=</span> <span class="n">cd</span><span class="o">.</span><span class="n">mkensemble</span><span class="p">(</span><span class="s">&#39;ts_Amon_HadCM3*&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>Next we use cat_exp_slices to join the sliced files:</p>
-<blockquote>
-<div>ens = cd.cat_exp_slices(ens)</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ens</span> <span class="o">=</span> <span class="n">cd</span><span class="o">.</span><span class="n">cat_exp_slices</span><span class="p">(</span><span class="n">ens</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>and the result is one unified file, which has been appropriately named:</p>
-<blockquote>
-<div>ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre>&gt;ls
+ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc
+</pre></div>
+</div>
 <p>We were also returned an updated ensemble object, the structure of which we can view as follows:</p>
-<blockquote>
-<div><p>ens.fulldetails()</p>
-<dl class="docutils">
-<dt>HadCM3:</dt>
-<dd><dl class="first last docutils">
-<dt>historical</dt>
-<dd><dl class="first last docutils">
-<dt>r1i1p1</dt>
-<dd><dl class="first last docutils">
-<dt>ts</dt>
-<dd>ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc</dd>
-</dl>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd>
-</dl>
-</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre>ens.fulldetails()
+
+HadCM3:
+    historical
+            r1i1p1
+                    ts
+                            ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc
+</pre></div>
+</div>
 <p>This example shows only one model, but the method works equally well for a large ensemble consisting
 of multple models, each with multiple realizations and hundreds of files. For example, using:</p>
-<blockquote>
-<div>ens = cd.mkensemble(&#8216;ts_Amon_*&#8217;)</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ens</span> <span class="o">=</span> <span class="n">cd</span><span class="o">.</span><span class="n">mkensemble</span><span class="p">(</span><span class="s">&#39;ts_Amon_*&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>would build an ensemble consisting of all files in the present directory starting with ts_Amon, and join_exp_slices
 would, on a per-realization basis, do the joining, when necessary.</p>
 </div>
@@ -130,34 +140,6 @@ would, on a per-realization basis, do the joining, when necessary.</p>
 <p>See the LICENSE.txt file in the cmipdata package. cmipdata is distributed
 under the GNU General Public License version 3, and the Open Government License - Canada
 (<a class="reference external" href="http://data.gc.ca/eng/open-government-licence-canada">http://data.gc.ca/eng/open-government-licence-canada</a>)</p>
-<p>Contents:</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="cmipdata.html">cmipdata package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="cmipdata.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cmipdata.html#module-cmipdata.classes">cmipdata.classes module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cmipdata.html#module-cmipdata.loading_tools">cmipdata.loading_tools module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cmipdata.html#loading-tools">loading_tools</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="cmipdata.html#module-cmipdata.plotting_tools">cmipdata.plotting_tools module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cmipdata.html#plotting-tools">plotting_tools</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cmipdata.html#currently-not-working">Currently not working</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="cmipdata.html#module-cmipdata.preprocessing_tools">cmipdata.preprocessing_tools module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cmipdata.html#preprocessing-tools-preprocesses-data-before-loading"><tt class="docutils literal"><span class="pre">preprocessing_tools</span></tt> &#8211; Preprocesses data before loading</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="cmipdata.html#module-cmipdata.slice_nc">cmipdata.slice_nc module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cmipdata.html#module-cmipdata">Module contents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cmipdata.html#cmipdata">cmipdata</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
 </div>
 </div>
 </div>
@@ -181,7 +163,7 @@ under the GNU General Public License version 3, and the Open Government License 
 <li><a class="reference internal" href="#">Welcome to cmipdata&#8217;s documentation!</a><ul>
 <li><a class="reference internal" href="#cmipdata">cmipdata</a><ul>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
-<li><a class="reference internal" href="#examples">Examples</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
 <li><a class="reference internal" href="#disclaimer">Disclaimer</a></li>
 <li><a class="reference internal" href="#contributors">Contributors</a></li>
 <li><a class="reference internal" href="#license">LICENSE</a></li>
@@ -193,8 +175,8 @@ under the GNU General Public License version 3, and the Open Government License 
 </ul>
 
   <h4>Next topic</h4>
-  <p class="topless"><a href="cmipdata.html"
-                        title="next chapter">cmipdata package</a></p>
+  <p class="topless"><a href="api.html"
+                        title="next chapter">classes</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/index.txt"
@@ -227,9 +209,9 @@ under the GNU General Public License version 3, and the Open Government License 
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="cmipdata.html" title="cmipdata package"
+          <a href="api.html" title="classes"
              >next</a> |</li>
-        <li><a href="#">cmipdata  documentation</a> &raquo;</li> 
+        <li><a href="#">cmipdata 0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

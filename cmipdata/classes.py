@@ -1,7 +1,49 @@
-"""Defines the Ensemble, Model, Experiment, Realization and Variable objects of
-cmipdata and associated functions.
+"""classes
+======================
 
-Neil Swart, 22/07/2014
+Summary
+-------
+
+The core functionality of cmipdata is to organize a large number of
+model output files into a logical structure so that further processing
+can be done. Data is organized into Ensembles, which are made up of many
+Models, Experiments, Realizations and Variables and filenames. The structure treats 
+`Variable`s as the lowest organizing theme. Each Variable contains a list of filenames 
+(and other attributes), and each variable belongs
+to a specified Realiation. Each Realization in turn belongs to a specified
+Experiment, which will belong to a given Model.  
+  
+Various methods exist to interact with the Ensemble, and its constituent
+elements. Once created, an Ensemble can be used to harness the power of
+the `preprocessing_tools` to apply systematic operations to all files.
+Indeed, all data-handling and processing in cmipdata used the Ensemble.
+
+See Also
+--------
+ - preprocessing_tools
+ - loading_tools
+ - plotting_tools
+  
+Examples
+-----------
+
+A cmipdata Ensemble is easily created using:: 
+
+    ens = cmipdata.mk_ensemble(filepattern) 
+
+which generates the Ensemble `ens`, with all the underlying
+structure, simply by matching all files matching the descriptor
+`filepattern`.
+
+A summary of the Ensemble can then be generated using::
+
+    ens.sinfo()
+    
+and a full description of the Ensemble can be gained from::
+
+    ens.fulldetails()
+
+.. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
 """
 
 import os
@@ -9,8 +51,16 @@ import glob
 import copy
 
 class Ensemble(object):
-    """ Defines a cmipdata ensemble. The ensemble contains
-    a list of model members.
+    """ Defines a cmipdata Ensemble. 
+    
+    Parameters
+    ----------
+    
+    Attributes
+    ----------
+    models : list
+             The list of constituent models
+             
     """
     def __init__(self):
         self.models = []    
@@ -19,17 +69,37 @@ class Ensemble(object):
         return "Models in %s: \n %s" %(self.name, '\n'.join([m.name for m in self.models]))
         
     def add_model(self, model):
-	"""Adds the model object model to the ensemble"""
+	"""Add model to the ensemble
+	
+	Parameters
+	----------
+	model : cmipdata Model
+	"""
         self.models.append(model)
         
     def del_model(self, model):
-	"""deletes the model object model to the ensemble"""
+	"""Delete model from the ensemble
+	
+	Parameters
+	----------
+	model : cmipdata Model		
+	"""
         self.models.remove(model)     
         
     def get_model(self, modelname):
-        """Finds and returns the model object corresponding
-	to modelname in the ensemble, or if no match is found, 
-	returns an empty list.
+        """Return modelname from the ensemble
+	
+	Parameters
+	----------
+	modelname : str
+	            The name of the model to return
+	            
+	Returns 
+	-------
+	model : cmipdata Model
+	        The Model object corresponding to 
+	        modelname
+    
 	"""
 	for model in self.models:
 	    if model.name == modelname:
@@ -43,7 +113,7 @@ class Ensemble(object):
 	"""Returns a iterable, which is a tuple containing all the ensembles 
 	model, experiment, realization and variable objects and the list of filenames.
 	
-	EXAMPLE:
+	EXAMPLE::
 	
        for model, experiment, realization, variable, files in ens.iterate():
            print model.name, experiment.name, realization.name, variable.name, files		
@@ -282,33 +352,46 @@ class Variable(object):
    
 def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
     """Creates and returns a cmipdata ensemble object from a list of 
-    filenames matching filepattern. filepattern is a string that by default
-    is matched against all files in the current directory. But filepattern 
-    could include a full path to reference files not in the current directory, 
-    and can also include wildcards. 
+    filenames matching filepattern. 
     
     Once the list of matching filenames is derived, the model, experiment,
     realization, variable, start_date and end_date fields are extracted by
     parsing the filnames against a specified file naming convention. By 
-    default this is the CMIP5 convention, which is
+    default this is the CMIP5 convention, which is::
     
-    variable_realm_model_experiment_realization_startdate-enddate.nc
+        variable_realm_model_experiment_realization_startdate-enddate.nc
     
     Optionally specifying prefix will remove prefix from each filename
     before the parsing is done. This is useful, for example, to remove 
     pre-pended paths used in filepattern.
     
-    EXAMPLES:
     
-    # ensemble of all sea-level pressure files from the historical experiment in 
-    # the current directory.
+    Parameters
+    ----------
     
-    ens = mkensemble('psl*historical*.nc') 
+    filepattern : string  
+                A string that by default is matched against all files in the 
+                current directory. But filepattern could include a full path 
+                to reference files not in the current directory, and can also 
+                include wildcards. 
+                
+    prefix : string
+             A pattern occuring in filepattern before the start of the official
+             filename, as defined by the file naming converntion. For instance,
+             a path preceeding the filename.
     
-    # ensemble of all sea-level pressure files from all experiments in a non-local
-    # directory
+    EXAMPLES
+    --------
     
-    ens = mkensemble('/home/ncs/ra40/cmip5/sam/c5_slp/psl*'
+    1. Create ensemble of all sea-level pressure files from the historical experiment in 
+    the current directory::
+    
+        ens = mkensemble('psl*historical*.nc') 
+          
+    2. Create ensemble of all sea-level pressure files from all experiments in a non-local
+    directory::
+    
+        ens = mkensemble('/home/ncs/ra40/cmip5/sam/c5_slp/psl*'
                       , prefix='/home/ncs/ra40/cmip5/sam/c5_slp/') 
 
     
@@ -318,12 +401,12 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
     experiment,realization, variable, start_date and end_date) and
     whos values are the position in the filename that the element occurs.
     In addition, the key 'separator' must contain the element separator.
-    For example, for the CMIP5 naming convention:
+    For example, for the CMIP5 naming convention::
     
-    kwargs = {'separator':'_', 'variable':0, 'realm':1, 'model':2, 'experiment':3,
-    'realization':4, 'dates':5}
+        kwargs = {'separator':'_', 'variable':0, 'realm':1, 'model':2, 'experiment':3,
+                  'realization':4, 'dates':5}
     
-    ens = mkensemble('psl*.nc', **kwargs) 
+        ens = mkensemble('psl*.nc', **kwargs) 
     
     """
  

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>cmipdata package &mdash; cmipdata  documentation</title>
+    <title>classes &mdash; cmipdata 0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '',
+        VERSION:     '0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="cmipdata  documentation" href="index.html" />
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cmipdata 0.0 documentation" href="index.html" />
     <link rel="prev" title="Welcome to cmipdata’s documentation!" href="index.html" /> 
   </head>
   <body>
@@ -39,7 +40,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to cmipdata’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">cmipdata  documentation</a> &raquo;</li> 
+        <li><a href="index.html">cmipdata 0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -48,32 +49,82 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="cmipdata-package">
-<h1>cmipdata package<a class="headerlink" href="#cmipdata-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+  <span class="target" id="module-cmipdata.classes"></span><div class="section" id="classes">
+<h1>classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
+<p>The core functionality of cmipdata is to organize a large number of
+model output files into a logical structure so that further processing
+can be done. Data is organized into Ensembles, which are made up of many
+Models, Experiments, Realizations and Variables and filenames. The structure treats 
+<a href="#id1"><span class="problematic" id="id2">`</span></a>Variable`s as the lowest organizing theme. Each Variable contains a list of filenames 
+(and other attributes), and each variable belongs
+to a specified Realiation. Each Realization in turn belongs to a specified
+Experiment, which will belong to a given Model.</p>
+<p>Various methods exist to interact with the Ensemble, and its constituent
+elements. Once created, an Ensemble can be used to harness the power of
+the <cite>preprocessing_tools</cite> to apply systematic operations to all files.
+Indeed, all data-handling and processing in cmipdata used the Ensemble.</p>
 </div>
-<div class="section" id="module-cmipdata.classes">
-<span id="cmipdata-classes-module"></span><h2>cmipdata.classes module<a class="headerlink" href="#module-cmipdata.classes" title="Permalink to this headline">¶</a></h2>
-<p>Defines the Ensemble, Model, Experiment, Realization and Variable objects of
-cmipdata and associated functions.</p>
-<p>Neil Swart, 22/07/2014</p>
+<div class="section" id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>preprocessing_tools</li>
+<li>loading_tools</li>
+<li>plotting_tools</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>A cmipdata Ensemble is easily created using:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ens</span> <span class="o">=</span> <span class="n">cmipdata</span><span class="o">.</span><span class="n">mk_ensemble</span><span class="p">(</span><span class="n">filepattern</span><span class="p">)</span> 
+</pre></div>
+</div>
+<p>which generates the Ensemble <cite>ens</cite>, with all the underlying
+structure, simply by matching all files matching the descriptor
+<cite>filepattern</cite>.</p>
+<p>A summary of the Ensemble can then be generated using:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ens</span><span class="o">.</span><span class="n">sinfo</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>and a full description of the Ensemble can be gained from:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ens</span><span class="o">.</span><span class="n">fulldetails</span><span class="p">()</span>
+</pre></div>
+</div>
 <dl class="class">
 <dt id="cmipdata.classes.Ensemble">
 <em class="property">class </em><tt class="descclassname">cmipdata.classes.</tt><tt class="descname">Ensemble</tt><a class="reference internal" href="_modules/cmipdata/classes.html#Ensemble"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Ensemble" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>Defines a cmipdata ensemble. The ensemble contains
-a list of model members.</p>
+<dd><p>Defines a cmipdata Ensemble.</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="cmipdata.classes.Ensemble.add_model">
 <tt class="descname">add_model</tt><big>(</big><em>model</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Ensemble.add_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Ensemble.add_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds the model object model to the ensemble</p>
+<dd><p>Add model to the ensemble</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> : cmipdata Model</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="cmipdata.classes.Ensemble.del_model">
 <tt class="descname">del_model</tt><big>(</big><em>model</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Ensemble.del_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Ensemble.del_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>deletes the model object model to the ensemble</p>
+<dd><p>Delete model from the ensemble</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> : cmipdata Model</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -85,9 +136,26 @@ a list of model members.</p>
 <dl class="method">
 <dt id="cmipdata.classes.Ensemble.get_model">
 <tt class="descname">get_model</tt><big>(</big><em>modelname</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Ensemble.get_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Ensemble.get_model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds and returns the model object corresponding
-to modelname in the ensemble, or if no match is found, 
-returns an empty list.</p>
+<dd><p>Return modelname from the ensemble</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>modelname</strong> : str</p>
+<blockquote>
+<div><p>The name of the model to return</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>model</strong> : cmipdata Model</p>
+<blockquote class="last">
+<div><p>The Model object corresponding to 
+modelname</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -134,11 +202,11 @@ WARNING: since ens is modifying itself in the loop, something could go wrong!</p
 <dl class="class">
 <dt id="cmipdata.classes.Experiment">
 <em class="property">class </em><tt class="descclassname">cmipdata.classes.</tt><tt class="descname">Experiment</tt><big>(</big><em>experimentname</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Experiment" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>Defines an experiment for a given model, with a name and a list of
+<dd><p>Defines an experiment for a given model, with a name and a list of
 assiciated realizations, which can be retrieved with
 experiment.realizations(). New realizations can be added
 to the experiment with experiment.add_realization(realization)</p>
+<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="cmipdata.classes.Experiment.add_realization">
 <tt class="descname">add_realization</tt><big>(</big><em>realization</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Experiment.add_realization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Experiment.add_realization" title="Permalink to this definition">¶</a></dt>
@@ -168,18 +236,13 @@ match is found, returns an empty list.</p>
 experiment instance</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="cmipdata.classes.Experiment.realizations">
-<tt class="descname">realizations</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Experiment.realizations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Experiment.realizations" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="class">
 <dt id="cmipdata.classes.Model">
 <em class="property">class </em><tt class="descclassname">cmipdata.classes.</tt><tt class="descname">Model</tt><big>(</big><em>modelname</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>Defines a model with a name.</p>
+<dd><p>Defines a model with a name.</p>
+<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="cmipdata.classes.Model.add_experiment">
 <tt class="descname">add_experiment</tt><big>(</big><em>experiment</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Model.add_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Model.add_experiment" title="Permalink to this definition">¶</a></dt>
@@ -193,11 +256,6 @@ models experiments</p>
 <dd><p>deletes the experiment object experiment from the 
 models experiments</p>
 </dd></dl>
-
-<dl class="method">
-<dt id="cmipdata.classes.Model.experiments">
-<tt class="descname">experiments</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Model.experiments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Model.experiments" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="method">
 <dt id="cmipdata.classes.Model.get_experiment">
@@ -218,12 +276,12 @@ match is found, returns an empty list.</p>
 <dl class="class">
 <dt id="cmipdata.classes.Realization">
 <em class="property">class </em><tt class="descclassname">cmipdata.classes.</tt><tt class="descname">Realization</tt><big>(</big><em>realizationname</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Realization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Realization" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>Defines a realization for a given model and experiment, 
+<dd><p>Defines a realization for a given model and experiment, 
 with a name and a list of
 assiciated variables, which can be retrieved with
 realization.variables(). New variables can be added
 to the realization with realization.add_variable(variable)</p>
+<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="cmipdata.classes.Realization.add_variable">
 <tt class="descname">add_variable</tt><big>(</big><em>variable</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Realization.add_variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Realization.add_variable" title="Permalink to this definition">¶</a></dt>
@@ -253,21 +311,16 @@ match is found, returns an empty list.</p>
 realization instance</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="cmipdata.classes.Realization.variables">
-<tt class="descname">variables</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Realization.variables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Realization.variables" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="class">
 <dt id="cmipdata.classes.Variable">
 <em class="property">class </em><tt class="descclassname">cmipdata.classes.</tt><tt class="descname">Variable</tt><big>(</big><em>variablename</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Variable" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>Defines a variable for a given model, experiment and realization,
+<dd><p>Defines a variable for a given model, experiment and realization,
 with a name, and an associated list of filenames, which can be retrieved 
 with variable.filenames(). A new filename can be added with 
 variable.add_filename(&#8216;filename.nc&#8217;)</p>
+<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="cmipdata.classes.Variable.add_end_date">
 <tt class="descname">add_end_date</tt><big>(</big><em>end_date</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Variable.add_end_date"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Variable.add_end_date" title="Permalink to this definition">¶</a></dt>
@@ -317,28 +370,50 @@ variable instance</p>
 <dt id="cmipdata.classes.mkensemble">
 <tt class="descclassname">cmipdata.classes.</tt><tt class="descname">mkensemble</tt><big>(</big><em>filepattern</em>, <em>experiment='*'</em>, <em>prefix=''</em>, <em>kwargs=''</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#mkensemble"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.mkensemble" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates and returns a cmipdata ensemble object from a list of 
-filenames matching filepattern. filepattern is a string that by default
-is matched against all files in the current directory. But filepattern 
-could include a full path to reference files not in the current directory, 
-and can also include wildcards.</p>
+filenames matching filepattern.</p>
 <p>Once the list of matching filenames is derived, the model, experiment,
 realization, variable, start_date and end_date fields are extracted by
 parsing the filnames against a specified file naming convention. By 
-default this is the CMIP5 convention, which is</p>
-<p>variable_realm_model_experiment_realization_startdate-enddate.nc</p>
+default this is the CMIP5 convention, which is:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">variable_realm_model_experiment_realization_startdate</span><span class="o">-</span><span class="n">enddate</span><span class="o">.</span><span class="n">nc</span>
+</pre></div>
+</div>
 <p>Optionally specifying prefix will remove prefix from each filename
 before the parsing is done. This is useful, for example, to remove 
 pre-pended paths used in filepattern.</p>
-<p>EXAMPLES:</p>
-<p># ensemble of all sea-level pressure files from the historical experiment in 
-# the current directory.</p>
-<p>ens = mkensemble(&#8216;psl*historical*.nc&#8217;)</p>
-<p># ensemble of all sea-level pressure files from all experiments in a non-local
-# directory</p>
-<dl class="docutils">
-<dt>ens = mkensemble(&#8216;/home/ncs/ra40/cmip5/sam/c5_slp/psl*&#8217;</dt>
-<dd>, prefix=&#8217;/home/ncs/ra40/cmip5/sam/c5_slp/&#8217;)</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filepattern</strong> : string</p>
+<blockquote>
+<div><p>A string that by default is matched against all files in the 
+current directory. But filepattern could include a full path 
+to reference files not in the current directory, and can also 
+include wildcards.</p>
+</div></blockquote>
+<p><strong>prefix</strong> : string</p>
+<blockquote class="last">
+<div><p>A pattern occuring in filepattern before the start of the official
+filename, as defined by the file naming converntion. For instance,
+a path preceeding the filename.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>1. Create ensemble of all sea-level pressure files from the historical experiment in 
+the current directory:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ens</span> <span class="o">=</span> <span class="n">mkensemble</span><span class="p">(</span><span class="s">&#39;psl*historical*.nc&#39;</span><span class="p">)</span> 
+</pre></div>
+</div>
+<p>2. Create ensemble of all sea-level pressure files from all experiments in a non-local
+directory:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ens</span> <span class="o">=</span> <span class="n">mkensemble</span><span class="p">(</span><span class="s">&#39;/home/ncs/ra40/cmip5/sam/c5_slp/psl*&#39;</span>
+              <span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s">&#39;/home/ncs/ra40/cmip5/sam/c5_slp/&#39;</span><span class="p">)</span> 
+</pre></div>
+</div>
 <p>If the default CMIP5 naming convention is not used by your files,
 an arbitary naming convention for the parsing may be specified by
 kwargs. kwargs is a dictionary whos keys contain each element (model, 
@@ -346,141 +421,23 @@ experiment,realization, variable, start_date and end_date) and
 whos values are the position in the filename that the element occurs.
 In addition, the key &#8216;separator&#8217; must contain the element separator.
 For example, for the CMIP5 naming convention:</p>
-<p>kwargs = {&#8216;separator&#8217;:&#8217;_&#8217;, &#8216;variable&#8217;:0, &#8216;realm&#8217;:1, &#8216;model&#8217;:2, &#8216;experiment&#8217;:3,
-&#8216;realization&#8217;:4, &#8216;dates&#8217;:5}</p>
-<p>ens = mkensemble(&#8216;psl*.nc&#8217;, <a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;separator&#39;</span><span class="p">:</span><span class="s">&#39;_&#39;</span><span class="p">,</span> <span class="s">&#39;variable&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;realm&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;model&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#39;experiment&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span>
+          <span class="s">&#39;realization&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span> <span class="s">&#39;dates&#39;</span><span class="p">:</span><span class="mi">5</span><span class="p">}</span>
+
+<span class="n">ens</span> <span class="o">=</span> <span class="n">mkensemble</span><span class="p">(</span><span class="s">&#39;psl*.nc&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> 
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
-<div class="section" id="module-cmipdata.loading_tools">
-<span id="cmipdata-loading-tools-module"></span><h2>cmipdata.loading_tools module<a class="headerlink" href="#module-cmipdata.loading_tools" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="loading-tools">
-<h3>loading_tools<a class="headerlink" href="#loading-tools" title="Permalink to this headline">¶</a></h3>
-<p>The loading_tools module of cmipdata is a set of functions which use 
-the cdo python bindings and NetCDF4 to load data from input NetCDF
-files listed in a cmipdata ensemble object into python numpy arrays.
-Some processing can optionally be done during the loading, specifically
-remapping, time-slicing, time-averaging and zonal-averaging. Functions 
-are</p>
+</div>
+<span class="target" id="module-cmipdata.preprocessing_tools"></span><div class="section" id="preprocessing-tools">
+<h1>preprocessing_tools<a class="headerlink" href="#preprocessing-tools" title="Permalink to this headline">¶</a></h1>
 <blockquote>
-<div><ul>
-<li><dl class="first docutils">
-<dt>loadvar: loads a given variable from a given file, and optionally</dt>
-<dd><p class="first last">does processing</p>
-</dd>
-</dl>
-</li>
-<li><p class="first">loadfiles: loads data from multiple files.</p>
-</li>
-<li><dl class="first docutils">
-<dt>get_dimensions: gets the dimensions from a netCDF files and returns</dt>
-<dd><p class="first last">them in a dict.</p>
-</dd>
-</dl>
-</li>
-</ul>
-</div></blockquote>
-<p>Neil Swart, 07/2014</p>
-<dl class="function">
-<dt id="cmipdata.loading_tools.get_dimensions">
-<tt class="descclassname">cmipdata.loading_tools.</tt><tt class="descname">get_dimensions</tt><big>(</big><em>ifile</em>, <em>varname</em>, <em>toDatetime=False</em><big>)</big><a class="reference internal" href="_modules/cmipdata/loading_tools.html#get_dimensions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.loading_tools.get_dimensions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the dimensions of variable varname in file ifile as a dictionary.
-If one of the dimensions begins with lat (Lat, Latitude and Latitudes), it 
-will be returned with a key of lat, and similarly for lon. If to a Datetime=True, 
-the time dimension is converted to a datetime.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="cmipdata.loading_tools.loadens">
-<tt class="descclassname">cmipdata.loading_tools.</tt><tt class="descname">loadens</tt><big>(</big><em>ens</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cmipdata/loading_tools.html#loadens"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.loading_tools.loadens" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load all variables in all files in ens into a numpy array which is
-save in the the variable object under variable.data. Currently
-loadens expects there to only be one filename per variable object 
-(i.e. per realization).</p>
-<p>Optionally specify any kwargs valid for loadvar.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="cmipdata.loading_tools.loadfiles">
-<tt class="descclassname">cmipdata.loading_tools.</tt><tt class="descname">loadfiles</tt><big>(</big><em>ens</em>, <em>varname</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cmipdata/loading_tools.html#loadfiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.loading_tools.loadfiles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a variable &#8220;varname&#8221; from all files in ens, and load it into a matrix
-where the zeroth dimensions represents an input file and dimensions 1 to n are
-the dimensions of the input variable. Variable &#8220;varname&#8221; must have the same shape 
-in all ifiles. Optionally specify any kwargs valid for loadvar.</p>
-<p>Requires netCDF4, cdo bindings and numpy 
-Returns a masked numpy array, varmat.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="cmipdata.loading_tools.loadvar">
-<tt class="descclassname">cmipdata.loading_tools.</tt><tt class="descname">loadvar</tt><big>(</big><em>ifile</em>, <em>varname</em>, <em>remap=''</em>, <em>start_date=''</em>, <em>end_date=''</em>, <em>timmean=False</em>, <em>zonmean=False</em><big>)</big><a class="reference internal" href="_modules/cmipdata/loading_tools.html#loadvar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.loading_tools.loadvar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a CMIP5 netcdf variable &#8220;varname&#8221; from &#8220;ifile&#8221; and optionally 1) distance
-weighted remap to a given grid (e.g. &#8216;r360x180), 2) select a date range between 
-start_date and end_date (format: &#8216;YYYY-MM-DD&#8217;), 3) time-mean over the whole 
-record, or between the selected dates and 4) zonal mean. Requires netCDF4, CDO 
-and CDO python bindings. Returns a masked array, var.</p>
-<p>If zonmean=True and remap=True, the zonal mean is done first, so the remap
-will in that case only specify the latitude-grid, with 1-point in x, e.g.: 
-remap=r180x1.</p>
-</dd></dl>
-
-</div>
-</div>
-<div class="section" id="module-cmipdata.plotting_tools">
-<span id="cmipdata-plotting-tools-module"></span><h2>cmipdata.plotting_tools module<a class="headerlink" href="#module-cmipdata.plotting_tools" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="plotting-tools">
-<h3>plotting_tools<a class="headerlink" href="#plotting-tools" title="Permalink to this headline">¶</a></h3>
-<p>The plotting_tools module of cmipdata is a set of functions which use 
-matplotlib to produce various common plots.</p>
-<p>The functions take an ensemble object and a data object. The ensemble
-object is a cmipdata ensemble, the data object is a numpy array
-generated using loading_tools.</p>
-</div>
-<div class="section" id="currently-not-working">
-<h3>Currently not working<a class="headerlink" href="#currently-not-working" title="Permalink to this headline">¶</a></h3>
-<p>Neil Swart, 07/2014</p>
-<dl class="function">
-<dt id="cmipdata.plotting_tools.ensemble_envelope_timeseries">
-<tt class="descclassname">cmipdata.plotting_tools.</tt><tt class="descname">ensemble_envelope_timeseries</tt><big>(</big><em>ens</em>, <em>meanfile</em>, <em>stdfile</em>, <em>varname</em>, <em>ax=''</em>, <em>kwargs={'color': 'k'</em>, <em>'linewidth': 3}</em><big>)</big><a class="reference internal" href="_modules/cmipdata/plotting_tools.html#ensemble_envelope_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.plotting_tools.ensemble_envelope_timeseries" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each realization in ens (and data, which is generated from ens
-using loadfiles), plot the realization in color (grey by default)
-for variable varname.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="cmipdata.plotting_tools.plot_realization_timeseries">
-<tt class="descclassname">cmipdata.plotting_tools.</tt><tt class="descname">plot_realization_timeseries</tt><big>(</big><em>ens</em>, <em>data</em>, <em>varname</em>, <em>kwargs={'color': [0.5</em>, <em>0.5</em>, <em>0.5]}</em><big>)</big><a class="reference internal" href="_modules/cmipdata/plotting_tools.html#plot_realization_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.plotting_tools.plot_realization_timeseries" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each realization in ens (and data, which is generated from ens
-using loadfiles), plot the realization in color (grey by default)
-for variable varname. kwargs is a dict of option to pass to plt,
-e.g.: kwargs={&#8216;color&#8217;:&#8217;r&#8217;}</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="cmipdata.plotting_tools.plot_realizations_1d">
-<tt class="descclassname">cmipdata.plotting_tools.</tt><tt class="descname">plot_realizations_1d</tt><big>(</big><em>ens</em>, <em>data</em>, <em>varname</em>, <em>dimension</em>, <em>kwargs={'color': [0.5</em>, <em>0.5</em>, <em>0.5]}</em><big>)</big><a class="reference internal" href="_modules/cmipdata/plotting_tools.html#plot_realizations_1d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.plotting_tools.plot_realizations_1d" title="Permalink to this definition">¶</a></dt>
-<dd><p>For each realization in ens (and data, which is generated from ens
-using loadfiles), plot the realization in color (grey by default)
-for variable varname. Data should be 1-d for each realization, along the 
-dimension specified (time, lon, lat etc).</p>
-<p>kwargs is a dict of option to pass to plt,
-e.g.: kwargs={&#8216;color&#8217;:&#8217;r&#8217;}</p>
-<p>EXAMPLES:</p>
-<p># plot the uas data against latitude in red
-cd.plot_realizations_1d(ens, data, varname=&#8217;uas&#8217;, dimension=&#8217;lat&#8217;, kwargs={&#8216;color&#8217;:&#8217;r&#8217;})</p>
-</dd></dl>
-
-</div>
-</div>
-<div class="section" id="module-cmipdata.preprocessing_tools">
-<span id="cmipdata-preprocessing-tools-module"></span><h2>cmipdata.preprocessing_tools module<a class="headerlink" href="#module-cmipdata.preprocessing_tools" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="preprocessing-tools-preprocesses-data-before-loading">
-<h3><tt class="xref py py-mod docutils literal"><span class="pre">preprocessing_tools</span></tt> &#8211; Preprocesses data before loading<a class="headerlink" href="#preprocessing-tools-preprocesses-data-before-loading" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="cmipdata.preprocessing_tools.areaint">
-<tt class="descclassname">cmipdata.preprocessing_tools.</tt><tt class="descname">areaint</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cmipdata/preprocessing_tools.html#areaint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.preprocessing_tools.areaint" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div>The preprocessing_tools module of cmipdata is a set of functions which use 
+os.system calls to Climate Data Operators (cdo) to systematically apply a 
+given processing on multiple NetCDF files, which are listed in cmipdata 
+ensemble objects.</div></blockquote>
 <dl class="function">
 <dt id="cmipdata.preprocessing_tools.areamean">
 <tt class="descclassname">cmipdata.preprocessing_tools.</tt><tt class="descname">areamean</tt><big>(</big><em>ens</em>, <em>delete=True</em><big>)</big><a class="reference internal" href="_modules/cmipdata/preprocessing_tools.html#areamean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.preprocessing_tools.areamean" title="Permalink to this definition">¶</a></dt>
@@ -504,9 +461,7 @@ For example, if the ensemble contains two experiments for many models/realizatio
 files will be produced per realization: one for the historical and one for the rcp45 experiment. To join files
 over experiments (e.g. to concatenate historical and rcp45) see cat_experiments.</p>
 <p>EXAMPLE:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># For a simple ensemble comprized of only 1 model, 1 experiment and one realization. </span>
-</pre></div>
-</div>
+<p># For a simple ensemble comprized of only 1 model, 1 experiment and one realization.</p>
 <p># Look at the ensemble structure before the concatenation
 ens.fulldetails()
 HadCM3:</p>
@@ -683,24 +638,116 @@ if delete=True (default). An updated ensemble object is also returned.</p>
 </dd></dl>
 
 </div>
+<span class="target" id="module-cmipdata.loading_tools"></span><div class="section" id="loading-tools">
+<h1>loading_tools<a class="headerlink" href="#loading-tools" title="Permalink to this headline">¶</a></h1>
+<p>The loading_tools module of cmipdata is a set of functions which use 
+the cdo python bindings and NetCDF4 to load data from input NetCDF
+files listed in a cmipdata ensemble object into python numpy arrays.
+Some processing can optionally be done during the loading, specifically
+remapping, time-slicing, time-averaging and zonal-averaging.</p>
+<dl class="function">
+<dt id="cmipdata.loading_tools.get_dimensions">
+<tt class="descclassname">cmipdata.loading_tools.</tt><tt class="descname">get_dimensions</tt><big>(</big><em>ifile</em>, <em>varname</em>, <em>toDatetime=False</em><big>)</big><a class="reference internal" href="_modules/cmipdata/loading_tools.html#get_dimensions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.loading_tools.get_dimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the dimensions of variable varname in file ifile as a dictionary.
+If one of the dimensions begins with lat (Lat, Latitude and Latitudes), it 
+will be returned with a key of lat, and similarly for lon. If to a Datetime=True, 
+the time dimension is converted to a datetime.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cmipdata.loading_tools.loadens">
+<tt class="descclassname">cmipdata.loading_tools.</tt><tt class="descname">loadens</tt><big>(</big><em>ens</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cmipdata/loading_tools.html#loadens"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.loading_tools.loadens" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load all variables in all files in ens into a numpy array which is
+save in the the variable object under variable.data. Currently
+loadens expects there to only be one filename per variable object 
+(i.e. per realization).</p>
+<p>Optionally specify any kwargs valid for loadvar.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cmipdata.loading_tools.loadfiles">
+<tt class="descclassname">cmipdata.loading_tools.</tt><tt class="descname">loadfiles</tt><big>(</big><em>ens</em>, <em>varname</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/cmipdata/loading_tools.html#loadfiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.loading_tools.loadfiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a variable &#8220;varname&#8221; from all files in ens, and load it into a matrix
+where the zeroth dimensions represents an input file and dimensions 1 to n are
+the dimensions of the input variable. Variable &#8220;varname&#8221; must have the same shape 
+in all ifiles. Optionally specify any kwargs valid for loadvar.</p>
+<p>Requires netCDF4, cdo bindings and numpy 
+Returns a masked numpy array, varmat.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cmipdata.loading_tools.loadvar">
+<tt class="descclassname">cmipdata.loading_tools.</tt><tt class="descname">loadvar</tt><big>(</big><em>ifile</em>, <em>varname</em>, <em>remap=''</em>, <em>start_date=''</em>, <em>end_date=''</em>, <em>timmean=False</em>, <em>zonmean=False</em><big>)</big><a class="reference internal" href="_modules/cmipdata/loading_tools.html#loadvar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.loading_tools.loadvar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a CMIP5 netcdf variable &#8220;varname&#8221; from &#8220;ifile&#8221; and optionally 1) distance
+weighted remap to a given grid (e.g. &#8216;r360x180), 2) select a date range between 
+start_date and end_date (format: &#8216;YYYY-MM-DD&#8217;), 3) time-mean over the whole 
+record, or between the selected dates and 4) zonal mean. Requires netCDF4, CDO 
+and CDO python bindings. Returns a masked array, var.</p>
+<p>If zonmean=True and remap=True, the zonal mean is done first, so the remap
+will in that case only specify the latitude-grid, with 1-point in x, e.g.: 
+remap=r180x1.</p>
+</dd></dl>
+
 </div>
-<div class="section" id="module-cmipdata.slice_nc">
-<span id="cmipdata-slice-nc-module"></span><h2>cmipdata.slice_nc module<a class="headerlink" href="#module-cmipdata.slice_nc" title="Permalink to this headline">¶</a></h2>
-<p>Get a [time,lat,lon] slice from a netcdf file</p>
+<span class="target" id="module-cmipdata.plotting_tools"></span><div class="section" id="plotting-tools">
+<h1>plotting_tools<a class="headerlink" href="#plotting-tools" title="Permalink to this headline">¶</a></h1>
+<p>The plotting_tools module of cmipdata is a set of functions which use 
+matplotlib to produce various common plots.</p>
+<p>The functions take an ensemble object and a data object. The ensemble
+object is a cmipdata ensemble, the data object is a numpy array
+generated using loading_tools.</p>
+<dl class="function">
+<dt id="cmipdata.plotting_tools.ensemble_envelope_timeseries">
+<tt class="descclassname">cmipdata.plotting_tools.</tt><tt class="descname">ensemble_envelope_timeseries</tt><big>(</big><em>ens</em>, <em>meanfile</em>, <em>stdfile</em>, <em>varname</em>, <em>ax=''</em>, <em>kwargs={'color': 'k'</em>, <em>'linewidth': 3}</em><big>)</big><a class="reference internal" href="_modules/cmipdata/plotting_tools.html#ensemble_envelope_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.plotting_tools.ensemble_envelope_timeseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each realization in ens (and data, which is generated from ens
+using loadfiles), plot the realization in color (grey by default)
+for variable varname.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cmipdata.plotting_tools.plot_realization_timeseries">
+<tt class="descclassname">cmipdata.plotting_tools.</tt><tt class="descname">plot_realization_timeseries</tt><big>(</big><em>ens</em>, <em>data</em>, <em>varname</em>, <em>kwargs={'color': [0.5</em>, <em>0.5</em>, <em>0.5]}</em><big>)</big><a class="reference internal" href="_modules/cmipdata/plotting_tools.html#plot_realization_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.plotting_tools.plot_realization_timeseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each realization in ens (and data, which is generated from ens
+using loadfiles), plot the realization in color (grey by default)
+for variable varname. kwargs is a dict of option to pass to plt,
+e.g.: kwargs={&#8216;color&#8217;:&#8217;r&#8217;}</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cmipdata.plotting_tools.plot_realizations_1d">
+<tt class="descclassname">cmipdata.plotting_tools.</tt><tt class="descname">plot_realizations_1d</tt><big>(</big><em>ens</em>, <em>data</em>, <em>varname</em>, <em>dimension</em>, <em>kwargs={'color': [0.5</em>, <em>0.5</em>, <em>0.5]}</em><big>)</big><a class="reference internal" href="_modules/cmipdata/plotting_tools.html#plot_realizations_1d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.plotting_tools.plot_realizations_1d" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each realization in ens (and data, which is generated from ens
+using loadfiles), plot the realization in color (grey by default)
+for variable varname. Data should be 1-d for each realization, along the 
+dimension specified (time, lon, lat etc).</p>
+<p>kwargs is a dict of option to pass to plt,
+e.g.: kwargs={&#8216;color&#8217;:&#8217;r&#8217;}</p>
+<p>EXAMPLES:</p>
+<p># plot the uas data against latitude in red
+cd.plot_realizations_1d(ens, data, varname=&#8217;uas&#8217;, dimension=&#8217;lat&#8217;, kwargs={&#8216;color&#8217;:&#8217;r&#8217;})</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-cmipdata.slice_nc"></span><p>Get a [time,lat,lon] slice from a netcdf file</p>
 <dl class="function">
 <dt id="cmipdata.slice_nc.find_index">
 <tt class="descclassname">cmipdata.slice_nc.</tt><tt class="descname">find_index</tt><big>(</big><em>vec_vals</em>, <em>target</em><big>)</big><a class="reference internal" href="_modules/cmipdata/slice_nc.html#find_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.slice_nc.find_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns the first index of vec_vals that contains the value
 closest to target.</p>
-<p>vec_vals: list or 1-d array
-target:   list 1-d array or scalar</p>
-<p>list of len(target) containing the index idx such that
-vec_vals[idx] is closest to each item in target</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lons</span><span class="o">=</span><span class="p">[</span><span class="mi">110</span><span class="p">,</span><span class="mi">115</span><span class="p">,</span><span class="mi">120</span><span class="p">,</span><span class="mi">125</span><span class="p">,</span><span class="mi">130</span><span class="p">,</span><span class="mi">135</span><span class="p">,</span><span class="mi">140</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">find_index</span><span class="p">(</span><span class="n">lons</span><span class="p">,[</span><span class="mf">115.4</span><span class="p">,</span><span class="mf">134.9</span><span class="p">])</span>
-<span class="go">[1, 5]</span>
-</pre></div>
-</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>vec_vals: list or 1-d array</strong></p>
+<p><strong>target:   list 1-d array or scalar</strong></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of len(target) containing the index idx such that</p>
+<p class="last">vec_vals[idx] is closest to each item in target</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -709,47 +756,39 @@ vec_vals[idx] is closest to each item in target</p>
 <dd><p>Given a netcdf file containing a [time,lat,lon] variable with name
 var_name, return a slice with values
 [start_date:stop_date,corners.ll.lat:corners.ur.lat,corners.ll.lon:corners.ur.lon]</p>
-<p>filename: str &#8211;  name of netcdf (possible including full path) of netcdf file
-varname:  str &#8211;  name of [time,lat,lon] netcdf variable (.eg. tos)
-corners:  optional, my_namedtuple &#8211; Box object with latlon corner points</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename: str &#8211;  name of netcdf (possible including full path) of netcdf file</strong></p>
+<p><strong>varname:  str &#8211;  name of [time,lat,lon] netcdf variable (.eg. tos)</strong></p>
+<p><strong>corners:  optional, my_namedtuple &#8211; Box object with latlon corner points</strong></p>
 <blockquote>
-<div>if None, defaults to all lats, all lons</div></blockquote>
-<dl class="docutils">
-<dt>start_date: optional, datetime  &#8211; python datetime object to start slice</dt>
-<dd>if None, defaults to time index 0</dd>
-<dt>stop_date: optional, datetime  &#8211; python datetime object to end slice</dt>
-<dd>if None, defaults to last time value</dd>
-</dl>
-<p>tuple containing:</p>
-<p>data_nc: netCDF4 Dataset
-var_nc:  netCDF4 variable
-the_times: np.array of datetimes for slice
-the_lats: 1-D np.array of latitudes for slice
-the_lons: 1_D np.array of longitudes for slice
-vararray: 2:D np.array with variable slice</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">constants</span> <span class="kn">import</span> <span class="n">warm_pool</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">in_file</span><span class="o">=</span><span class="s">&#39;tos_AMSRE_L3_v7_200206-201012.nc&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">corners</span><span class="o">=</span><span class="n">warm_pool</span><span class="p">,</span><span class="n">start_date</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2003</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">stop_date</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2006</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data_nc</span><span class="p">,</span><span class="n">var_nc</span><span class="p">,</span><span class="n">the_times</span><span class="p">,</span><span class="n">the_lats</span><span class="p">,</span><span class="n">the_lons</span><span class="p">,</span><span class="n">sst</span><span class="o">=</span><span class="n">get_var_2D</span><span class="p">(</span><span class="n">in_file</span><span class="p">,</span><span class="s">&#39;tos&#39;</span><span class="p">,</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">([</span><span class="s">&quot;</span><span class="si">%6.3f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sst</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:</span><span class="mi">4</span><span class="p">]])</span>
-<span class="go">[&#39;301.819&#39;, &#39;301.879&#39;, &#39;301.970&#39;, &#39;302.070&#39;]</span>
-</pre></div>
-</div>
+<div><p>if None, defaults to all lats, all lons</p>
+</div></blockquote>
+<p><strong>start_date: optional, datetime  &#8211; python datetime object to start slice</strong></p>
+<blockquote>
+<div><p>if None, defaults to time index 0</p>
+</div></blockquote>
+<p><strong>stop_date: optional, datetime  &#8211; python datetime object to end slice</strong></p>
+<blockquote>
+<div><p>if None, defaults to last time value</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">tuple containing:</p>
+<p>data_nc: netCDF4 Dataset</p>
+<p>var_nc:  netCDF4 variable</p>
+<p>the_times: np.array of datetimes for slice</p>
+<p>the_lats: 1-D np.array of latitudes for slice</p>
+<p>the_lons: 1_D np.array of longitudes for slice</p>
+<p class="last">vararray: 2:D np.array with variable slice</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="function">
-<dt id="cmipdata.slice_nc.test_get_var_2D">
-<tt class="descclassname">cmipdata.slice_nc.</tt><tt class="descname">test_get_var_2D</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cmipdata/slice_nc.html#test_get_var_2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.slice_nc.test_get_var_2D" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="module-cmipdata">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-cmipdata" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="cmipdata">
-<h3>cmipdata<a class="headerlink" href="#cmipdata" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-</div>
 
 
           </div>
@@ -759,29 +798,15 @@ vararray: 2:D np.array with variable slice</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">cmipdata package</a><ul>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-cmipdata.classes">cmipdata.classes module</a></li>
-<li><a class="reference internal" href="#module-cmipdata.loading_tools">cmipdata.loading_tools module</a><ul>
+<li><a class="reference internal" href="#">classes</a><ul>
+<li><a class="reference internal" href="#summary">Summary</a></li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#preprocessing-tools">preprocessing_tools</a></li>
 <li><a class="reference internal" href="#loading-tools">loading_tools</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-cmipdata.plotting_tools">cmipdata.plotting_tools module</a><ul>
 <li><a class="reference internal" href="#plotting-tools">plotting_tools</a></li>
-<li><a class="reference internal" href="#currently-not-working">Currently not working</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-cmipdata.preprocessing_tools">cmipdata.preprocessing_tools module</a><ul>
-<li><a class="reference internal" href="#preprocessing-tools-preprocesses-data-before-loading"><tt class="docutils literal"><span class="pre">preprocessing_tools</span></tt> &#8211; Preprocesses data before loading</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-cmipdata.slice_nc">cmipdata.slice_nc module</a></li>
-<li><a class="reference internal" href="#module-cmipdata">Module contents</a><ul>
-<li><a class="reference internal" href="#cmipdata">cmipdata</a></li>
-</ul>
-</li>
-</ul>
-</li>
 </ul>
 
   <h4>Previous topic</h4>
@@ -789,7 +814,7 @@ vararray: 2:D np.array with variable slice</p>
                         title="previous chapter">Welcome to cmipdata&#8217;s documentation!</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="_sources/cmipdata.txt"
+    <li><a href="_sources/api.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -821,7 +846,7 @@ vararray: 2:D np.array with variable slice</p>
         <li class="right" >
           <a href="index.html" title="Welcome to cmipdata’s documentation!"
              >previous</a> |</li>
-        <li><a href="index.html">cmipdata  documentation</a> &raquo;</li> 
+        <li><a href="index.html">cmipdata 0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
