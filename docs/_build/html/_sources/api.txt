@@ -6,6 +6,3 @@
    :members:
 .. automodule:: cmipdata.plotting_tools
    :members:
-.. automodule:: cmipdata.slice_nc
-   :members:   
-   

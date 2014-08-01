@@ -103,10 +103,7 @@
 
 <div class="viewcode-block" id="Ensemble"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Ensemble">[docs]</a><span class="k">class</span> <span class="nc">Ensemble</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Defines a cmipdata Ensemble. </span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    </span>
+<span class="sd">       </span>
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    models : list</span>
@@ -239,21 +236,33 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">=</span> <span class="p">[]</span>
                
 <div class="viewcode-block" id="Model.add_experiment"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Model.add_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">add_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiment</span><span class="p">):</span>
-	<span class="sd">&quot;&quot;&quot;Adds the experiment object experiment to the </span>
-<span class="sd">	models experiments</span>
+	<span class="sd">&quot;&quot;&quot;Adds experiment to the model</span>
+<span class="sd">	</span>
+<span class="sd">	Parameters</span>
+<span class="sd">	----------</span>
+<span class="sd">	experiment : cmipdata Experiment</span>
+<span class="sd">	</span>
 <span class="sd">	&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
         </div>
 <div class="viewcode-block" id="Model.del_experiment"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Model.del_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">del_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiment</span><span class="p">):</span>
-	<span class="sd">&quot;&quot;&quot;deletes the experiment object experiment from the </span>
-<span class="sd">	models experiments</span>
-<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="sd">&quot;&quot;&quot;deletes experiment from the model&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
         </div>
 <div class="viewcode-block" id="Model.get_experiment"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Model.get_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">get_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experimentname</span><span class="p">):</span>
-	<span class="sd">&quot;&quot;&quot;Finds and returns the experiment object corresponding</span>
-<span class="sd">	to experimnentname in the model experiment list, or if no </span>
-<span class="sd">	match is found, returns an empty list.</span>
+	<span class="sd">&quot;&quot;&quot;Returns the experiment with experimnentname.</span>
+<span class="sd">	</span>
+<span class="sd">	Parameters</span>
+<span class="sd">	----------</span>
+<span class="sd">	experimentname : string</span>
+<span class="sd">	</span>
+<span class="sd">	Returns</span>
+<span class="sd">	----------</span>
+<span class="sd">	experiment : cmipdata Experiment</span>
+<span class="sd">	             The cmipdata experiment corresponding to </span>
+<span class="sd">	             experimentname for the model. If no experiment</span>
+<span class="sd">	             matching experimentname is found, returns an</span>
+<span class="sd">	             empty list.</span>
 <span class="sd">	&quot;&quot;&quot;</span>
 	<span class="k">for</span> <span class="n">experiment</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
 	    <span class="k">if</span> <span class="n">experiment</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">experimentname</span><span class="p">:</span>
@@ -271,10 +280,21 @@
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">)</span>     
 </div></div>
 <div class="viewcode-block" id="Experiment"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Experiment">[docs]</a><span class="k">class</span> <span class="nc">Experiment</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Defines an experiment for a given model, with a name and a list of</span>
-<span class="sd">    assiciated realizations, which can be retrieved with</span>
+    <span class="sd">&quot;&quot;&quot; Defines an experiment for a given model. </span>
+<span class="sd">    </span>
+<span class="sd">    Assiciated realizations can be retrieved with</span>
 <span class="sd">    experiment.realizations(). New realizations can be added</span>
 <span class="sd">    to the experiment with experiment.add_realization(realization)</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    experimentname : string</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    realizations : list</span>
+<span class="sd">                   List of constituent realizations   </span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experimentname</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">experimentname</span>
@@ -284,21 +304,28 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
         
 <div class="viewcode-block" id="Experiment.add_realization"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Experiment.add_realization">[docs]</a>    <span class="k">def</span> <span class="nf">add_realization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">realization</span><span class="p">):</span>
-	<span class="sd">&quot;&quot;&quot;Adds the realization object experiment to the </span>
-<span class="sd">	experiments realizations.</span>
-<span class="sd">	&quot;&quot;&quot;</span>	
+	<span class="sd">&quot;&quot;&quot;Adds realization to the experiment.&quot;&quot;&quot;</span>	
         <span class="bp">self</span><span class="o">.</span><span class="n">realizations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">realization</span><span class="p">)</span>
         </div>
 <div class="viewcode-block" id="Experiment.del_realization"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Experiment.del_realization">[docs]</a>    <span class="k">def</span> <span class="nf">del_realization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">realization</span><span class="p">):</span>
-	<span class="sd">&quot;&quot;&quot;Adds the realization object experiment to the </span>
-<span class="sd">	experiments realizations.</span>
-<span class="sd">	&quot;&quot;&quot;</span>	
+	<span class="sd">&quot;&quot;&quot;Deletes realization from the experiment.&quot;&quot;&quot;</span>	
         <span class="bp">self</span><span class="o">.</span><span class="n">realizations</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">realization</span><span class="p">)</span>
         </div>
 <div class="viewcode-block" id="Experiment.get_realization"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Experiment.get_realization">[docs]</a>    <span class="k">def</span> <span class="nf">get_realization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">realizationname</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Finds and returns the realization object corresponding</span>
-<span class="sd">	to realizationname in the experiment&#39;s realization list, or if no </span>
-<span class="sd">	match is found, returns an empty list.</span>
+        <span class="sd">&quot;&quot;&quot;Returns the realization with realizationname. </span>
+<span class="sd">        </span>
+<span class="sd">	Parameters</span>
+<span class="sd">	----------</span>
+<span class="sd">	realizationname : string</span>
+<span class="sd">	</span>
+<span class="sd">	Returns</span>
+<span class="sd">	----------</span>
+<span class="sd">	realization : cmipdata Realization</span>
+<span class="sd">	             The cmipdata realization corresponding to </span>
+<span class="sd">	             realizationname for the experiment. If no realization</span>
+<span class="sd">	             matching realizationname is found, returns an</span>
+<span class="sd">	             empty list.        </span>
+<span class="sd">        </span>
 <span class="sd">	&quot;&quot;&quot;</span>
 	<span class="k">for</span> <span class="n">realization</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">realizations</span><span class="p">:</span>
 	    <span class="k">if</span> <span class="n">realization</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">realizationname</span><span class="p">:</span>
@@ -317,32 +344,49 @@
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">realizations</span><span class="p">)</span>  
         </div></div>
 <div class="viewcode-block" id="Realization"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Realization">[docs]</a><span class="k">class</span> <span class="nc">Realization</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Defines a realization for a given model and experiment, </span>
-<span class="sd">    with a name and a list of</span>
-<span class="sd">    assiciated variables, which can be retrieved with</span>
+    <span class="sd">&quot;&quot;&quot; Defines a realization for a given model and experiment.</span>
+<span class="sd">        </span>
+<span class="sd">    Associated variables can be retrieved with</span>
 <span class="sd">    realization.variables(). New variables can be added</span>
 <span class="sd">    to the realization with realization.add_variable(variable)</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    realizationname : string</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variables : list</span>
+<span class="sd">                List of constituent variables     </span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">realizationname</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">realizationname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="p">[]</span>
         
 <div class="viewcode-block" id="Realization.add_variable"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Realization.add_variable">[docs]</a>    <span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span>
-	<span class="sd">&quot;&quot;&quot;Adds the variable object to the </span>
-<span class="sd">	realization&#39;s variables.</span>
-<span class="sd">	&quot;&quot;&quot;</span>	
+	<span class="sd">&quot;&quot;&quot;Adds variable object to the realization.&quot;&quot;&quot;</span>	
         <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
         </div>
 <div class="viewcode-block" id="Realization.del_variable"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Realization.del_variable">[docs]</a>    <span class="k">def</span> <span class="nf">del_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span>
-	<span class="sd">&quot;&quot;&quot;Delete the variable object to the </span>
-<span class="sd">	realization&#39;s variables.</span>
-<span class="sd">	&quot;&quot;&quot;</span>	
+	<span class="sd">&quot;&quot;&quot;Deletes variable from the realization.&quot;&quot;&quot;</span>	
         <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
         </div>
 <div class="viewcode-block" id="Realization.get_variable"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Realization.get_variable">[docs]</a>    <span class="k">def</span> <span class="nf">get_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variablename</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Finds and returns the variable object corresponding</span>
-<span class="sd">	to variablename in the realization&#39;s variable list, or if no </span>
-<span class="sd">	match is found, returns an empty list.</span>
+        <span class="sd">&quot;&quot;&quot;Returns the variable object with variablename.</span>
+<span class="sd">        </span>
+<span class="sd">	Parameters</span>
+<span class="sd">	----------</span>
+<span class="sd">	variablename : string</span>
+<span class="sd">	</span>
+<span class="sd">	Returns</span>
+<span class="sd">	----------</span>
+<span class="sd">	variable : cmipdata Variable</span>
+<span class="sd">	             The cmipdata variable corresponding to </span>
+<span class="sd">	             variablename for the realization. If no variable</span>
+<span class="sd">	             matching variablename is found, returns an</span>
+<span class="sd">	             empty list.        </span>
+<span class="sd">              </span>
 <span class="sd">	&quot;&quot;&quot;</span>	
 	<span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
 	    <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">variablename</span><span class="p">:</span>
@@ -361,10 +405,23 @@
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">realizations</span><span class="p">)</span>
         </div></div>
 <div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../../api.html#cmipdata.classes.Variable">[docs]</a><span class="k">class</span> <span class="nc">Variable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Defines a variable for a given model, experiment and realization,</span>
-<span class="sd">    with a name, and an associated list of filenames, which can be retrieved </span>
-<span class="sd">    with variable.filenames(). A new filename can be added with </span>
-<span class="sd">    variable.add_filename(&#39;filename.nc&#39;)</span>
+    <span class="sd">&quot;&quot;&quot;Defines a variable for a given model, experiment and realization.</span>
+<span class="sd">     </span>
+<span class="sd">    Associated filenames can be retrieved with variable.filenames(). A new </span>
+<span class="sd">    filename can be added with variable.add_filename(&#39;filename.nc&#39;).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variablename : string</span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filenames : list</span>
+<span class="sd">                List of constituent files                </span>
+<span class="sd">    start_dates : list</span>
+<span class="sd">                  List of start_dates of files in filenames.</span>
+<span class="sd">    end_dates : list</span>
+<span class="sd">                List of end_dates of files in filenames.                  </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variablename</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">variablename</span>      
@@ -404,6 +461,10 @@
 <div class="viewcode-block" id="mkensemble"><a class="viewcode-back" href="../../api.html#cmipdata.classes.mkensemble">[docs]</a><span class="k">def</span> <span class="nf">mkensemble</span><span class="p">(</span><span class="n">filepattern</span><span class="p">,</span> <span class="n">experiment</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Creates and returns a cmipdata ensemble object from a list of </span>
 <span class="sd">    filenames matching filepattern. </span>
+
+<span class="sd">    Optionally specifying prefix will remove prefix from each filename</span>
+<span class="sd">    before the parsing is done. This is useful, for example, to remove </span>
+<span class="sd">    pre-pended paths used in filepattern (see example 2).</span>
 <span class="sd">    </span>
 <span class="sd">    Once the list of matching filenames is derived, the model, experiment,</span>
 <span class="sd">    realization, variable, start_date and end_date fields are extracted by</span>
@@ -412,9 +473,9 @@
 <span class="sd">    </span>
 <span class="sd">        variable_realm_model_experiment_realization_startdate-enddate.nc</span>
 <span class="sd">    </span>
-<span class="sd">    Optionally specifying prefix will remove prefix from each filename</span>
-<span class="sd">    before the parsing is done. This is useful, for example, to remove </span>
-<span class="sd">    pre-pended paths used in filepattern.</span>
+<span class="sd">    If the default CMIP5 naming convention is not used by your files,</span>
+<span class="sd">    an arbitary naming convention for the parsing may be specified by</span>
+<span class="sd">    the dicionary kwargs (see example 3). </span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -445,18 +506,11 @@
 <span class="sd">        ens = mkensemble(&#39;/home/ncs/ra40/cmip5/sam/c5_slp/psl*&#39;</span>
 <span class="sd">                      , prefix=&#39;/home/ncs/ra40/cmip5/sam/c5_slp/&#39;) </span>
 
-<span class="sd">    </span>
-<span class="sd">    If the default CMIP5 naming convention is not used by your files,</span>
-<span class="sd">    an arbitary naming convention for the parsing may be specified by</span>
-<span class="sd">    kwargs. kwargs is a dictionary whos keys contain each element (model, </span>
-<span class="sd">    experiment,realization, variable, start_date and end_date) and</span>
-<span class="sd">    whos values are the position in the filename that the element occurs.</span>
-<span class="sd">    In addition, the key &#39;separator&#39; must contain the element separator.</span>
-<span class="sd">    For example, for the CMIP5 naming convention::</span>
+<span class="sd">    3. Create ensemble defining a custom file naming convention::</span>
 <span class="sd">    </span>
 <span class="sd">        kwargs = {&#39;separator&#39;:&#39;_&#39;, &#39;variable&#39;:0, &#39;realm&#39;:1, &#39;model&#39;:2, &#39;experiment&#39;:3,</span>
 <span class="sd">                  &#39;realization&#39;:4, &#39;dates&#39;:5}</span>
-<span class="sd">    </span>
+<span class="sd"> </span>
 <span class="sd">        ens = mkensemble(&#39;psl*.nc&#39;, **kwargs) </span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>

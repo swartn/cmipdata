@@ -64,52 +64,47 @@
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 
-<span class="c">#=======================================================================================================</span>
-<span class="c"># The next three operators work on multiple files across the ensemble, and cannot be chained together.</span>
-<span class="c">#=======================================================================================================</span>
+<span class="c">#===========================================================================</span>
+<span class="c"># The next three operators work on multiple files across the ensemble, </span>
+<span class="c"># and cannot be chained together.</span>
+<span class="c">#=============================================================================</span>
 
 <div class="viewcode-block" id="cat_exp_slices"><a class="viewcode-back" href="../../api.html#cmipdata.preprocessing_tools.cat_exp_slices">[docs]</a><span class="k">def</span> <span class="nf">cat_exp_slices</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    For models which divide their output into multiple files per experiment (time-slices), cat_exp_slices concatenates</span>
-<span class="sd">    the files into one unified file using CDO, and deletes the individual slices, unless delete=False. As input </span>
-<span class="sd">    cat_exp_slices takes a cmipdata ensemble object (see mkensemble). Unified experiment files are written to the </span>
-<span class="sd">    current working directory, and an updated ensemble object is returned</span>
+<span class="sd">    Concatenate multiple time-slice files per experiment.</span>
 <span class="sd">    </span>
-<span class="sd">    The input ensemble can contain multiple models, experiments, realizations and variables, which cat_exp_slices </span>
-<span class="sd">    will process independently. In other words, files are joined per-model, per-experiment, per-relization, per-variable.</span>
-<span class="sd">    For example, if the ensemble contains two experiments for many models/realizations for variable psl, two unified</span>
-<span class="sd">    files will be produced per realization: one for the historical and one for the rcp45 experiment. To join files</span>
+<span class="sd">    For all models in ens which divide their output into multiple files per </span>
+<span class="sd">    experiment (time-slices), cat_exp_slices concatenates the files into one </span>
+<span class="sd">    unified file, and deletes the individual slices, unless delete=False. </span>
+<span class="sd">    The input ensemble can contain multiple models, experiments, realizations </span>
+<span class="sd">    and variables, which cat_exp_slices will process independently. In other words, </span>
+<span class="sd">    files are joined per-model, per-experiment, per-relization, per-variable.</span>
+<span class="sd">    For example, if the ensemble contains two experiments for many models/realizations </span>
+<span class="sd">    for variable psl, two unified files will be produced per realization: one for the </span>
+<span class="sd">    historical and one for the rcp45 experiment. To join files</span>
 <span class="sd">    over experiments (e.g. to concatenate historical and rcp45) see cat_experiments.  </span>
-<span class="sd">    </span>
-<span class="sd">    EXAMPLE:</span>
-<span class="sd">    </span>
-<span class="sd">    # For a simple ensemble comprized of only 1 model, 1 experiment and one realization. </span>
-<span class="sd">    </span>
-<span class="sd">    # Look at the ensemble structure before the concatenation</span>
-<span class="sd">    ens.fulldetails()</span>
-<span class="sd">    HadCM3:</span>
-<span class="sd">        historical</span>
-<span class="sd">                r1i1p1</span>
-<span class="sd">                        ts</span>
-<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_185912-188411.nc</span>
-<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_188412-190911.nc</span>
-<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_190912-193411.nc</span>
-<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_193412-195911.nc</span>
-<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_195912-198411.nc</span>
-<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_198412-200512.nc</span>
 
-<span class="sd">     #=======================</span>
-<span class="sd">     # Do the concantenation</span>
-<span class="sd">     #=======================</span>
-<span class="sd">     ens = cd.cat_exp_slices(ens)         </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ens : cmipdata Ensemble</span>
+<span class="sd">          The ensemble on which to do the concatenation.</span>
+<span class="sd">    delete : boolean</span>
+<span class="sd">             If delete=True, delete the individual time-slice files.</span>
+<span class="sd">	            </span>
+<span class="sd">    Returns </span>
+<span class="sd">    -------</span>
+<span class="sd">    ens : cmipdata Ensemble</span>
+<span class="sd">          An updated ensemble object, containing the names of the newly </span>
+<span class="sd">          concatenated files.</span>
+<span class="sd">    </span>
+<span class="sd">    The concatenated files are written to present working directory.</span>
+<span class="sd">    </span>
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    For a simple ensemble comprized of only 1 model, 1 experiment and one realization.::    </span>
+<span class="sd">    </span>
+<span class="sd">        hello</span>
 
-<span class="sd">    # Look at the ensemble structure before the concatenation</span>
-<span class="sd">    ens.fulldetails()</span>
-<span class="sd">    HadCM3:</span>
-<span class="sd">        historical</span>
-<span class="sd">                r1i1p1</span>
-<span class="sd">                        ts</span>
-<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc</span>
 <span class="sd">                               </span>
 <span class="sd">    &quot;&quot;&quot;</span> 
     <span class="c"># Loop over all models, experiments, realizations and variables</span>

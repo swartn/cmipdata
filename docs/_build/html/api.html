@@ -202,31 +202,65 @@ WARNING: since ens is modifying itself in the loop, something could go wrong!</p
 <dl class="class">
 <dt id="cmipdata.classes.Experiment">
 <em class="property">class </em><tt class="descclassname">cmipdata.classes.</tt><tt class="descname">Experiment</tt><big>(</big><em>experimentname</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Experiment" title="Permalink to this definition">¶</a></dt>
-<dd><p>Defines an experiment for a given model, with a name and a list of
-assiciated realizations, which can be retrieved with
+<dd><p>Defines an experiment for a given model.</p>
+<p>Assiciated realizations can be retrieved with
 experiment.realizations(). New realizations can be added
 to the experiment with experiment.add_realization(realization)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>experimentname</strong> : string</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="76%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>realizations</td>
+<td>(list) List of constituent realizations</td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Methods</p>
 <dl class="method">
 <dt id="cmipdata.classes.Experiment.add_realization">
 <tt class="descname">add_realization</tt><big>(</big><em>realization</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Experiment.add_realization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Experiment.add_realization" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds the realization object experiment to the 
-experiments realizations.</p>
+<dd><p>Adds realization to the experiment.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="cmipdata.classes.Experiment.del_realization">
 <tt class="descname">del_realization</tt><big>(</big><em>realization</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Experiment.del_realization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Experiment.del_realization" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds the realization object experiment to the 
-experiments realizations.</p>
+<dd><p>Deletes realization from the experiment.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="cmipdata.classes.Experiment.get_realization">
 <tt class="descname">get_realization</tt><big>(</big><em>realizationname</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Experiment.get_realization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Experiment.get_realization" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds and returns the realization object corresponding
-to realizationname in the experiment&#8217;s realization list, or if no 
-match is found, returns an empty list.</p>
+<dd><p>Returns the realization with realizationname.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>realizationname</strong> : string</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>realization</strong> : cmipdata Realization</p>
+<blockquote class="last">
+<div><p>The cmipdata realization corresponding to 
+realizationname for the experiment. If no realization
+matching realizationname is found, returns an
+empty list.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -246,23 +280,45 @@ experiment instance</p>
 <dl class="method">
 <dt id="cmipdata.classes.Model.add_experiment">
 <tt class="descname">add_experiment</tt><big>(</big><em>experiment</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Model.add_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Model.add_experiment" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds the experiment object experiment to the 
-models experiments</p>
+<dd><p>Adds experiment to the model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>experiment</strong> : cmipdata Experiment</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="cmipdata.classes.Model.del_experiment">
 <tt class="descname">del_experiment</tt><big>(</big><em>experiment</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Model.del_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Model.del_experiment" title="Permalink to this definition">¶</a></dt>
-<dd><p>deletes the experiment object experiment from the 
-models experiments</p>
+<dd><p>deletes experiment from the model</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="cmipdata.classes.Model.get_experiment">
 <tt class="descname">get_experiment</tt><big>(</big><em>experimentname</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Model.get_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Model.get_experiment" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds and returns the experiment object corresponding
-to experimnentname in the model experiment list, or if no 
-match is found, returns an empty list.</p>
+<dd><p>Returns the experiment with experimnentname.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>experimentname</strong> : string</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>experiment</strong> : cmipdata Experiment</p>
+<blockquote class="last">
+<div><p>The cmipdata experiment corresponding to 
+experimentname for the model. If no experiment
+matching experimentname is found, returns an
+empty list.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -276,32 +332,65 @@ match is found, returns an empty list.</p>
 <dl class="class">
 <dt id="cmipdata.classes.Realization">
 <em class="property">class </em><tt class="descclassname">cmipdata.classes.</tt><tt class="descname">Realization</tt><big>(</big><em>realizationname</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Realization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Realization" title="Permalink to this definition">¶</a></dt>
-<dd><p>Defines a realization for a given model and experiment, 
-with a name and a list of
-assiciated variables, which can be retrieved with
+<dd><p>Defines a realization for a given model and experiment.</p>
+<p>Associated variables can be retrieved with
 realization.variables(). New variables can be added
 to the realization with realization.add_variable(variable)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>realizationname</strong> : string</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>variables</td>
+<td>(list) List of constituent variables</td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Methods</p>
 <dl class="method">
 <dt id="cmipdata.classes.Realization.add_variable">
 <tt class="descname">add_variable</tt><big>(</big><em>variable</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Realization.add_variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Realization.add_variable" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds the variable object to the 
-realization&#8217;s variables.</p>
+<dd><p>Adds variable object to the realization.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="cmipdata.classes.Realization.del_variable">
 <tt class="descname">del_variable</tt><big>(</big><em>variable</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Realization.del_variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Realization.del_variable" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete the variable object to the 
-realization&#8217;s variables.</p>
+<dd><p>Deletes variable from the realization.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="cmipdata.classes.Realization.get_variable">
 <tt class="descname">get_variable</tt><big>(</big><em>variablename</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Realization.get_variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Realization.get_variable" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds and returns the variable object corresponding
-to variablename in the realization&#8217;s variable list, or if no 
-match is found, returns an empty list.</p>
+<dd><p>Returns the variable object with variablename.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>variablename</strong> : string</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>variable</strong> : cmipdata Variable</p>
+<blockquote class="last">
+<div><p>The cmipdata variable corresponding to 
+variablename for the realization. If no variable
+matching variablename is found, returns an
+empty list.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -316,10 +405,32 @@ realization instance</p>
 <dl class="class">
 <dt id="cmipdata.classes.Variable">
 <em class="property">class </em><tt class="descclassname">cmipdata.classes.</tt><tt class="descname">Variable</tt><big>(</big><em>variablename</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Variable" title="Permalink to this definition">¶</a></dt>
-<dd><p>Defines a variable for a given model, experiment and realization,
-with a name, and an associated list of filenames, which can be retrieved 
-with variable.filenames(). A new filename can be added with 
-variable.add_filename(&#8216;filename.nc&#8217;)</p>
+<dd><p>Defines a variable for a given model, experiment and realization.</p>
+<p>Associated filenames can be retrieved with variable.filenames(). A new 
+filename can be added with variable.add_filename(&#8216;filename.nc&#8217;).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>variablename</strong> : string</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="82%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>start_dates</td>
+<td>(list) List of start_dates of files in filenames.</td>
+</tr>
+<tr class="row-even"><td>end_dates</td>
+<td>(list) List of end_dates of files in filenames.</td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Methods</p>
 <dl class="method">
 <dt id="cmipdata.classes.Variable.add_end_date">
@@ -371,6 +482,9 @@ variable instance</p>
 <tt class="descclassname">cmipdata.classes.</tt><tt class="descname">mkensemble</tt><big>(</big><em>filepattern</em>, <em>experiment='*'</em>, <em>prefix=''</em>, <em>kwargs=''</em><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#mkensemble"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.mkensemble" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates and returns a cmipdata ensemble object from a list of 
 filenames matching filepattern.</p>
+<p>Optionally specifying prefix will remove prefix from each filename
+before the parsing is done. This is useful, for example, to remove 
+pre-pended paths used in filepattern (see example 2).</p>
 <p>Once the list of matching filenames is derived, the model, experiment,
 realization, variable, start_date and end_date fields are extracted by
 parsing the filnames against a specified file naming convention. By 
@@ -378,9 +492,9 @@ default this is the CMIP5 convention, which is:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">variable_realm_model_experiment_realization_startdate</span><span class="o">-</span><span class="n">enddate</span><span class="o">.</span><span class="n">nc</span>
 </pre></div>
 </div>
-<p>Optionally specifying prefix will remove prefix from each filename
-before the parsing is done. This is useful, for example, to remove 
-pre-pended paths used in filepattern.</p>
+<p>If the default CMIP5 naming convention is not used by your files,
+an arbitary naming convention for the parsing may be specified by
+the dicionary kwargs (see example 3).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -414,19 +528,16 @@ directory:</p>
               <span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s">&#39;/home/ncs/ra40/cmip5/sam/c5_slp/&#39;</span><span class="p">)</span> 
 </pre></div>
 </div>
-<p>If the default CMIP5 naming convention is not used by your files,
-an arbitary naming convention for the parsing may be specified by
-kwargs. kwargs is a dictionary whos keys contain each element (model, 
-experiment,realization, variable, start_date and end_date) and
-whos values are the position in the filename that the element occurs.
-In addition, the key &#8216;separator&#8217; must contain the element separator.
-For example, for the CMIP5 naming convention:</p>
+<ol class="arabic" start="3">
+<li><p class="first">Create ensemble defining a custom file naming convention:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;separator&#39;</span><span class="p">:</span><span class="s">&#39;_&#39;</span><span class="p">,</span> <span class="s">&#39;variable&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;realm&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;model&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#39;experiment&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span>
           <span class="s">&#39;realization&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span> <span class="s">&#39;dates&#39;</span><span class="p">:</span><span class="mi">5</span><span class="p">}</span>
 
 <span class="n">ens</span> <span class="o">=</span> <span class="n">mkensemble</span><span class="p">(</span><span class="s">&#39;psl*.nc&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> 
 </pre></div>
 </div>
+</li>
+</ol>
 </dd></dl>
 
 </div>
@@ -451,62 +562,41 @@ if delete=True. An updated ensemble object is also returned.</p>
 <dl class="function">
 <dt id="cmipdata.preprocessing_tools.cat_exp_slices">
 <tt class="descclassname">cmipdata.preprocessing_tools.</tt><tt class="descname">cat_exp_slices</tt><big>(</big><em>ens</em>, <em>delete=True</em><big>)</big><a class="reference internal" href="_modules/cmipdata/preprocessing_tools.html#cat_exp_slices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.preprocessing_tools.cat_exp_slices" title="Permalink to this definition">¶</a></dt>
-<dd><p>For models which divide their output into multiple files per experiment (time-slices), cat_exp_slices concatenates
-the files into one unified file using CDO, and deletes the individual slices, unless delete=False. As input 
-cat_exp_slices takes a cmipdata ensemble object (see mkensemble). Unified experiment files are written to the 
-current working directory, and an updated ensemble object is returned</p>
-<p>The input ensemble can contain multiple models, experiments, realizations and variables, which cat_exp_slices 
-will process independently. In other words, files are joined per-model, per-experiment, per-relization, per-variable.
-For example, if the ensemble contains two experiments for many models/realizations for variable psl, two unified
-files will be produced per realization: one for the historical and one for the rcp45 experiment. To join files
+<dd><p>Concatenate multiple time-slice files per experiment.</p>
+<p>For all models in ens which divide their output into multiple files per 
+experiment (time-slices), cat_exp_slices concatenates the files into one 
+unified file, and deletes the individual slices, unless delete=False. 
+The input ensemble can contain multiple models, experiments, realizations 
+and variables, which cat_exp_slices will process independently. In other words, 
+files are joined per-model, per-experiment, per-relization, per-variable.
+For example, if the ensemble contains two experiments for many models/realizations 
+for variable psl, two unified files will be produced per realization: one for the 
+historical and one for the rcp45 experiment. To join files
 over experiments (e.g. to concatenate historical and rcp45) see cat_experiments.</p>
-<p>EXAMPLE:</p>
-<p># For a simple ensemble comprized of only 1 model, 1 experiment and one realization.</p>
-<p># Look at the ensemble structure before the concatenation
-ens.fulldetails()
-HadCM3:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ens</strong> : cmipdata Ensemble</p>
 <blockquote>
-<div><blockquote>
-<div><dl class="docutils">
-<dt>historical</dt>
-<dd><dl class="first last docutils">
-<dt>r1i1p1</dt>
-<dd><dl class="first last docutils">
-<dt>ts</dt>
-<dd>ts_Amon_HadCM3_historical_r1i1p1_185912-188411.nc
-ts_Amon_HadCM3_historical_r1i1p1_188412-190911.nc
-ts_Amon_HadCM3_historical_r1i1p1_190912-193411.nc
-ts_Amon_HadCM3_historical_r1i1p1_193412-195911.nc
-ts_Amon_HadCM3_historical_r1i1p1_195912-198411.nc
-ts_Amon_HadCM3_historical_r1i1p1_198412-200512.nc</dd>
-</dl>
-</dd>
-</dl>
-</dd>
-</dl>
+<div><p>The ensemble on which to do the concatenation.</p>
 </div></blockquote>
-<p>#=======================
-# Do the concantenation
-#=======================
-ens = cd.cat_exp_slices(ens)</p>
-</div></blockquote>
-<p># Look at the ensemble structure before the concatenation
-ens.fulldetails()
-HadCM3:</p>
+<p><strong>delete</strong> : boolean</p>
 <blockquote>
-<div><dl class="docutils">
-<dt>historical</dt>
-<dd><dl class="first last docutils">
-<dt>r1i1p1</dt>
-<dd><dl class="first last docutils">
-<dt>ts</dt>
-<dd>ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc</dd>
-</dl>
-</dd>
-</dl>
-</dd>
-</dl>
+<div><p>If delete=True, delete the individual time-slice files.</p>
 </div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ens</strong> : cmipdata Ensemble</p>
+<blockquote>
+<div><p>An updated ensemble object, containing the names of the newly 
+concatenated files.</p>
+</div></blockquote>
+<p class="last">The concatenated files are written to present working directory.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -728,67 +818,6 @@ cd.plot_realizations_1d(ens, data, varname=&#8217;uas&#8217;, dimension=&#8217;l
 </dd></dl>
 
 </div>
-<span class="target" id="module-cmipdata.slice_nc"></span><p>Get a [time,lat,lon] slice from a netcdf file</p>
-<dl class="function">
-<dt id="cmipdata.slice_nc.find_index">
-<tt class="descclassname">cmipdata.slice_nc.</tt><tt class="descname">find_index</tt><big>(</big><em>vec_vals</em>, <em>target</em><big>)</big><a class="reference internal" href="_modules/cmipdata/slice_nc.html#find_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.slice_nc.find_index" title="Permalink to this definition">¶</a></dt>
-<dd><p>returns the first index of vec_vals that contains the value
-closest to target.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>vec_vals: list or 1-d array</strong></p>
-<p><strong>target:   list 1-d array or scalar</strong></p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of len(target) containing the index idx such that</p>
-<p class="last">vec_vals[idx] is closest to each item in target</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="cmipdata.slice_nc.get_var_2D">
-<tt class="descclassname">cmipdata.slice_nc.</tt><tt class="descname">get_var_2D</tt><big>(</big><em>file_name</em>, <em>var_name</em>, <em>corners=None</em>, <em>start_date=None</em>, <em>stop_date=None</em>, <em>time_name='time'</em>, <em>lat_name='lat'</em>, <em>lon_name='lon'</em><big>)</big><a class="reference internal" href="_modules/cmipdata/slice_nc.html#get_var_2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.slice_nc.get_var_2D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a netcdf file containing a [time,lat,lon] variable with name
-var_name, return a slice with values
-[start_date:stop_date,corners.ll.lat:corners.ur.lat,corners.ll.lon:corners.ur.lon]</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename: str &#8211;  name of netcdf (possible including full path) of netcdf file</strong></p>
-<p><strong>varname:  str &#8211;  name of [time,lat,lon] netcdf variable (.eg. tos)</strong></p>
-<p><strong>corners:  optional, my_namedtuple &#8211; Box object with latlon corner points</strong></p>
-<blockquote>
-<div><p>if None, defaults to all lats, all lons</p>
-</div></blockquote>
-<p><strong>start_date: optional, datetime  &#8211; python datetime object to start slice</strong></p>
-<blockquote>
-<div><p>if None, defaults to time index 0</p>
-</div></blockquote>
-<p><strong>stop_date: optional, datetime  &#8211; python datetime object to end slice</strong></p>
-<blockquote>
-<div><p>if None, defaults to last time value</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">tuple containing:</p>
-<p>data_nc: netCDF4 Dataset</p>
-<p>var_nc:  netCDF4 variable</p>
-<p>the_times: np.array of datetimes for slice</p>
-<p>the_lats: 1-D np.array of latitudes for slice</p>
-<p>the_lons: 1_D np.array of longitudes for slice</p>
-<p class="last">vararray: 2:D np.array with variable slice</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 
 
           </div>
