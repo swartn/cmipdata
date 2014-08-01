@@ -52,10 +52,7 @@ import copy
 
 class Ensemble(object):
     """ Defines a cmipdata Ensemble. 
-    
-    Parameters
-    ----------
-    
+       
     Attributes
     ----------
     models : list
@@ -188,21 +185,33 @@ class Model(object):
         self.experiments = []
                
     def add_experiment(self, experiment):
-	"""Adds the experiment object experiment to the 
-	models experiments
+	"""Adds experiment to the model
+	
+	Parameters
+	----------
+	experiment : cmipdata Experiment
+	
 	"""
         self.experiments.append(experiment)
         
     def del_experiment(self, experiment):
-	"""deletes the experiment object experiment from the 
-	models experiments
-	"""
+	"""deletes experiment from the model"""
         self.experiments.remove(experiment)
         
     def get_experiment(self, experimentname):
-	"""Finds and returns the experiment object corresponding
-	to experimnentname in the model experiment list, or if no 
-	match is found, returns an empty list.
+	"""Returns the experiment with experimnentname.
+	
+	Parameters
+	----------
+	experimentname : string
+	
+	Returns
+	----------
+	experiment : cmipdata Experiment
+	             The cmipdata experiment corresponding to 
+	             experimentname for the model. If no experiment
+	             matching experimentname is found, returns an
+	             empty list.
 	"""
 	for experiment in self.experiments:
 	    if experiment.name == experimentname:
@@ -220,10 +229,21 @@ class Model(object):
         return len(self.experiments)     
 
 class Experiment(object):
-    """ Defines an experiment for a given model, with a name and a list of
-    assiciated realizations, which can be retrieved with
+    """ Defines an experiment for a given model. 
+    
+    Assiciated realizations can be retrieved with
     experiment.realizations(). New realizations can be added
     to the experiment with experiment.add_realization(realization)
+    
+    Parameters
+    ----------
+    experimentname : string
+        
+    Attributes
+    ----------
+    realizations : list
+                   List of constituent realizations   
+    
     """
     def __init__(self, experimentname):
         self.name = experimentname
@@ -233,21 +253,28 @@ class Experiment(object):
         return self.name
         
     def add_realization(self, realization):
-	"""Adds the realization object experiment to the 
-	experiments realizations.
-	"""	
+	"""Adds realization to the experiment."""	
         self.realizations.append(realization)
         
     def del_realization(self, realization):
-	"""Adds the realization object experiment to the 
-	experiments realizations.
-	"""	
+	"""Deletes realization from the experiment."""	
         self.realizations.remove(realization)
         
     def get_realization(self, realizationname):
-        """Finds and returns the realization object corresponding
-	to realizationname in the experiment's realization list, or if no 
-	match is found, returns an empty list.
+        """Returns the realization with realizationname. 
+        
+	Parameters
+	----------
+	realizationname : string
+	
+	Returns
+	----------
+	realization : cmipdata Realization
+	             The cmipdata realization corresponding to 
+	             realizationname for the experiment. If no realization
+	             matching realizationname is found, returns an
+	             empty list.        
+        
 	"""
 	for realization in self.realizations:
 	    if realization.name == realizationname:
@@ -266,32 +293,49 @@ class Experiment(object):
         return len(self.realizations)  
         
 class Realization(object):
-    """ Defines a realization for a given model and experiment, 
-    with a name and a list of
-    assiciated variables, which can be retrieved with
+    """ Defines a realization for a given model and experiment.
+        
+    Associated variables can be retrieved with
     realization.variables(). New variables can be added
     to the realization with realization.add_variable(variable)
+    
+    Parameters
+    ----------
+    realizationname : string
+        
+    Attributes
+    ----------
+    variables : list
+                List of constituent variables     
+    
     """
     def __init__(self, realizationname):
         self.name = realizationname
         self.variables = []
         
     def add_variable(self, variable):
-	"""Adds the variable object to the 
-	realization's variables.
-	"""	
+	"""Adds variable object to the realization."""	
         self.variables.append(variable)
         
     def del_variable(self, variable):
-	"""Delete the variable object to the 
-	realization's variables.
-	"""	
+	"""Deletes variable from the realization."""	
         self.variables.remove(variable)
         
     def get_variable(self, variablename):
-        """Finds and returns the variable object corresponding
-	to variablename in the realization's variable list, or if no 
-	match is found, returns an empty list.
+        """Returns the variable object with variablename.
+        
+	Parameters
+	----------
+	variablename : string
+	
+	Returns
+	----------
+	variable : cmipdata Variable
+	             The cmipdata variable corresponding to 
+	             variablename for the realization. If no variable
+	             matching variablename is found, returns an
+	             empty list.        
+              
 	"""	
 	for variable in self.variables:
 	    if variable.name == variablename:
@@ -310,10 +354,23 @@ class Realization(object):
         return len(self.realizations)
         
 class Variable(object):
-    """Defines a variable for a given model, experiment and realization,
-    with a name, and an associated list of filenames, which can be retrieved 
-    with variable.filenames(). A new filename can be added with 
-    variable.add_filename('filename.nc')
+    """Defines a variable for a given model, experiment and realization.
+     
+    Associated filenames can be retrieved with variable.filenames(). A new 
+    filename can be added with variable.add_filename('filename.nc').
+    
+    Parameters
+    ----------
+    variablename : string
+        
+    Attributes
+    ----------
+    filenames : list
+                List of constituent files                
+    start_dates : list
+                  List of start_dates of files in filenames.
+    end_dates : list
+                List of end_dates of files in filenames.                  
     """
     def __init__(self, variablename):
         self.name = variablename      
@@ -353,6 +410,10 @@ class Variable(object):
 def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
     """Creates and returns a cmipdata ensemble object from a list of 
     filenames matching filepattern. 
+
+    Optionally specifying prefix will remove prefix from each filename
+    before the parsing is done. This is useful, for example, to remove 
+    pre-pended paths used in filepattern (see example 2).
     
     Once the list of matching filenames is derived, the model, experiment,
     realization, variable, start_date and end_date fields are extracted by
@@ -361,9 +422,9 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
     
         variable_realm_model_experiment_realization_startdate-enddate.nc
     
-    Optionally specifying prefix will remove prefix from each filename
-    before the parsing is done. This is useful, for example, to remove 
-    pre-pended paths used in filepattern.
+    If the default CMIP5 naming convention is not used by your files,
+    an arbitary naming convention for the parsing may be specified by
+    the dicionary kwargs (see example 3). 
     
     
     Parameters
@@ -394,18 +455,11 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
         ens = mkensemble('/home/ncs/ra40/cmip5/sam/c5_slp/psl*'
                       , prefix='/home/ncs/ra40/cmip5/sam/c5_slp/') 
 
-    
-    If the default CMIP5 naming convention is not used by your files,
-    an arbitary naming convention for the parsing may be specified by
-    kwargs. kwargs is a dictionary whos keys contain each element (model, 
-    experiment,realization, variable, start_date and end_date) and
-    whos values are the position in the filename that the element occurs.
-    In addition, the key 'separator' must contain the element separator.
-    For example, for the CMIP5 naming convention::
+    3. Create ensemble defining a custom file naming convention::
     
         kwargs = {'separator':'_', 'variable':0, 'realm':1, 'model':2, 'experiment':3,
                   'realization':4, 'dates':5}
-    
+ 
         ens = mkensemble('psl*.nc', **kwargs) 
     
     """

@@ -13,33 +13,51 @@ from classes import Ensemble, Model, Experiment, Realization, Variable
 import copy
 import itertools
 
-#=======================================================================================================
-# The next three operators work on multiple files across the ensemble, and cannot be chained together.
-#=======================================================================================================
+#===========================================================================
+# The next three operators work on multiple files across the ensemble, 
+# and cannot be chained together.
+#=============================================================================
 
 def cat_exp_slices(ens, delete=True):
     """
-    For models which divide their output into multiple files per experiment (time-slices), cat_exp_slices concatenates
-    the files into one unified file using CDO, and deletes the individual slices, unless delete=False. As input 
-    cat_exp_slices takes a cmipdata ensemble object (see mkensemble). Unified experiment files are written to the 
-    current working directory, and an updated ensemble object is returned
+    Concatenate multiple time-slice files per experiment.
     
-    The input ensemble can contain multiple models, experiments, realizations and variables, which cat_exp_slices 
-    will process independently. In other words, files are joined per-model, per-experiment, per-relization, per-variable.
-    For example, if the ensemble contains two experiments for many models/realizations for variable psl, two unified
-    files will be produced per realization: one for the historical and one for the rcp45 experiment. To join files
+    For all models in ens which divide their output into multiple files per 
+    experiment (time-slices), cat_exp_slices concatenates the files into one 
+    unified file, and deletes the individual slices, unless delete=False. 
+    The input ensemble can contain multiple models, experiments, realizations 
+    and variables, which cat_exp_slices will process independently. In other words, 
+    files are joined per-model, per-experiment, per-relization, per-variable.
+    For example, if the ensemble contains two experiments for many models/realizations 
+    for variable psl, two unified files will be produced per realization: one for the 
+    historical and one for the rcp45 experiment. To join files
     over experiments (e.g. to concatenate historical and rcp45) see cat_experiments.  
+
+    Parameters
+    ----------
+    ens : cmipdata Ensemble
+          The ensemble on which to do the concatenation.
+    delete : boolean
+             If delete=True, delete the individual time-slice files.
+	            
+    Returns 
+    -------
+    ens : cmipdata Ensemble
+          An updated ensemble object, containing the names of the newly 
+          concatenated files.
     
-    EXAMPLE:
+    The concatenated files are written to present working directory.
     
-    # For a simple ensemble comprized of only 1 model, 1 experiment and one realization. 
+    Example
+    -------
+    For a simple ensemble comprized of only 1 model, 1 experiment and one realization.::    
     
-    # Look at the ensemble structure before the concatenation
-    ens.fulldetails()
-    HadCM3:
-        historical
-                r1i1p1
-                        ts
+      # Look at the ensemble structure before the concatenation
+      ens.fulldetails()
+      HadCM3:
+          historical
+                  r1i1p1
+                          ts
                                 ts_Amon_HadCM3_historical_r1i1p1_185912-188411.nc
                                 ts_Amon_HadCM3_historical_r1i1p1_188412-190911.nc
                                 ts_Amon_HadCM3_historical_r1i1p1_190912-193411.nc
@@ -47,17 +65,15 @@ def cat_exp_slices(ens, delete=True):
                                 ts_Amon_HadCM3_historical_r1i1p1_195912-198411.nc
                                 ts_Amon_HadCM3_historical_r1i1p1_198412-200512.nc
 
-     #=======================
-     # Do the concantenation
-     #=======================
-     ens = cd.cat_exp_slices(ens)         
+      # Do the concantenation
+      ens = cd.cat_exp_slices(ens)         
 
-    # Look at the ensemble structure before the concatenation
-    ens.fulldetails()
-    HadCM3:
-        historical
-                r1i1p1
-                        ts
+      # Look at the ensemble structure before the concatenation
+      ens.fulldetails()
+      HadCM3:
+          historical
+                  r1i1p1
+                          ts
                                 ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc
                                
     """ 
@@ -93,9 +109,11 @@ def cat_exp_slices(ens, delete=True):
     return ens		        
 
 def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
-    """ For variable (named variable_name) concatenate experiments exp1 and exp2 
-    into a single file for each realization of each model listed in ensemble ens, and 
-    return an updated ensemble object.
+    """Concatenate the files for two experiments. 
+    
+    For variable_name concatenate experiments exp1 and exp2 
+    into a single file for each realization of each model listed 
+    in ensemble ens, and return an updated ensemble object.
     
     - ens is a cmipdata ensemble object (see mkensemble).
     - variable_name is a string corresponding to a variable in ens.
