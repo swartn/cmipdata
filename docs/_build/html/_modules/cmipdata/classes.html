@@ -161,10 +161,14 @@
 	<span class="sd">&quot;&quot;&quot;Returns a iterable, which is a tuple containing all the ensembles </span>
 <span class="sd">	model, experiment, realization and variable objects and the list of filenames.</span>
 <span class="sd">	</span>
-<span class="sd">	EXAMPLE::</span>
+<span class="sd">	Examples</span>
+<span class="sd">	-------</span>
 <span class="sd">	</span>
-<span class="sd">       for model, experiment, realization, variable, files in ens.iterate():</span>
-<span class="sd">           print model.name, experiment.name, realization.name, variable.name, files		</span>
+<span class="sd">	Iterate over all files in ens::</span>
+<span class="sd">	</span>
+<span class="sd">           for model, experiment, realization, variable, files in ens.iterate():</span>
+<span class="sd">               print model.name, experiment.name, realization.name, variable.name, files</span>
+<span class="sd">               </span>
 <span class="sd">	&quot;&quot;&quot;</span>
 	<span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
 	<span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>

@@ -103,8 +103,29 @@
 <span class="sd">    -------</span>
 <span class="sd">    For a simple ensemble comprized of only 1 model, 1 experiment and one realization.::    </span>
 <span class="sd">    </span>
-<span class="sd">        hello</span>
+<span class="sd">      # Look at the ensemble structure before the concatenation</span>
+<span class="sd">      ens.fulldetails()</span>
+<span class="sd">      HadCM3:</span>
+<span class="sd">          historical</span>
+<span class="sd">                  r1i1p1</span>
+<span class="sd">                          ts</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_185912-188411.nc</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_188412-190911.nc</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_190912-193411.nc</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_193412-195911.nc</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_195912-198411.nc</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_198412-200512.nc</span>
 
+<span class="sd">      # Do the concantenation</span>
+<span class="sd">      ens = cd.cat_exp_slices(ens)         </span>
+
+<span class="sd">      # Look at the ensemble structure before the concatenation</span>
+<span class="sd">      ens.fulldetails()</span>
+<span class="sd">      HadCM3:</span>
+<span class="sd">          historical</span>
+<span class="sd">                  r1i1p1</span>
+<span class="sd">                          ts</span>
+<span class="sd">                                ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc</span>
 <span class="sd">                               </span>
 <span class="sd">    &quot;&quot;&quot;</span> 
     <span class="c"># Loop over all models, experiments, realizations and variables</span>
@@ -139,9 +160,11 @@
     <span class="k">return</span> <span class="n">ens</span>		        
 </div>
 <div class="viewcode-block" id="cat_experiments"><a class="viewcode-back" href="../../api.html#cmipdata.preprocessing_tools.cat_experiments">[docs]</a><span class="k">def</span> <span class="nf">cat_experiments</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">variable_name</span><span class="p">,</span> <span class="n">exp1_name</span><span class="p">,</span> <span class="n">exp2_name</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; For variable (named variable_name) concatenate experiments exp1 and exp2 </span>
-<span class="sd">    into a single file for each realization of each model listed in ensemble ens, and </span>
-<span class="sd">    return an updated ensemble object.</span>
+    <span class="sd">&quot;&quot;&quot;Concatenate the files for two experiments. </span>
+<span class="sd">    </span>
+<span class="sd">    For variable_name concatenate experiments exp1 and exp2 </span>
+<span class="sd">    into a single file for each realization of each model listed </span>
+<span class="sd">    in ensemble ens, and return an updated ensemble object.</span>
 <span class="sd">    </span>
 <span class="sd">    - ens is a cmipdata ensemble object (see mkensemble).</span>
 <span class="sd">    - variable_name is a string corresponding to a variable in ens.</span>

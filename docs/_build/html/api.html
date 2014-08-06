@@ -161,14 +161,13 @@ modelname</p>
 <dl class="method">
 <dt id="cmipdata.classes.Ensemble.iterate">
 <tt class="descname">iterate</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/cmipdata/classes.html#Ensemble.iterate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.classes.Ensemble.iterate" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Returns a iterable, which is a tuple containing all the ensembles </dt>
-<dd><p class="first">model, experiment, realization and variable objects and the list of filenames.</p>
-<p class="last">EXAMPLE:</p>
-</dd>
-<dt>for model, experiment, realization, variable, files in ens.iterate():</dt>
-<dd>print model.name, experiment.name, realization.name, variable.name, files</dd>
-</dl>
+<dd><p>Returns a iterable, which is a tuple containing all the ensembles 
+model, experiment, realization and variable objects and the list of filenames.</p>
+<p>Iterate over all files in ens:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">realization</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">ens</span><span class="o">.</span><span class="n">iterate</span><span class="p">():</span>
+    <span class="k">print</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">realization</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">files</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -602,9 +601,10 @@ concatenated files.</p>
 <dl class="function">
 <dt id="cmipdata.preprocessing_tools.cat_experiments">
 <tt class="descclassname">cmipdata.preprocessing_tools.</tt><tt class="descname">cat_experiments</tt><big>(</big><em>ens</em>, <em>variable_name</em>, <em>exp1_name</em>, <em>exp2_name</em>, <em>delete=True</em><big>)</big><a class="reference internal" href="_modules/cmipdata/preprocessing_tools.html#cat_experiments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cmipdata.preprocessing_tools.cat_experiments" title="Permalink to this definition">¶</a></dt>
-<dd><p>For variable (named variable_name) concatenate experiments exp1 and exp2 
-into a single file for each realization of each model listed in ensemble ens, and 
-return an updated ensemble object.</p>
+<dd><p>Concatenate the files for two experiments.</p>
+<p>For variable_name concatenate experiments exp1 and exp2 
+into a single file for each realization of each model listed 
+in ensemble ens, and return an updated ensemble object.</p>
 <ul class="simple">
 <li>ens is a cmipdata ensemble object (see mkensemble).</li>
 <li>variable_name is a string corresponding to a variable in ens.</li>
