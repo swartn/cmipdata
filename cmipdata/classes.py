@@ -110,10 +110,14 @@ class Ensemble(object):
 	"""Returns a iterable, which is a tuple containing all the ensembles 
 	model, experiment, realization and variable objects and the list of filenames.
 	
-	EXAMPLE::
+	Examples
+	-------
 	
-       for model, experiment, realization, variable, files in ens.iterate():
-           print model.name, experiment.name, realization.name, variable.name, files		
+	Iterate over all files in ens::
+	
+           for model, experiment, realization, variable, files in ens.iterate():
+               print model.name, experiment.name, realization.name, variable.name, files
+               
 	"""
 	output = []
 	for model in self.models:
