@@ -524,6 +524,46 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
     print('\n For more details use ens.fulldetails() \n')
     return ens    
     
+def match_ensembles(ens1, ens2):
+    """
+    Find common models between two ensembles.
+    
+    Parameters
+    ----------
+    ens1 : cmipdata ensemble
+    ens2 : cmipdata ensemble
+           the two cmipdata ensembles to compare.
+    
+    Returns
+    ------- 
+    ens1 : cmipdata ensemble
+    ens2 : cmipdata ensemble
+    
+    """
+    # Get the modelnames
+    ens1_modelnames = [ model.name for model in ens1.models]
+    ens2_modelnames = [ model.name for model in ens2.models]
+    
+    # find matching and non-matching models 
+    model_matches = set( ens1_modelnames ).intersection( ens2_modelnames )
+    model_misses = set( ens1_modelnames ).symmetric_difference( ens2_modelnames )
+    
+    #print model_misses
+    #print len(model_matches), model_matches
+    
+    # remove non-matching models
+    for name in model_misses:
+        m = ens1.get_model(name)
+	if m !=[]:
+            print 'deleting %s from ens1' %(m.name)
+	    ens1.del_model(m)
+	    
+	m = ens2.get_model(name)
+	if m !=[]:
+	    print 'deleting %s from ens2' %(m.name)
+	    ens2.del_model(m)
+    	    
+    return ens1, ens2	
+	
 
- 
 		    

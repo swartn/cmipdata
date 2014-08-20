@@ -128,6 +128,7 @@ def loadfiles(ens, varname, **kwargs):
            ifiles = ifiles + files	
            
         # Determine the dimensions of the matrix.       
+        print ifiles[0]
         vst = loadvar( ifiles[0], varname, **kwargs )
         varmat = np.ones( (len(ifiles),) + vst.shape )*999e99
 

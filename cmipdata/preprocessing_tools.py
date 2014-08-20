@@ -366,8 +366,35 @@ def ens_stats(ens, variable_name):
 #============================================================================================
     
      
-def areaint():
-    print "hello this is areaint"
+def areaint(ens, delete=True):
+    """
+    For each file in ens, calculate the area-weighted integral 
+    and do a smart naming of the output and remove the input files 
+    if delete=True. An updated ensemble object is also returned.
+    
+    EXAMPLE
+    -------
+    Area integrate fields in ens::
+    
+        ens = cd.areaint(ens)
+    
+    """ 
+    for model, experiment, realization, variable, files in ens.iterate():
+        for infile in files:
+            outfile = ' area-integral_' + infile
+
+            cdo_str = 'cdo fldsum -mul ' + infile + ' -gridarea ' + infile + outfile 			
+            os.system( cdo_str )
+
+            if delete == True:
+                delstr = 'rm ' + infile
+	        os.system( delstr )    
+	        
+	    variable.del_filename(infile)
+	    variable.add_filename(outfile)    
+    
+    return ens
+    
     
 def areamean(ens, delete=True):
     """
@@ -589,8 +616,8 @@ def my_operator(ens, my_cdo_str, output_prefix='processed_', delete=False):
     Optionally delete the original input files if delete=True.
     
     EXAMPLE:
-    
-    my_ens = cd.my_operator(ens, 'cdo -yearmean', output_prefix='annual_')
+    my_cdo_str = 'cdo -yearmean {infile} {outfile}'
+    my_ens = cd.my_operator(ens, my_cdo_str, output_prefix='annual_')
     
     FUTURE EXPANSION:
     can easily handle more complex cases by passing a dict to my_cdo_str
@@ -617,8 +644,7 @@ def my_operator(ens, my_cdo_str, output_prefix='processed_', delete=False):
             cdo_str=''
             values = {'model':model,'experiment':experiment,'realization':realization \
                       , 'variable':variable, 'infile':infile, 'outfile':outfile}
-
-           
+          
             cdo_str = my_cdo_str.format(**values)
             ex = os.system( cdo_str )
 	    
