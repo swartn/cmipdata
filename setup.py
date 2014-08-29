@@ -13,7 +13,7 @@ setup(
     url='',
     license='LICENSE.txt',
     description='Processing tools for large ensembles of CMIP type netcdf data',
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
 )
 
 
