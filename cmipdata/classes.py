@@ -538,6 +538,7 @@ def match_ensembles(ens1, ens2):
     ------- 
     ens1 : cmipdata ensemble
     ens2 : cmipdata ensemble
+           two ensembles with matching realizations.
     
     """
     # Get the modelnames

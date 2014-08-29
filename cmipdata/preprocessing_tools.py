@@ -48,7 +48,7 @@ def cat_exp_slices(ens, delete=True):
     
     The concatenated files are written to present working directory.
     
-    Example
+    Examples
     -------
     For a simple ensemble comprized of only 1 model, 1 experiment and one realization.::    
     
@@ -362,19 +362,37 @@ def ens_stats(ens, variable_name):
     
 #===========================================================================================
 # The operators below this point work on a file-by-file basis and can be chained together 
-# (in principle, not implemented).
-#============================================================================================
-    
+# (in principle, not implemented). Practically my_operator can be used to chain operations.
+#============================================================================================ 
      
 def areaint(ens, delete=True):
     """
-    For each file in ens, calculate the area-weighted integral 
-    and do a smart naming of the output and remove the input files 
-    if delete=True. An updated ensemble object is also returned.
+    Calculate the area weighted integral for each file in ens.
     
-    EXAMPLE
+    The output files are prepended with 'area-integral'. The original 
+    the input files are removed  if delete=True (default). An updated 
+    ensemble object is also returned.
+    
+    Parameters
+    ----------
+    ens : cmipdata Ensemble
+          The ensemble on which to do the processing.
+          	 		 
+    delete : boolean
+             If delete=True, delete the original input files.
+	            
+    Returns 
     -------
-    Area integrate fields in ens::
+    ens : cmipdata Ensemble
+          An updated ensemble object, containing the names of the newly 
+          processed files.
+    
+    The processed files are also written to present working directory.
+        
+    Examples
+    --------
+    
+    1. Compute the area integral for all files in ens::
     
         ens = cd.areaint(ens)
     
@@ -398,13 +416,34 @@ def areaint(ens, delete=True):
     
 def areamean(ens, delete=True):
     """
-    For each file in ens, calculate the area mean using CDO fldmean, 
-    and do a smart naming of the output and remove the input files 
-    if delete=True. An updated ensemble object is also returned.
+    Calculate the area mean for each file in ens.
     
-    EXAMPLE:
+    The output files are prepended with 'area-mean'. The original 
+    the input files are removed  if delete=True (default). An updated 
+    ensemble object is also returned.
     
-    area_mean_ens = cd.areamean(ens)
+    Parameters
+    ----------
+    ens : cmipdata Ensemble
+          The ensemble on which to do the processing.
+          	 		 
+    delete : boolean
+             If delete=True, delete the original input files.
+	            
+    Returns 
+    -------
+    ens : cmipdata Ensemble
+          An updated ensemble object, containing the names of the newly 
+          processed files.
+    
+    The processed files are also written to present working directory.
+        
+    Examples
+    --------
+    
+    1. Compute the area mean for all files in ens::
+     
+        area_mean_ens = cd.areamean(ens)
     
     """ 
     for model, experiment, realization, variable, files in ens.iterate():
@@ -425,13 +464,34 @@ def areamean(ens, delete=True):
         
 def zonmean(ens, delete=True):
     """
-    For each file in ens, calculate the zonal mean using CDO zonmean, 
-    and do a smart naming of the output and remove the input files 
-    if delete=True (default). An updated ensemble object is also returned.
+    Calculate the zonal mean for each file in ens.
     
-    EXAMPLE:
+    The output files are prepended with 'zonal-mean'. The original 
+    the input files are removed  if delete=True (default). An updated 
+    ensemble object is also returned.
     
-    zonal_mean_ens = cd.zonmean(ens)
+    Parameters
+    ----------
+    ens : cmipdata Ensemble
+          The ensemble on which to do the processing.
+          	 		 
+    delete : boolean
+             If delete=True, delete the original input files.
+	            
+    Returns 
+    -------
+    ens : cmipdata Ensemble
+          An updated ensemble object, containing the names of the newly 
+          processed files.
+    
+    The processed files are also written to present working directory.
+        
+    Examples
+    ---------
+    
+    1. Compute the zonal mean for all files in ens::
+    
+        zonal_mean_ens = cd.zonmean(ens)
     
     """ 
     for model, experiment, realization, variable, files in ens.iterate():
@@ -463,16 +523,38 @@ def zonmean(ens, delete=True):
 
 def climatology(ens, delete=True):
     """
-    For each file in ens, calculate the monthly climatology over the full file-length 
-    using CDO ymonmean, and do a smart naming of the output and remove the input files 
-    if delete=True (default). An updated ensemble object is also returned.
+    Compute the monthly climatology for each file in ens.
+    
+    The climatology is calculated over the full file-length using 
+    cdo ymonmean, and the output files are prepended with 'climatology_'. 
+    The original the input files are removed  if delete=True (default). 
+    An updated ensemble object is also returned.
     
     If you want to compute the climatology over a specific time slice, use time_slice
     before compute the climatology.
     
-    EXAMPLE:
+    Parameters
+    ----------
+    ens : cmipdata Ensemble
+          The ensemble on which to do the remapping.
+          	 		 
+    delete : boolean
+             If delete=True, delete the original input files.
+	            
+    Returns 
+    -------
+    ens : cmipdata Ensemble
+          An updated ensemble object, containing the names of the newly 
+          processed files.
     
-    climatology_ens = cd.climatology(ens)
+    The processed files are also written to present working directory.
+        
+    Examples
+    --------
+    
+    1. Compute the climatology::
+    
+        climatology_ens = cd.climatology(ens)
     
     """ 
     for model, experiment, realization, variable, files in ens.iterate():
@@ -494,14 +576,42 @@ def climatology(ens, delete=True):
 
 def remap(ens, remap='r360x180', method='remapdis', delete=True):
     """
-    For each file in ens, remap to resolution remap='r_nlon_x_nlat_', where _nlon_, _nlat_ are the 
-    number of lat-lon points to use. The remap is done using cdo and a smart naming of the output and 
-    removal of the input files occurs if delete=True (default). An updated ensemble object is also returned.
+    Remap files to a specified resolution.
     
-    By default the distance weighted remapping is used, but any valid cdo remapping method can be used
-    by specifying the option argument 'method', e.g. method='remapdis'.
+    For each file in ens, remap to resolution remap='r_nlon_x_nlat_', where _nlon_, 
+    _nlat_ are the number of lat-lon points to use. Removal of the original input 
+    files occurs if delete=True (default). An updated ensemble object is also returned.
+    
+    By default the distance weighted remapping is used, but any valid cdo 
+    remapping method can be used by specifying the option argument 'method', 
+    e.g. method='remapdis'.
+    
+    Parameters
+    ----------
+    ens : cmipdata Ensemble
+          The ensemble on which to do the remapping.
+          
+    remap : str
+          The resolution to remap to, e.g. for a 1-degree grid remap='r360x180'
+	 		 
+    delete : boolean
+             If delete=True, delete the original input files.
+	            
+    Returns 
+    -------
+    ens : cmipdata Ensemble
+          An updated ensemble object, containing the names of the newly 
+          processed files.
+    
+    The processed files are also written to present working directory.
+        
     
     EXAMPLE:
+    --------
+    
+    1. remap files to a one-degree grid::
+    
+        ens = cd.remap(ens, remap='r1x180')
        
     """ 
     for model, experiment, realization, variable, files in ens.iterate():
@@ -525,12 +635,40 @@ def remap(ens, remap='r360x180', method='remapdis', delete=True):
 
 def time_slice(ens, start_date, end_date, delete=True):
     """
-    For each file in ens, limit the date range to between start_date and end_date, 
-    do a smart naming of the output and remove the input files 
-    if delete=True. An updated ensemble object is also returned.
+    Limit the data to the period between start_date and end_date,
+    for each file in ens.
     
-    start_date and end_date format is YYYY-MM-DD
+    The resulting output is written to file, named with with the correct 
+    date range, and the original input files are deleted if delete=True.
     
+    Parameters
+    ----------
+    ens : cmipdata Ensemble
+          The ensemble on which to do the processing.
+          
+    start_date : str
+                 Start date for the output file with format: YYYY-MM-DD
+    end_date : str
+                 End date for the output file with format: YYYY-MM-DD
+	 		 
+    delete : boolean
+             If delete=True, delete the original input files.
+	            
+    Returns 
+    -------
+    ens : cmipdata Ensemble
+          An updated ensemble object, containing the names of the newly 
+          processed files.
+    
+    The processed files are also written to present working directory.
+        
+    
+    EXAMPLES
+    ---------
+    1. Select data between 1 January 1980 and 31 December 2013::
+    
+        ens = cd.time_slice(ens, start_date='1979-01-01', end_date='2013-12-31')
+
     """ 
     date_range = start_date + ',' + end_date
     
@@ -571,13 +709,42 @@ def time_slice(ens, start_date, end_date, delete=True):
 
 def time_anomaly(ens, start_date, end_date, delete=False):
     """
-    For each file in ens, compute the anomaly relative the period 
-    between start_date and end_date, do a smart naming of the output 
-    and remove the input files if delete=True. An updated ensemble 
-    object is also returned.
+    Compute the anomaly relative the period between start_date and end_date,
+    for each file in ens.
     
-    start_date and end_date format is YYYY-MM-DD
+    The resulting output is written to file with the prefix 'anomaly_', and the 
+    original input files are deleted if delete=True.
     
+    Parameters
+    ----------
+    ens : cmipdata Ensemble
+          The ensemble on which to do the processing.
+          
+    start_date : str
+                 Start date for the base period with format: YYYY-MM-DD
+    end_date : str
+                 End date for the base period with format: YYYY-MM-DD
+	 
+		 
+    delete : boolean
+             If delete=True, delete the original input files.
+	            
+    Returns 
+    -------
+    ens : cmipdata Ensemble
+          An updated ensemble object, containing the names of the newly 
+          processed files.
+    
+    The processed files are also written to present working directory.
+        
+    
+    EXAMPLES
+    ---------
+    
+    1. Compute the anomaly relative to the base period 1980 to 2010::
+    
+        ens = cd.time_anomaly(ens, start_date='1980-01-01', end_date='2010-12-31')
+  
     """ 
     date_range = start_date + ',' + end_date
     
@@ -608,31 +775,51 @@ def time_anomaly(ens, start_date, end_date, delete=False):
     
 def my_operator(ens, my_cdo_str, output_prefix='processed_', delete=False):
     """
-    For each file in ens, apply the cdo command contained in
-    my_cdo_str, creating an output file appended by 'output_prefix'
-    which is 'processed_' by default. An updated ensemble object
-    is returned.
+    Apply a customized cdo operation to all files in ens.
+    
+    For each file in ens the command in my_cdo_str is applied and an output 
+    file appended by 'output_prefix' is created. 
     
     Optionally delete the original input files if delete=True.
     
-    EXAMPLE:
-    my_cdo_str = 'cdo -yearmean {infile} {outfile}'
-    my_ens = cd.my_operator(ens, my_cdo_str, output_prefix='annual_')
+    Parameters
+    ----------
+    ens : cmipdata Ensemble
+          The ensemble on which to do the processing.
+          
+    my_cdo_str : str
+                 The (chain) of cdo commands to apply. Defined variables which can 
+                 be used in my_cdo_str are: model, experiment, realization, variable, 
+		 infile, outfile
+		 
+    output_prefix : str
+                 The string to prepend to the processed filenames.		 
+		 
+    delete : boolean
+             If delete=True, delete the original input files.
+	            
+    Returns 
+    -------
+    ens : cmipdata Ensemble
+          An updated ensemble object, containing the names of the newly 
+          processed files.
     
-    FUTURE EXPANSION:
-    can easily handle more complex cases by passing a dict to my_cdo_str
-    and mapping defined variables such as infile...
+    The processed files are also written to present working directory.
+        
     
-    defined variables are:
-    model, experiment, realization, variable, infile, outfile
-    
-    e.g. my_cdo_str = 'cdo sub {infile} -timmean -seldate,1991-01-01,2000-12-31 {infile} {outfile}'
-    
-    and in the function:
-        for model, experiment, realization, variable, files in ens.iterate():
-            for infile in files:
-               my_cdo_str.format(infile='file_input.nc',outfile='file_output.nc')
+    EXAMPLES
+    ---------
 
+    1. Do an annual mean::
+    
+           my_cdo_str = 'cdo -yearmean {infile} {outfile}'
+           my_ens = cd.my_operator(ens, my_cdo_str, output_prefix='annual_')
+    
+    2. Do a date selection and time mean::
+    
+           my_cdo_str = 'cdo sub {infile} -timmean -seldate,1991-01-01,2000-12-31 {infile} {outfile}'
+           my_ens = cd.my_operator(ens, my_cdo_str, output_prefix='test_')
+  
     """ 
     if delete == True:
 	# Take a copy of the original ensemble before we modify it below
@@ -670,7 +857,7 @@ def my_operator(ens, my_cdo_str, output_prefix='processed_', delete=False):
     return ens	        
         
 def del_ens_files(ens):
-    """ delete all files in ensemble ens"""
+    """ delete from disk all files listed in ensemble ens"""
     for model, experiment, realization, variable, files in ens.iterate():
         for infile in files:
 	        delstr = 'rm ' + infile
