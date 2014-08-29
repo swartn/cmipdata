@@ -49,7 +49,7 @@ def cat_exp_slices(ens, delete=True):
     The concatenated files are written to present working directory.
     
     Examples
-    -------
+    ---------
     For a simple ensemble comprized of only 1 model, 1 experiment and one realization.::    
     
       # Look at the ensemble structure before the concatenation
