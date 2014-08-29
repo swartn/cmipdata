@@ -48,6 +48,10 @@ def cat_exp_slices(ens, delete=True):
     
     The concatenated files are written to present working directory.
     
+    See also
+    --------
+    cat_experiments : Concatenate the files for two experiments.
+    
     Examples
     ---------
     For a simple ensemble comprized of only 1 model, 1 experiment and one realization.::    
@@ -111,25 +115,49 @@ def cat_exp_slices(ens, delete=True):
 def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
     """Concatenate the files for two experiments. 
     
-    For variable_name concatenate experiments exp1 and exp2 
-    into a single file for each realization of each model listed 
-    in ensemble ens, and return an updated ensemble object.
-    
-    - ens is a cmipdata ensemble object (see mkensemble).
-    - variable_name is a string corresponding to a variable in ens.
-    - exp1 and exp2 are strings defining the two experiments to be concatenated 
-      (e.g. exp1='historical', exp2='rcp45').
-      
-    For each realization, the concatenated file for variable variable_name is written 
-    to the current working directory and the input files are deleted by default, 
-    unless delete=False.
+    Experiments exp1 and exp2 are concatenated into a single file for each 
+    realization of each model listed in ens. For each realization, the concatenated file 
+    for variable variable_name is written to the current working directory and the input files 
+    are deleted by default, unless delete=False.
     
     The concatenation occurs for each realization for which input files
     exist for both exp1 and exp2.  If no match is found for the realization 
     in exp1 (i.e. there is no corresponding realization in exp2), then the files 
     for both experiments are deleted from the path (unless delete=False) and 
     the realization is removed from ens. Similarly if exp2 is missing for a 
-    given model, that model is deleted from ens.     
+    given model, that model is deleted from ens.  
+       
+    Parameters
+    ----------
+    ens : cmipdata Ensemble
+          The ensemble on which to do the concatenation.
+          
+    variable_name : str
+                    The name of the variable to be concatenated.
+                    
+    exp1_name : str
+                    The name of the first experiment to be concatenated (e.g. 'historical'). 
+                    
+    exp2_name : str
+                    The name of the second experiment to be concatenated (e.g. 'rcp45').                     
+            
+    delete : boolean
+             If delete=True, delete the individual time-slice files.
+	            
+    Returns 
+    -------
+    ens : cmipdata Ensemble
+          An updated ensemble object, containing the names of the newly 
+          concatenated files.
+    
+          The concatenated files are written to present working directory.
+    
+    Examples
+    ---------
+    
+    1. Join the historical and rcp45 simulations for variable ts in ens::
+        ens = cd.cat_experiments(ens, 'ts', exp1_name='historical', exp2_name='rcp45')
+ 
     """
     # Create a copy of ens to use later for deleting input files if delete=True
     del_ens = copy.deepcopy(ens)
@@ -281,7 +309,9 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
     return ens		
 
 def ens_stats(ens, variable_name):
-    """ Calculate the ensemble mean and standard deviation over all models-realizations 
+    """ Compute the ensemble mean and standard deviation.
+    
+    The ensemble mean and standard deviation is computed over all models-realizations 
     and experiments for variable variable_name in ens, such that each model has a weight 
     of one. An output file is written containing the ensemble mean and another file is 
     written with the standard deviation, containing the names '_ENS-MEAN_' and '_ENS-STD_'
@@ -295,6 +325,29 @@ def ens_stats(ens, variable_name):
     
     The calculation is done by, first computing the mean over all realizations for each model; 
     then for the ensemble, calculating the mean over all models.
+    
+        Parameters
+    ----------
+    ens : cmipdata Ensemble
+          The ensemble on which to do the concatenation.
+          
+    variable_name : str
+                    The name of the variable to be concatenated.
+                    
+    delete : boolean
+             If delete=True, delete the individual time-slice files.
+	            
+    Returns 
+    ------- 
+    The ENS-MEAN and ENS-STD files are written to present working directory.
+    
+    Examples
+    ---------
+    
+    1. Compute the statistics for the ts variable::
+    
+        >>cd.ens_stats(ens, 'ts')
+
     """
 
     # figure out all the experiments in the ensemble 
