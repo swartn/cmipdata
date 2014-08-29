@@ -41,6 +41,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'numpydoc',
+    
 
 ]
 
@@ -56,6 +57,7 @@ MOCK_MODULES = [
     'numpy',
     'pandas',
     'cdo',
+    'scipy',
 ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
