@@ -24,8 +24,8 @@ Documentation
 Documentation for the tools is included in the docs/ directory and is rendered at cmipdata.readthedocs.org
 
 .. image:: https://readthedocs.org/projects/cmipdata/badge/?version=latest
-:target: https://readthedocs.org/projects/cmipdata/?badge=latest
-:alt: Documentation Status
+   :target: https://readthedocs.org/projects/cmipdata/?badge=latest
+   :alt: Documentation Status
 
 
 Examples
