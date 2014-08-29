@@ -27,7 +27,6 @@ Documentation for the tools is included in the docs/ directory and is rendered a
    :target: https://readthedocs.org/projects/cmipdata/?badge=latest
    :alt: Documentation Status
 
-
 Examples
 --------
 
