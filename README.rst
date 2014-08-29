@@ -19,8 +19,16 @@ and efficient. It contains three basic toolsets:
 
 3) *plotting_tools* provides quick methods for common plotting tasks (e.g. ensemble mean with envelope) using matplotlib.
 
+Documentation
+-------------
+Documentation for the tools is included in the docs/ directory and is rendered at cmipdata.readthedocs.org
 
-Example
+.. image:: https://readthedocs.org/projects/cmipdata/badge/?version=latest
+:target: https://readthedocs.org/projects/cmipdata/?badge=latest
+:alt: Documentation Status
+
+
+Examples
 --------
 
 The surface temperature files of HadCM3 are provided in multiple slices for the historical experiment::
