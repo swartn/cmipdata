@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>plotting_tools &mdash; cmipdata 0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="cmipdata 0.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">cmipdata 0.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for plotting_tools</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;plotting_tools</span>
+<span class="sd">======================</span>
+
+<span class="sd">The plotting_tools module of cmipdata is a set of functions which use </span>
+<span class="sd">matplotlib to produce various common plots.</span>
+
+<span class="sd">The functions take an ensemble object and a data object. The ensemble</span>
+<span class="sd">object is a cmipdata ensemble, the data object is a numpy array</span>
+<span class="sd">generated using loading_tools.</span>
+
+<span class="sd">  .. moduleauthor:: Neil Swart &lt;neil.swart@ec.gc.ca&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">loading_tools</span> <span class="kn">import</span> <span class="n">loadvar</span><span class="p">,</span> <span class="n">get_dimensions</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="kn">as</span> <span class="nn">sp</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<div class="viewcode-block" id="plot_realization_timeseries"><a class="viewcode-back" href="../api.html#plotting_tools.plot_realization_timeseries">[docs]</a><span class="k">def</span> <span class="nf">plot_realization_timeseries</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]}</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; For each realization in ens (and data, which is generated from ens</span>
+<span class="sd">    using loadfiles), plot the realization in color (grey by default)</span>
+<span class="sd">    for variable varname. kwargs is a dict of option to pass to plt,</span>
+<span class="sd">    e.g.: kwargs={&#39;color&#39;:&#39;r&#39;}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">plot_realizations_1d</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="s">&#39;time&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+  	
+    </div>
+<div class="viewcode-block" id="plot_realizations_1d"><a class="viewcode-back" href="../api.html#plotting_tools.plot_realizations_1d">[docs]</a><span class="k">def</span> <span class="nf">plot_realizations_1d</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]}</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; For each realization in ens (and data, which is generated from ens</span>
+<span class="sd">    using loadfiles), plot the realization in color (grey by default)</span>
+<span class="sd">    for variable varname. Data should be 1-d for each realization, along the </span>
+<span class="sd">    dimension specified (time, lon, lat etc).</span>
+<span class="sd">    </span>
+<span class="sd">    kwargs is a dict of option to pass to plt,</span>
+<span class="sd">    e.g.: kwargs={&#39;color&#39;:&#39;r&#39;}</span>
+<span class="sd">    </span>
+<span class="sd">    EXAMPLES:</span>
+<span class="sd">    </span>
+<span class="sd">    # plot the uas data against latitude in red</span>
+<span class="sd">    cd.plot_realizations_1d(ens, data, varname=&#39;uas&#39;, dimension=&#39;lat&#39;, kwargs={&#39;color&#39;:&#39;r&#39;})</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c"># First get the dimensions: A bad hack right now. Shouldn&#39;t reference attributes directly - use a function.</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">ens</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">realizations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">varname</span><span class="p">)</span>
+    <span class="n">infile</span><span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">filenames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dimensions</span> <span class="o">=</span> <span class="n">get_dimensions</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">toDatetime</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">dimensions</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span>
+    
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">):</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="n">x</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">r</span><span class="p">,:],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+	
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">varname</span><span class="p">)</span>	
+    </div>
+<div class="viewcode-block" id="ensemble_envelope_timeseries"><a class="viewcode-back" href="../api.html#plotting_tools.ensemble_envelope_timeseries">[docs]</a><span class="k">def</span> <span class="nf">ensemble_envelope_timeseries</span><span class="p">(</span><span class="n">ens</span><span class="p">,</span> <span class="n">meanfile</span><span class="p">,</span> <span class="n">stdfile</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;linewidth&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span><span class="s">&#39;k&#39;</span><span class="p">}):</span>
+    <span class="sd">&quot;&quot;&quot; For each realization in ens (and data, which is generated from ens</span>
+<span class="sd">    using loadfiles), plot the realization in color (grey by default)</span>
+<span class="sd">    for variable varname.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c"># First get the dimensions: A bad hack right now. Shouldn&#39;t reference attributes directly - use a function.</span>
+    <span class="n">dimensions</span> <span class="o">=</span> <span class="n">get_dimensions</span><span class="p">(</span><span class="n">meanfile</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">toDatetime</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">dimensions</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span>
+
+    <span class="n">ens_mean</span> <span class="o">=</span> <span class="n">loadvar</span><span class="p">(</span><span class="n">meanfile</span><span class="p">,</span> <span class="n">varname</span><span class="p">)</span>
+    <span class="n">ens_std</span> <span class="o">=</span> <span class="n">loadvar</span><span class="p">(</span><span class="n">stdfile</span><span class="p">,</span> <span class="n">varname</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">ax</span> <span class="o">==</span> <span class="s">&#39;&#39;</span> <span class="p">:</span>
+	<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	
+    <span class="n">num_models</span> <span class="o">=</span> <span class="n">ens</span><span class="o">.</span><span class="n">num_models</span><span class="p">()</span>	
+    <span class="n">c</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">isf</span><span class="p">(</span><span class="mf">0.025</span><span class="p">,</span> <span class="n">num_models</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">)</span>             <span class="c"># the two-tailed 5% critical value from the t-dist</span>
+    <span class="n">ci95p</span> <span class="o">=</span> <span class="p">(</span> <span class="n">c</span> <span class="o">*</span>  <span class="n">ens_std</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">num_models</span> <span class="p">)</span>     <span class="c"># the 95% confidence interval</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="p">(</span><span class="n">ens_mean</span><span class="o">-</span> <span class="n">ci95p</span><span class="p">),</span> <span class="p">(</span><span class="n">ens_mean</span> <span class="o">+</span>  <span class="n">ci95p</span><span class="p">)</span> <span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s">&#39;none&#39;</span> <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="n">time</span><span class="p">,</span> <span class="n">ens_mean</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+	
+    <span class="c">#ax.title(varname)		</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">cmipdata 0.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Neil Swart.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+  </body>
+</html>

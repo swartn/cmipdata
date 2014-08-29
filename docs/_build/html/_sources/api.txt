@@ -1,8 +1,8 @@
-.. automodule:: cmipdata.classes
+.. automodule:: classes
    :members:
-.. automodule:: cmipdata.preprocessing_tools
+.. automodule:: preprocessing_tools
    :members:
-.. automodule:: cmipdata.loading_tools
+.. automodule:: loading_tools
    :members:
-.. automodule:: cmipdata.plotting_tools
+.. automodule:: plotting_tools
    :members:
