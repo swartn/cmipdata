@@ -180,7 +180,7 @@ def get_dimensions(ifile, varname, toDatetime=False):
 	        elif dimension.lower().startswith('time'):	    
 		    if toDatetime==True:
 	                # Following Phil Austin's slice_nc
-                        nc_time = nc.variables['time']
+                        nc_time = nc.variables[dimension]
                         try:
 			    cal = nc_time.calendar
 		        except:
