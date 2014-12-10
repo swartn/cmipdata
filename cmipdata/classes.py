@@ -148,8 +148,8 @@ class Ensemble(object):
     def squeeze(self):
         """ Remove any empty elements from the ensemble
 	""" 	
-       ens = self.sq().sq().sq().sq()
-       return ens
+        ens = self.sq().sq().sq().sq()
+        return ens
       
     def models(self):
 	"""Retuns the list of model objects in the ensemble"""
