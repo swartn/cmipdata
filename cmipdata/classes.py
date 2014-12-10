@@ -128,18 +128,29 @@ class Ensemble(object):
 			
         return iter(output)			
 			
-    def squeeze(self):
+    def sq(self):
 	""" Remove any empty elements from the ensemble
-	WARNING: since ens is modifying itself in the loop, something could go wrong!
-	"""
-        for model, experiment, realization, variable, files in self.iterate():
-	    realization.del_variable(variable) if variable.filenames == [] else 0 # if the variable contains no files delete it
-   	    experiment.del_realization(realization) if realization.variables == [] else 0 # if the realization contains no variables delete it
-   	    model.del_experiment(experiment) if experiment.realizations == [] else 0 # if the experiment contains no realizations delete it
-   	    self.del_model(model) if model.experiments == [] else 0 # if the model contains no experiments delete it
-
+	""" 	 
+        for model in self.models:
+	    if model.experiments == []:
+	        self.del_model(model)
+	    for experiment in model.experiments:
+		if experiment.realizations == []:
+		    model.del_experiment(experiment) 
+		for realization in experiment.realizations:
+		    if realization.variables == []:
+		        experiment.del_realization(realization) 
+		    for variable in realization.variables:
+			if variable.filenames == []:
+			    realization.del_variable(variable)
    	return self
-   	    
+   	
+    def squeeze(self):
+        """ Remove any empty elements from the ensemble
+	""" 	
+       ens = self.sq().sq().sq().sq()
+       return ens
+      
     def models(self):
 	"""Retuns the list of model objects in the ensemble"""
         return self.models
@@ -567,4 +578,61 @@ def match_ensembles(ens1, ens2):
     return ens1, ens2	
 	
 
-		    
+def match_realizations(ens1, ens2):
+    """
+    Find common realizations between two ensembles.
+    
+    Parameters
+    ----------
+    ens1 : cmipdata ensemble
+    ens2 : cmipdata ensemble
+           the two cmipdata ensembles to compare.
+    
+    Returns
+    ------- 
+    ens1 : cmipdata ensemble
+    ens2 : cmipdata ensemble
+           two ensembles with matching realizations.
+    """
+    mer_e1 = []
+    mer_e2 = []    
+    
+    for model, experiment, realization, variable, files in ens1.iterate():
+        mer_e1.append( model.name + '-' + experiment.name + '-' +
+                       realization.name)
+            
+    for model, experiment, realization, variable, files in ens2.iterate():
+        mer_e2.append( model.name + '-' + experiment.name + '-' +
+                       realization.name)
+    
+    print mer_e1, mer_e2
+    
+    # find matching and non-matching models 
+    matches = set(mer_e1).intersection(mer_e2)
+    misses = set(mer_e1).symmetric_difference(mer_e2)
+
+    print 'misses', len(misses), 'matches', len(matches)
+    for model, experiment, realization, variable, files in ens1.iterate():
+	nm = model.name + '-' + experiment.name + '-' + realization.name
+        if nm in misses:
+	    experiment.del_realization(realization)
+	    
+    for model, experiment, realization, variable, files in ens2.iterate():
+	nm = model.name + '-' + experiment.name + '-' + realization.name
+        if nm in misses:
+	    experiment.del_realization(realization)
+	 
+	 
+    ens1 = ens1.squeeze()
+    ens2 = ens2.squeeze()
+    return ens1, ens2
+	 
+
+	    
+	    
+	    
+	    
+	    
+	    
+	    
+	    
