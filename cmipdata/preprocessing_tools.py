@@ -729,10 +729,8 @@ def time_slice(ens, start_date, end_date, delete=True):
     end_yyymm   = end_date.replace('-','')[0:6]   
     
     for model, experiment, realization, variable, files in ens.iterate():
-        for infile in files:
-
-            
-            if ( min(variable.start_dates) != int(start_yyymm) ) and ( max(variable.end_dates) != int(end_yyymm) ):
+        for infile in files:           
+            if ( min(variable.start_dates) != int(start_yyymm) ) or (max(variable.end_dates) != int(end_yyymm) ):
 		# Only yf the file doesnlt already have the correct date-range		
 		if ( min(variable.start_dates) <= int(start_yyymm) ) and ( max(variable.end_dates) >= int(end_yyymm) ):
 		    # Do the time-slicing if the file is within the specified dates
@@ -740,6 +738,7 @@ def time_slice(ens, start_date, end_date, delete=True):
 		    '_' + realization.name + '_' + start_yyymm \
 		    + '-' + end_yyymm + '.nc'
 		    
+		    print 'time limiting...'
 		    cdo_str = 'cdo seldate,' + date_range + '  -selvar,' + variable.name + ' ' + infile +  ' ' + outfile           
 		    ex = os.system( cdo_str )
 		    if ex == 0:
