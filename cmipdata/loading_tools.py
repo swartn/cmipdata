@@ -36,10 +36,11 @@ def loadvar( ifile , varname, remap=None, start_date=None, end_date=None, timmea
         nc = Dataset( ifile , 'r' )
         ncvar = nc.variables[ varname ]
         
-        date_range = start_date + ',' + end_date
+        if start_date:
+            date_range = start_date + ',' + end_date
     
         # parse through all options, and load the data using CDO.
-        if ( timmean ) and ( start_date ) and ( remap ) and (zonmean == True) :
+        if ( timmean ) and ( start_date ) and ( remap ) and (zonmean) :
             in_str = "-zonmean -timmean -seldate," + date_range + "  -selvar," + varname + " " + ifile
             var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
 
