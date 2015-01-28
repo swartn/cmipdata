@@ -91,7 +91,6 @@ def loadvar( ifile , varname, remap=None, start_date=None, end_date=None, timmea
 
         elif ( start_date ):
             var = cdo.seldate( date_range, input=ifile, returnMaArray=varname )
-            print "here"
 
         elif ( zonmean ):
             in_str =  "-selvar," + varname + " " + ifile
