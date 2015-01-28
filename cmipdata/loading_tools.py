@@ -17,7 +17,7 @@ import datetime
 
 os.system( 'rm -rf /tmp/cdo*') # clean out tmp to make space for CDO processing.
 
-def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=False, zonmean=False):
+def loadvar( ifile , varname, remap=None, start_date=None, end_date=None, timmean=False, zonmean=False):
         """  
             Load variables from a NetCDF file with optional pre-processing.
             
@@ -37,21 +37,21 @@ def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=Fals
         ncvar = nc.variables[ varname ]
         
         date_range = start_date + ',' + end_date
-
+    
         # parse through all options, and load the data using CDO.
-        if ( timmean == True ) and ( start_date ) and ( remap ) and (zonmean == True) :
+        if ( timmean ) and ( start_date ) and ( remap ) and (zonmean == True) :
             in_str = "-zonmean -timmean -seldate," + date_range + "  -selvar," + varname + " " + ifile
             var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
 
-        elif ( timmean == True ) and ( start_date ) and ( remap ) :
+        elif ( timmean ) and ( start_date ) and ( remap ) :
             in_str = "-timmean -seldate," + date_range + " " + ifile
             var = cdo.remapdis( remap, input = in_str, returnMaArray=varname )
   
-        elif ( timmean == True ) and ( start_date ) and ( zonmean ) :
+        elif ( timmean ) and ( start_date ) and ( zonmean ) :
             in_str = "-timmean -seldate," + date_range + " -selvar," + varname + " " + ifile
             var = cdo.zonmean( input = in_str, returnMaArray=varname )           
     
-        elif ( timmean == True ) and ( zonmean ) and ( remap ) :
+        elif ( timmean ) and ( zonmean ) and ( remap ) :
             in_str = "-zonmean -timmean -selvar," + varname + " " + ifile
             var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )     
   
@@ -59,7 +59,7 @@ def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=Fals
             in_str = "-zonmean -seldate," + date_range + " -selvar," + varname + " " + ifile
             var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )   
   
-        elif ( timmean == True ) and ( remap ) :
+        elif ( timmean ) and ( remap ) :
             in_str = "-timmean" + " " + ifile
             var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
 
@@ -67,32 +67,33 @@ def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=Fals
             in_str = "-seldate," + date_range + " " + ifile
             var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
 
-        elif  ( timmean == True ) and ( start_date ):
+        elif  ( timmean ) and ( start_date ):
             var = cdo.timmean( input = cdo.seldate( date_range, input=ifile ), 
                                returnMaArray=varname )
                                
-        elif  ( timmean == True ) and ( zonmean == True ):
+        elif  ( timmean ) and ( zonmean ):
 	    in_str = "-timmean -selvar," + varname + " " + ifile
             var = cdo.zonmean( input=in_str, returnMaArray=varname )       
             
-        elif  ( start_date ) and ( zonmean == True ):
+        elif  ( start_date ) and ( zonmean ):
 	    in_str = "-seldate," + date_range +  " -selvar," + varname + " " + ifile
             var = cdo.zonmean( input=in_str, returnMaArray=varname )    
             
-        elif  ( remap ) and  ( zonmean == True ):
+        elif  ( remap ) and  ( zonmean ):
             in_str = "-zonmean -selvar," + varname + " " + ifile
             var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )            
             
         elif ( remap ) :
             var = cdo.remapdis( remap , input = ifile, returnMaArray=varname )
 
-        elif ( timmean == True ):
+        elif ( timmean ):
             var = cdo.timmean( input=ifile, returnMaArray=varname ) 
 
         elif ( start_date ):
             var = cdo.seldate( date_range, input=ifile, returnMaArray=varname )
+            print "here"
 
-        elif ( zonmean == True ):
+        elif ( zonmean ):
             in_str =  "-selvar," + varname + " " + ifile
             var = cdo.zonmean( input=in_str, returnMaArray=varname )
 
