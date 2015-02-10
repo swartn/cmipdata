@@ -64,7 +64,8 @@ def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=Fals
             var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
 
         elif ( start_date ) and ( remap ) :
-            in_str = "-seldate," + date_range + " " + ifile
+            in_str = "-seldate," + date_range + " -selvar," + varname + "  " \
+		     +  ifile
             var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
 
         elif  ( timmean == True ) and ( start_date ):
