@@ -9,7 +9,10 @@ remapping, time-slicing, time-averaging and zonal-averaging.
 
   .. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
 """
-import cdo as cdo; cdo = cdo.Cdo() # recommended import
+try:
+    import cdo as cdo; cdo = cdo.Cdo() # recommended import
+except ImportError:
+    pass
 import os
 import numpy as np
 from netCDF4 import Dataset,num2date,date2num
@@ -110,7 +113,7 @@ def loadvar( ifile , varname, remap=None, start_date=None, end_date=None, timmea
         except:
 	    var_scale = 1	
             
-        var = var*var_scale + var_offset    
+        #var = var*var_scale + var_offset    
         #return var
         return np.squeeze( var )
 
