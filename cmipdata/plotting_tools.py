@@ -8,6 +8,9 @@ The functions take an ensemble object and a data object. The ensemble
 object is a cmipdata ensemble, the data object is a numpy array
 generated using loading_tools.
 
+**Note the plotting tools have not been fully developed, and are the lowest 
+priority.**
+
   .. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
 """
 import matplotlib.pyplot as plt

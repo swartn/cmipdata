@@ -1,47 +1,28 @@
-"""classes
-======================
+"""
+classes
+=======
 
-Summary
--------
-
-The core functionality of cmipdata is to organize a large number of
+The classes module provides five classes and three functions. The classes 
+are :class:`Ensemble`, :class:`Model`, :class:`Experiment`, :class:`Realization`
+and :class:`Variable`. 
+      
+The core functionality of :mod:`cmipdata` is to organize a large number of
 model output files into a logical structure so that further processing
-can be done. Data is organized into Ensembles, which are made up of many
-Models, Experiments, Realizations and Variables and filenames. The structure treats 
-`Variable`s as the lowest organizing theme. Each Variable contains a list of filenames 
-(and other attributes), and each variable belongs
-to a specified Realiation. Each Realization in turn belongs to a specified
-Experiment, which will belong to a given Model.  
-  
-Various methods exist to interact with the Ensemble, and its constituent
-elements. Once created, an Ensemble can be used to harness the power of
-the `preprocessing_tools` to apply systematic operations to all files.
-Indeed, all data-handling and processing in cmipdata used the Ensemble.
+can be done. Data is organized into :class:`Ensemble` objects, which are made up of 
+many :class:`Model` objects, :class:`Experiment` objects, :class:`Realization` 
+objects and :class:`Variable` objects. The structure treats 
+:class:`Variable` as the lowest organizing theme. Each :class:`Variable` contains 
+a list of filenames (and other attributes), and each variable belongs
+to a specified :class:`Realization`. Each :class:`Realization` in turn belongs to a 
+specified :class:`Experiment`, which will belong to a given :class:`Model`.  Various 
+methods exist to interact with the :class:`Ensemble`, and its constituent
+elements.
 
-See Also
---------
- - preprocessing_tools
- - loading_tools
- - plotting_tools
-  
-Examples
------------
-
-A cmipdata Ensemble is easily created using:: 
-
-    ens = cmipdata.mk_ensemble(filepattern) 
-
-which generates the Ensemble `ens`, with all the underlying
-structure, simply by matching all files matching the descriptor
-`filepattern`.
-
-A summary of the Ensemble can then be generated using::
-
-    ens.sinfo()
-    
-and a full description of the Ensemble can be gained from::
-
-    ens.fulldetails()
+The :func:`mkensemble` function is used to create :class:`Ensemble` 
+objects, while :func:`match_ensembles` finds models common to two ensembles and 
+:func:`match_reliazations` matches realizations between two ensembles. Once 
+created, an :class:`Ensemble` can be used to harness the power of
+the :mod:`preprocessing_tools` to apply systematic operations to all files.
 
 .. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
 """

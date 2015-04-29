@@ -156,6 +156,7 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
     ---------
     
     1. Join the historical and rcp45 simulations for variable ts in ens::
+    
         ens = cd.cat_experiments(ens, 'ts', exp1_name='historical', exp2_name='rcp45')
  
     """
@@ -572,8 +573,7 @@ def zonmean(ens, delete=True):
 	        
     ens.squeeze()	       
     return ens	
-  
-
+ 
 def climatology(ens, delete=True):
     """
     Compute the monthly climatology for each file in ens.

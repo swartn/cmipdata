@@ -1,3 +1,4 @@
 *.py?
 *.egg-info/
 *.*~
+*.kate-swp

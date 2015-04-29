@@ -41,9 +41,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'numpydoc',
-    
-
-]
+    ]
 
 # Mock interface for importing packages with C-extensions that aren't installed
 # in the docs build environment
