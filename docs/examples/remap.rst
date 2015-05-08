@@ -3,8 +3,8 @@
 remap
 =====
 
-To remap of all the sea ice concentration (sic) files to a common one-degree by 
-one-degree grid, simply do::
+To remap of all the sea ice concentration (sic) files in our directory to a common 
+one-degree by one-degree grid, simply do::
 
     import cmipdata as cd
     

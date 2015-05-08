@@ -669,7 +669,7 @@ def remap(ens, remap='r360x180', method='remapdis', delete=True):
     """ 
     for model, experiment, realization, variable, files in ens.iterate():
         for infile in files:
-            outfile = ' remap_' + infile
+            outfile = 'remap_' + infile
 
             cdo_str = 'cdo ' + method + ',' + remap + ' -selvar,' + variable.name + ' ' + infile + ' ' + outfile 	
             print cdo_str
