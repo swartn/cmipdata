@@ -890,7 +890,8 @@ def my_operator(ens, my_cdo_str, output_prefix='processed_', delete=False):
 	    if ex == 0:
 		#Add the filename for the newly processed file, if
 		# processing was sucessfull
-	        variable.add_filename(outfile)
+	        #variable.add_filename(outfile)
+	        pass 
 	    else:
 		try:
 		    # if processing aborted part-way, 
