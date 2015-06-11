@@ -113,7 +113,7 @@ def loadvar( ifile , varname, remap=None, start_date=None, end_date=None, timmea
         except:
 	    var_scale = 1	
             
-        #var = var*var_scale + var_offset    
+        var = var*var_scale + var_offset    
         #return var
         return np.squeeze( var )
 
