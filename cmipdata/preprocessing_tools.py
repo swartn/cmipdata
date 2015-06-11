@@ -204,59 +204,7 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
 		e1v = e1r.get_variable(variable_name)
 		e2v = e2r.get_variable(variable_name)
 		
-		# Check if the end of e1 and the beggining of e2 seem to line up
-		# if not, attempt to limit the e1 file endpoint
-		if max(e1v.end_dates) > min(e2v.start_dates):
-		    print '\n WARNING: %s end date is after %s start date for %s %s, attempting correction with cdo... \n' \
-		    % (e1.name, e2.name, model.name, e1r.name)
-		    
-		    e1_start_year = int( min(e1v.start_dates)/100 ) # Experiment 2 starts on this year: get year assuming YYYYMM format      			     
-		    e2_start_year = int( min(e2v.start_dates)/100 ) # Experiment 2 starts on this year: get year assuming YYYYMM format      
-		    e1_end_year = e2_start_year - 1                 # Experiment 1 should end 1 year before
-		    
-		    
-		    # First concatenate all experiment 1 files, if there is more than one
-		    if len(e1v.filenames) > 1:
-		        procfile = e1v.name + '_' + e1v.realm + '_'+ model.name + '_' + e1.name \
-		                           + '_' + e1r.name + '_' + str(min(e1v.start_dates) ) + '-' + str(max(e1v.end_dates) ) + '.nc'
-		    
-		        catstring = 'cdo mergetime ' + ' '.join(e1v.filenames) + 
-		                    ' ' + procfile
-		        ex = os.system( catstring )
-		    else:
-			procfile = ' '.join(e1v.filenames)
-		    
-		    """If the initial join of e1 files worked, time-slice the result with an appropriate end-date"""
-		    outfile = e1v.name + '_' + e1v.realm + '_'+ model.name + '_' + e1.name \
-		                             + '_' + e1r.name + '_' + str(min(e1v.start_dates) ) + '-' + str(e1_end_year) + '12' + '.nc'
-		    
-		    catstring = 'cdo -seldate,' + str(e1_start_year) + '-01-01' + ',' + str(e1_end_year) + '-12-31' + ' ' + procfile + ' ' + outfile	    
-		    ex = os.system( catstring )
-		        
-  		    if ex == 0:
-			"""If the fix was sucessfull, add the new file name to ens"""
-		        e1v.filenames = [outfile]
-		        print '\n %s end date is now %s12 and %s start date is %s01 \n' % (e1.name, e1_end_year, e2.name, e2_start_year)  
-		    
-		        # Add the newly created processing files to the delete list
-		        del_ens.get_model(model.name).get_experiment(e1.name).get_realization(e1r.name).get_variable(e1v.name).add_filename(outfile)
-		        del_ens.get_model(model.name).get_experiment(e1.name).get_realization(e1r.name).get_variable(e1v.name).add_filename(procfile)
-		        
-		    else:
-			"""print warning and delete the realization from the two experiments in ens"""
-			print '\n fix failed, deleting realization \n'.upper()
-			e1.del_realization(e1r)
-			e2.del_realization(e2r)
-		        if realization_misses:
-			    """Add to the list if it exists"""
-		            realizations_to_delete[model.name] = list(realization_misses) + e1r.name
-		        else:
-		            realizations_to_delete[model.name] = [e1r.name]
-
-			continue # if this failed to fix the problem, return to the top of the realization for loop.
-			
-			      
-		# join the two experiments original filenames with a whitespace      
+		# join the two experiments original filenames with a whitespace    
 		infiles = ' '.join( e1v.filenames + e2v.filenames )
 		
 		# construct the output filename
@@ -265,7 +213,8 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
 		
 		# do the concatenation using CDO
 		print "\n joining " + model.name + '_' + e1r.name + ' ' + e1.name + ' to ' + e2.name  
-		catstring = 'cdo cat ' + infiles + ' ' + outfile			    
+		catstring = 'cdo mergetime ' + infiles + ' ' + outfile		
+	    
 		os.system( catstring )
 		
 		# Add a new joined experiment to ens, 
