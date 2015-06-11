@@ -82,7 +82,7 @@ def cat_exp_slices(ens, delete=True):
                                
     """ 
     # Set the env variable to skip repeated times
-    os.environ["SKIP_SAME_TIME"]=1 
+    os.environ["SKIP_SAME_TIME"] = "1" 
     
     # Loop over all models, experiments, realizations and variables
     for model in ens.models:
@@ -165,7 +165,7 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
  
     """
     # Set the env variable to skip repeated times
-    os.environ["SKIP_SAME_TIME"]=1 
+    os.environ["SKIP_SAME_TIME"] = "1" 
     
     # Create a copy of ens to use later for deleting input files if delete=True
     del_ens = copy.deepcopy(ens)
