@@ -81,6 +81,9 @@ def cat_exp_slices(ens, delete=True):
                                 ts_Amon_HadCM3_historical_r1i1p1_185912-200512.nc
                                
     """ 
+    # Set the env variable to skip repeated times
+    os.environ["SKIP_SAME_TIME"]=1 
+    
     # Loop over all models, experiments, realizations and variables
     for model in ens.models:
         for experiment in model.experiments:
@@ -97,7 +100,8 @@ def cat_exp_slices(ens, delete=True):
                         outfile = variable.name + '_' + variable.realm + '_'+ model.name + '_' + experiment.name +\
 		        '_' + realization.name + '_' + str(min(variable.start_dates) ) + '-' + str( max(variable.end_dates) ) + '.nc'
 		        
-		        catstring = 'cdo cat ' + infiles + ' ' + outfile			
+		        catstring = 'cdo mergetime ' + infiles + ' ' + outfile	
+		
 		        
 		        os.system( catstring )
 		            
@@ -160,6 +164,9 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
         ens = cd.cat_experiments(ens, 'ts', exp1_name='historical', exp2_name='rcp45')
  
     """
+    # Set the env variable to skip repeated times
+    os.environ["SKIP_SAME_TIME"]=1 
+    
     # Create a copy of ens to use later for deleting input files if delete=True
     del_ens = copy.deepcopy(ens)
 
@@ -213,7 +220,8 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
 		        procfile = e1v.name + '_' + e1v.realm + '_'+ model.name + '_' + e1.name \
 		                           + '_' + e1r.name + '_' + str(min(e1v.start_dates) ) + '-' + str(max(e1v.end_dates) ) + '.nc'
 		    
-		        catstring = 'cdo cat ' + ' '.join(e1v.filenames) + ' ' + procfile
+		        catstring = 'cdo mergetime ' + ' '.join(e1v.filenames) + 
+		                    ' ' + procfile
 		        ex = os.system( catstring )
 		    else:
 			procfile = ' '.join(e1v.filenames)
