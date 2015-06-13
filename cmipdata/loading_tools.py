@@ -20,7 +20,8 @@ import datetime
 
 os.system( 'rm -rf /tmp/cdo*') # clean out tmp to make space for CDO processing.
 
-def loadvar( ifile , varname, remap=None, start_date=None, end_date=None, timmean=False, zonmean=False):
+def loadvar(ifile , varname, remap=None, start_date=None, end_date=None, 
+timmean=False, zonmean=False, cdostr=None):
         """  
             Load variables from a NetCDF file with optional pre-processing.
             
@@ -99,9 +100,18 @@ def loadvar( ifile , varname, remap=None, start_date=None, end_date=None, timmea
         elif ( zonmean ):
             in_str =  "-selvar," + varname + " " + ifile
             var = cdo.zonmean( input=in_str, returnMaArray=varname )
+        
+        elif(cdostr):
+            opslist = cdostr.split() 
+            base_op = opslist[0].replace('-','')
+            if len(opslist) > 1:
+                ops_str = ' '.join(opslist[1::]) + ' ' + ifile
+                var = getattr(cdo, base_op)(input=ops_str, returnMaArray=varname)
+            else:
+                var = getattr(cdo, base_op)(input=ifile, returnMaArray=varname)
 
         else :
-            var = cdo.setrtomiss(1e34,1.1e34, input=ifile, returnMaArray=varname)  
+            var = cdo.readMaArray(ifile, varname=varname)  
             
         # Apply any scaling and offsetting needed:
         try:
@@ -113,7 +123,7 @@ def loadvar( ifile , varname, remap=None, start_date=None, end_date=None, timmea
         except:
 	    var_scale = 1	
             
-        var = var*var_scale + var_offset    
+        #var = var*var_scale + var_offset    
         #return var
         return np.squeeze( var )
 
