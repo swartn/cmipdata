@@ -213,7 +213,8 @@ def cat_experiments(ens, variable_name, exp1_name, exp2_name, delete=True):
 		
 		# do the concatenation using CDO
 		print "\n joining " + model.name + '_' + e1r.name + ' ' + e1.name + ' to ' + e2.name  
-		catstring = 'cdo mergetime ' + infiles + ' ' + outfile		
+		catstring = ('cdo mergetime ' + infiles + ' ' + outfile)	
+	
 	    
 		os.system( catstring )
 		
@@ -696,7 +697,10 @@ def time_slice(ens, start_date, end_date, delete=True):
 		    + '-' + end_yyymm + '.nc'
 		    
 		    print 'time limiting...'
-		    cdo_str = 'cdo seldate,' + date_range + '  -selvar,' + variable.name + ' ' + infile +  ' ' + outfile           
+		    cdo_str = ('cdo -L seldate,' + date_range + '  -selvar,' + 
+                                variable.name + ' ' + infile +  ' ' + outfile
+                               )      
+     
 		    ex = os.system( cdo_str )
 		    if ex == 0:
 		        variable.add_filename(outfile)  # add the filename with new date-ranges to the variable in ens

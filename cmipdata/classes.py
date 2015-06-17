@@ -479,8 +479,10 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
 	experiment   = name.split( kwargs['separator'] )[ kwargs['experiment'] ]
 	realization  = name.split( kwargs['separator'] )[ kwargs['realization'] ]
 	dates        = name.split( kwargs['separator'] )[ kwargs['dates'] ]
-	start_date   = int( name.split( kwargs['separator'] )[5].split('-')[0]) 
-	end_date     = int( name.split( kwargs['separator'] )[5].split('-')[1].split('.')[0] )
+	start_date   = int( name.split( kwargs['separator'] 
+                                )[ kwargs['dates'] ].split('-')[0]) 
+	end_date     = int( name.split( kwargs['separator'] 
+                                )[ kwargs['dates'] ].split('-')[1].split('.')[0] )
 	
 	# create the model if necessary
 	m = ens.get_model(modelname)   
