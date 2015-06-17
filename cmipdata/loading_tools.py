@@ -85,7 +85,8 @@ def loadvar( ifile , varname, remap='', start_date='', end_date='', timmean=Fals
             var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )            
             
         elif ( remap ) :
-            var = cdo.remapdis( remap , input = ifile, returnMaArray=varname )
+	    in_str = "-selvar," + varname + " " + ifile
+            var = cdo.remapdis( remap , input=in_str, returnMaArray=varname )
 
         elif ( timmean == True ):
             var = cdo.timmean( input=ifile, returnMaArray=varname ) 
@@ -131,7 +132,6 @@ def loadfiles(ens, varname, **kwargs):
            ifiles = ifiles + files	
            
         # Determine the dimensions of the matrix.       
-        print ifiles[0]
         vst = loadvar( ifiles[0], varname, **kwargs )
         varmat = np.ones( (len(ifiles),) + vst.shape )*999e99
 

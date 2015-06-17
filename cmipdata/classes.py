@@ -626,7 +626,21 @@ def match_realizations(ens1, ens2):
     ens1 = ens1.squeeze()
     ens2 = ens2.squeeze()
     return ens1, ens2
-	 
+
+def get_matching_field(ens, modelname, 
+		       experimentname, 
+		       realizationname, 
+		       variablename):
+    """given the model, experiment, realization and variable names find the 
+    matching objects in ens and return.
+    """
+    model = ens.get_model(modelname)
+    experiment = model.get_experiment(experimentname)
+    realization = experiment.get_realization(realizationname)
+    variable = realization.get_variable(variablename)
+       
+    return model, experiment, realization, variable
+ 
 
 	    
 	    

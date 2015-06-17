@@ -10,6 +10,7 @@
 import os
 import glob
 from classes import Ensemble, Model, Experiment, Realization, Variable
+from classes import get_matching_field
 import copy
 import itertools
 
@@ -669,7 +670,7 @@ def remap(ens, remap='r360x180', method='remapdis', delete=True):
     """ 
     for model, experiment, realization, variable, files in ens.iterate():
         for infile in files:
-            outfile = ' remap_' + infile
+            outfile = 'remap_' + infile
 
             cdo_str = 'cdo ' + method + ',' + remap + ' -selvar,' + variable.name + ' ' + infile + ' ' + outfile 	
             print cdo_str
@@ -916,7 +917,93 @@ def del_ens_files(ens):
 	        os.system( delstr ) 
 	    
         
+def trends(ens, start_date, end_date, delete=False):
+    """
+    Compute linear trends over the period between start_date and end_date,
+    for each file in ens.
+    
+    The resulting output is written to file, named with with the correct 
+    date range, and the original input files are deleted if delete=True.
+    
+    Parameters
+    ----------
+    ens : cmipdata Ensemble
+          The ensemble on which to do the processing.
+          
+    start_date : str
+                 Start date for the output file with format: YYYY-MM-DD
+    end_date : str
+                 End date for the output file with format: YYYY-MM-DD
+	 		 
+    delete : boolean
+             If delete=True, delete the original input files.
+	            
+    Returns 
+    -------
+    ens : cmipdata Ensemble
+          An updated ensemble object, containing the names of the newly 
+          processed files.
+    
+    The processed files are also written to present working directory,
+    and begin with "slope_" and "intercept_".
         
+    
+    EXAMPLES
+    ---------
+    1. Select data between 1 January 1980 and 31 December 2013::
+    
+        ens = cd.trends(ens, start_date='1979-01-01', end_date='2013-12-31')
+
+    """  
+    
+    # copy the ens object
+    ens_out = copy.deepcopy(ens)
+    
+    # set up the dates in cmip5 format
+    date_range = start_date + ',' + end_date  
+    start_yyymm = start_date.replace('-','')[0:6] # convert date format
+    end_yyymm   = end_date.replace('-','')[0:6]  
+	
+    for model, experiment, realization, variable, files in ens.iterate():
+	modelo, experimento, realizationo, variableo =\
+              get_matching_field(ens_out, model.name, experiment.name,
+				 realization.name, variable.name)
+        for infile in files:         
+            if ( min(variable.start_dates) <= int(start_yyymm) ) and ( 
+                 max(variable.end_dates) >= int(end_yyymm) ):
+		    # Do the time-slicing if the file is within the specified
+		    outfile =  variable.name + '_' + variable.realm \
+		                + '_' + model.name + '_' + experiment.name \
+		                + '_' + realization.name + '_' + start_yyymm \
+		                + '-' + end_yyymm + '.nc'
+		    
+		    print 'time limiting...'
+		    cdo_str = 'cdo trend -seldate,' + date_range + ' '\
+			       + '-selvar,' + variable.name\
+		               + ' ' + infile +  ' '\
+			       + 'intercept_' + outfile + ' '\
+                               + 'slope_' + outfile
+ 
+		    ex = os.system( cdo_str )
+		    #add the filename with new date-ranges to ens
+		    if ex == 0:
+		        variableo.add_filename('intercept_' + outfile)  
+		        variableo.add_filename('slope_' + outfile) 		
+		        variableo.start_dates=[]; variable.end_dates=[]
+		        variableo.add_start_date(int(start_yyymm)) 
+		        variableo.add_end_date(int(end_yyymm)) 
+	    else:
+	        #If the file does not containt the desired dates, delete 
+	        print "%s %s is not in the date-range...deleting"\
+		    %(model.name, realization.name)
+			     
+	    variableo.del_filename(infile) 
+   	       
+            if delete == True:
+                delstr = 'rm ' + infile
+	        os.system( delstr )  
+    
+    return ens_out	 
         
         
         
