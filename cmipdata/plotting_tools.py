@@ -8,6 +8,9 @@ The functions take an ensemble object and a data object. The ensemble
 object is a cmipdata ensemble, the data object is a numpy array
 generated using loading_tools.
 
+**Note the plotting tools have not been fully developed, and are the lowest 
+priority.**
+
   .. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
 """
 import matplotlib.pyplot as plt
@@ -15,17 +18,9 @@ from loading_tools import loadvar, get_dimensions
 import scipy as sp
 from scipy import stats
 import numpy as np
-
-def plot_realization_timeseries(ens, data, varname, kwargs={'color':[0.5, 0.5, 0.5]} ):
-    """ For each realization in ens (and data, which is generated from ens
-    using loadfiles), plot the realization in color (grey by default)
-    for variable varname. kwargs is a dict of option to pass to plt,
-    e.g.: kwargs={'color':'r'}
-    """
-    plot_realizations_1d(ens, data, varname, dimension='time', kwargs=kwargs)
-  	
-    
-def plot_realizations_1d(ens, data, varname, dimension, kwargs={'color':[0.5, 0.5, 0.5]} ):
+ 
+def plot_realizations_1d(ens, data, varname, dimension, ax=None, 
+                         kwargs={'color':[0.5, 0.5,0.5]}):
     """ For each realization in ens (and data, which is generated from ens
     using loadfiles), plot the realization in color (grey by default)
     for variable varname. Data should be 1-d for each realization, along the 
@@ -46,12 +41,16 @@ def plot_realizations_1d(ens, data, varname, dimension, kwargs={'color':[0.5, 0.
     dimensions = get_dimensions(infile, varname, toDatetime=True)
     x = dimensions[dimension]
     
-    for r in range( data.shape[0] ):
-	plt.plot( x, data[r,:], **kwargs)
-	
-    plt.title(varname)	
+    if ax is None:
+        ax = plt.gca()
     
-def ensemble_envelope_timeseries(ens, meanfile, stdfile, varname, ax='', kwargs={'linewidth':3, 'color':'k'}):
+    for r in range( data.shape[0] ):
+	ax.plot(x, data[r,:], **kwargs)
+	
+    ax.set_title(varname)	
+    
+def ensemble_envelope_timeseries(ens, meanfile, stdfile, varname, ax=None, 
+                                 kwargs={'linewidth':3, 'color':'k'}):
     """ For each realization in ens (and data, which is generated from ens
     using loadfiles), plot the realization in color (grey by default)
     for variable varname.
@@ -64,7 +63,7 @@ def ensemble_envelope_timeseries(ens, meanfile, stdfile, varname, ax='', kwargs=
     ens_mean = loadvar(meanfile, varname)
     ens_std = loadvar(stdfile, varname)
     
-    if ax == '' :
+    if not ax:
 	fig, ax = plt.subplots(1)
 	
     num_models = ens.num_models()	

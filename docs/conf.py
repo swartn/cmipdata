@@ -41,9 +41,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'numpydoc',
-    
-
-]
+    ]
 
 # Mock interface for importing packages with C-extensions that aren't installed
 # in the docs build environment
@@ -76,7 +74,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'cmipdata'
-copyright = u'2014, Neil Swart'
+copyright = u'2014-2015, Neil Swart'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

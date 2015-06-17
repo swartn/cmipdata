@@ -1,3 +1,5 @@
 *.py?
 *.egg-info/
 *.*~
+*.kate-swp
+/docs/_build
