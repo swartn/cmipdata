@@ -36,7 +36,7 @@ docs/ directory.
 
 Contributors
 ------------
-Neil Swart, Canadian Centre for Climate Modelling and Analysis, Environment Canada: Neil.Swart@ec.gc.ca
+Neil Swart, CCCma, Environment Canada: Neil.Swart@ec.gc.ca
 David Fallis, University of Victoria:  davidwfallis@gmail.com
 
 Pull requests and comments are welcome.
