@@ -1,7 +1,7 @@
 cmipdata
 ========
 
-![DOI](https://zenodo.org/badge/16109/swartn/cmipdata.svg)](https://zenodo.org/badge/latestdoi/16109/swartn/cmipdata)
+[DOI](https://zenodo.org/badge/16109/swartn/cmipdata.svg)](https://zenodo.org/badge/latestdoi/16109/swartn/cmipdata)
 
 Introduction
 ------------
