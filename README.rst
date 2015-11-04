@@ -30,7 +30,7 @@ model ensemble with only one or two commands are:
 
 Documentation
 -------------
-Documentation is rendered at https://cmipdata.readthedocs.org/latest and is included in the 
+Documentation is rendered at https://cmipdata.readthedocs.org and is included in the 
 docs/ directory.
 
 .. image:: https://readthedocs.org/projects/cmipdata/badge/?version=latest
