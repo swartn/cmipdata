@@ -1,14 +1,14 @@
 """plotting_tools
 ======================
 
-The plotting_tools module of cmipdata is a set of functions which use 
+The plotting_tools module of cmipdata is a set of functions which use
 matplotlib to produce various common plots.
 
 The functions take an ensemble object and a data object. The ensemble
 object is a cmipdata ensemble, the data object is a numpy array
 generated using loading_tools.
 
-**Note the plotting tools have not been fully developed, and are the lowest 
+**Note the plotting tools have not been fully developed, and are the lowest
 priority.**
 
   .. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
@@ -18,60 +18,101 @@ from loading_tools import loadvar, get_dimensions
 import scipy as sp
 from scipy import stats
 import numpy as np
- 
-def plot_realizations_1d(ens, data, varname, dimension, ax=None, 
-                         kwargs={'color':[0.5, 0.5,0.5]}):
+from matplotlib.backends.backend_pdf import PdfPages
+from mpl_toolkits.basemap import Basemap
+
+
+def plot_realizations_1d(data, varname, dimension, ax=None, pdf="", png="",
+                         xlabel="", ylabel="", title="",
+                         kwargs={'color': [0.5, 0.5, 0.5]}):
     """ For each realization in ens (and data, which is generated from ens
     using loadfiles), plot the realization in color (grey by default)
-    for variable varname. Data should be 1-d for each realization, along the 
+    for variable varname. Data should be 1-d for each realization, along the
     dimension specified (time, lon, lat etc).
-    
-    kwargs is a dict of option to pass to plt,
+
+
+    kwargs is a dict of option to pass to plt.
     e.g.: kwargs={'color':'r'}
-    
+
     EXAMPLES:
-    
+
     # plot the uas data against latitude in red
     cd.plot_realizations_1d(ens, data, varname='uas', dimension='lat', kwargs={'color':'r'})
     """
-    
-    # First get the dimensions: A bad hack right now. Shouldn't reference attributes directly - use a function.
-    v = ens.models[0].experiments[0].realizations[0].get_variable(varname)
-    infile= v.filenames[0]
-    dimensions = get_dimensions(infile, varname, toDatetime=True)
+    plotdata = data["data"]
+    dimensions = data["dimensions"]
     x = dimensions[dimension]
-    
+
     if ax is None:
         ax = plt.gca()
-    
-    for r in range( data.shape[0] ):
-	ax.plot(x, data[r,:], **kwargs)
-	
-    ax.set_title(varname)	
-    
-def ensemble_envelope_timeseries(ens, meanfile, stdfile, varname, ax=None, 
-                                 kwargs={'linewidth':3, 'color':'k'}):
+        
+    for r in range(plotdata.shape[0]):
+        ax.plot(x, plotdata[r, :], **kwargs)
+
+    if title == "":
+        ax.set_title(varname)
+    else:
+        ax.set_title(title)
+
+    if xlabel != "":
+        plt.xlabel(xlabel)
+
+    if ylabel != "":
+        plt.ylabel(ylabel)
+
+    if(png != ""):
+        if not png.endswith('.png'):
+            png = png + '.png'
+        plt.savefig(png)
+
+    if(pdf != ""):
+        if pdf.endswith('.pdf'):
+            pp = PdfPages(pdf)
+        else:
+            pdf = pdf + '.pdf'
+            pp = PdfPages(pdf)
+        plt.savefig(pp, format='pdf')
+        pp.close()
+
+
+def ensemble_envelope_timeseries(ens, meanfile, stdfile, varname, ax=None, pdf="", png="",
+                                 kwargs={'linewidth': 3, 'color': 'k'}):
     """ For each realization in ens (and data, which is generated from ens
     using loadfiles), plot the realization in color (grey by default)
     for variable varname.
     """
-    
-    # First get the dimensions: A bad hack right now. Shouldn't reference attributes directly - use a function.
+
     dimensions = get_dimensions(meanfile, varname, toDatetime=True)
     time = dimensions['time']
 
     ens_mean = loadvar(meanfile, varname)
     ens_std = loadvar(stdfile, varname)
-    
-    if not ax:
-	fig, ax = plt.subplots(1)
-	
-    num_models = ens.num_models()	
-    c = sp.stats.t.isf(0.025, num_models - 1 )             # the two-tailed 5% critical value from the t-dist
-    ci95p = ( c *  ens_std) / np.sqrt( num_models )     # the 95% confidence interval
 
-    ax.fill_between(time, (ens_mean- ci95p), (ens_mean +  ci95p) , color='k', alpha=0.25,edgecolor='none' )
-    ax.plot( time, ens_mean, **kwargs)
+    if not ax:
+        fig, ax = plt.subplots(1)
+
+    num_models = len(list(ens.objects('model')))
+    # the two-tailed 5% critical value from the t-dist
+    c = sp.stats.t.isf(0.025, num_models - 1)
+    # the 95% confidence interval
+    ci95p = (c * ens_std) / np.sqrt(num_models)
+
+    ax.fill_between(time, (ens_mean - ci95p), (ens_mean + ci95p),
+                    color='k', alpha=0.25, edgecolor='none')
+    ax.plot(time, ens_mean, **kwargs)
     plt.draw()
-	
-    #ax.title(varname)		
+
+    if(png != ""):
+        if not png.endswith('.png'):
+            png = png + '.png'
+        plt.savefig(png)
+
+    if(pdf != ""):
+        if pdf.endswith('.pdf'):
+            pp = PdfPages(pdf)
+        else:
+            pdf = pdf + '.pdf'
+            pp = PdfPages(pdf)
+        plt.savefig(pp, format='pdf')
+        pp.close()
+    # ax.title(varname)

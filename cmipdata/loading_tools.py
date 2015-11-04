@@ -1,211 +1,162 @@
 """loading_tools
 ======================
 
-The loading_tools module of cmipdata is a set of functions which use 
+The loading_tools module of cmipdata is a set of functions which use
 the cdo python bindings and NetCDF4 to load data from input NetCDF
 files listed in a cmipdata ensemble object into python numpy arrays.
 Some processing can optionally be done during the loading, specifically
-remapping, time-slicing, time-averaging and zonal-averaging. 
+remapping, time-slicing, time-averaging and zonal-averaging.
 
-  .. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
+.. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
 """
 try:
-    import cdo as cdo; cdo = cdo.Cdo() # recommended import
+    import cdo as cdo
+    cdo = cdo.Cdo()  # recommended import
 except ImportError:
     pass
 import os
 import numpy as np
-from netCDF4 import Dataset,num2date,date2num
+from netCDF4 import Dataset, num2date, date2num
 import datetime
 
-os.system( 'rm -rf /tmp/cdo*') # clean out tmp to make space for CDO processing.
+# clean out tmp to make space for CDO processing.
+os.system('rm -rf /tmp/cdo*')
 
-def loadvar(ifile , varname, remap=None, start_date=None, end_date=None, 
-timmean=False, zonmean=False, cdostr=None):
-        """  
-            Load variables from a NetCDF file with optional pre-processing.
-            
-            Load a CMIP5 netcdf variable "varname" from "ifile" and optionally 1) distance
-            weighted remap to a given grid (e.g. 'r360x180), 2) select a date range between 
-            start_date and end_date (format: 'YYYY-MM-DD'), 3) time-mean over the whole 
-            record, or between the selected dates and 4) zonal mean. Requires netCDF4, CDO 
-            and CDO python bindings. Returns a masked array, var.
-            
-            If zonmean=True and remap=True, the zonal mean is done first, so the remap
-            will in that case only specify the latitude-grid, with 1-point in x, e.g.: 
-            remap=r180x1.
-          """
-          
-        # Open the variable using NetCDF4 to get scale and offset attributes.  
-        nc = Dataset( ifile , 'r' )
-        ncvar = nc.variables[ varname ]
-        
-        if start_date:
-            date_range = start_date + ',' + end_date
+
+def loadvar(ifile, varname, cdostr=None, **kwargs):
+    """
+        Load variables from a NetCDF file with optional pre-processing.
+
+        Load a CMIP5 netcdf variable "varname" from "ifile" and an optional
+        cdo string for preprocessing the data from the netCDF files.
+        Requires netCDF4, CDO and CDO python bindings.
+        Returns a masked array, var.
+      """
+    # Open the variable using NetCDF4 to get scale and offset attributes.
+    nc = Dataset(ifile, 'r')
+    ncvar = nc.variables[varname]
     
-        # parse through all options, and load the data using CDO.
-        if ( timmean ) and ( start_date ) and ( remap ) and (zonmean) :
-            in_str = "-zonmean -timmean -seldate," + date_range + "  -selvar," + varname + " " + ifile
-            var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
+    # apply cdo string if it exists
+    if(cdostr):
+        opslist = cdostr.split()
+        base_op = opslist[0].replace('-', '')
+        if len(opslist) > 1:
+            ops_str = ' '.join(opslist[1::]) + ' ' + ifile
+            var = getattr(cdo, base_op)(input=ops_str, returnMaArray=varname)
+        else:
+            var = getattr(cdo, base_op)(input=ifile, returnMaArray=varname)
 
-        elif ( timmean ) and ( start_date ) and ( remap ) :
-            in_str = "-timmean -seldate," + date_range + " " + ifile
-            var = cdo.remapdis( remap, input = in_str, returnMaArray=varname )
-  
-        elif ( timmean ) and ( start_date ) and ( zonmean ) :
-            in_str = "-timmean -seldate," + date_range + " -selvar," + varname + " " + ifile
-            var = cdo.zonmean( input = in_str, returnMaArray=varname )           
-    
-        elif ( timmean ) and ( zonmean ) and ( remap ) :
-            in_str = "-zonmean -timmean -selvar," + varname + " " + ifile
-            var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )     
-  
-        elif ( zonmean ) and ( start_date ) and ( remap ) :
-            in_str = "-zonmean -seldate," + date_range + " -selvar," + varname + " " + ifile
-            var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )   
-  
-        elif ( timmean ) and ( remap ) :
-            in_str = "-timmean" + " " + ifile
-            var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
+    else:
+        var = cdo.readMaArray(ifile, varname=varname)
 
-        elif ( start_date ) and ( remap ) :
-            in_str = "-seldate," + date_range + " -selvar," + varname + "  " \
-		     +  ifile
-            var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )
+    # Apply any scaling and offsetting needed:
+    try:
+        var_offset = ncvar.add_offset
+    except:
+        var_offset = 0
+    try:
+        var_scale = ncvar.scale_factor
+    except:
+        var_scale = 1
 
-        elif  ( timmean ) and ( start_date ):
-            var = cdo.timmean( input = cdo.seldate( date_range, input=ifile ), 
-                               returnMaArray=varname )
-                               
-        elif  ( timmean ) and ( zonmean ):
-	    in_str = "-timmean -selvar," + varname + " " + ifile
-            var = cdo.zonmean( input=in_str, returnMaArray=varname )       
-            
-        elif  ( start_date ) and ( zonmean ):
-	    in_str = "-seldate," + date_range +  " -selvar," + varname + " " + ifile
-            var = cdo.zonmean( input=in_str, returnMaArray=varname )    
-            
-        elif  ( remap ) and  ( zonmean ):
-            in_str = "-zonmean -selvar," + varname + " " + ifile
-            var = cdo.remapdis( remap , input = in_str, returnMaArray=varname )            
-            
-        elif ( remap ) :
-	    in_str = "-selvar," + varname + " " + ifile
-            var = cdo.remapdis( remap , input=in_str, returnMaArray=varname )
+    # var = var*var_scale + var_offset
+    # return var
+    return np.squeeze(var)
 
-        elif ( timmean ):
-            var = cdo.timmean( input=ifile, returnMaArray=varname ) 
 
-        elif ( start_date ):
-            var = cdo.seldate( date_range, input=ifile, returnMaArray=varname )
+def _create_tempfile(ens, varname, ifileone, cdostr=None, **kwargs):
+    """
+        _create_tempfile is called when modifications are made to the ensemeble without
+        creating new files. Creates a temporary file that can be used to determine dimensions of
+        the modified data.
+    """
+    if(cdostr):
+        opslist = cdostr.split()
+        op = opslist[0].replace('-', '')
+        cdo_str = 'cdo ' + op + ' ' + ifileone + ' temporary_0.nc'
+        ex = os.system(cdo_str)
+        if len(opslist) > 1:
+            for i in range(1, len(opslist)):
+                op = opslist[i].replace('-', '')
+                cdo_str = 'cdo ' + op + ' ' + 'temporary_' + str(i-1) + '.nc' + ' temporary_' + str(i) + '.nc'
+                ex = os.system(cdo_str)
+                os.remove('temporary_' + str(i-1) + '.nc')
+                if i == len(opslist)-1:
+                    os.rename('temporary_' + str(len(opslist)-1) + '.nc', 'temp123.nc')
+        else:
+            os.rename('temporary_0.nc', 'temp123.nc')
 
-        elif ( zonmean ):
-            in_str =  "-selvar," + varname + " " + ifile
-            var = cdo.zonmean( input=in_str, returnMaArray=varname )
-        
-        elif(cdostr):
-            opslist = cdostr.split() 
-            base_op = opslist[0].replace('-','')
-            if len(opslist) > 1:
-                ops_str = ' '.join(opslist[1::]) + ' ' + ifile
-                var = getattr(cdo, base_op)(input=ops_str, returnMaArray=varname)
-            else:
-                var = getattr(cdo, base_op)(input=ifile, returnMaArray=varname)
-
-        else :
-            var = cdo.readMaArray(ifile, varname=varname)  
-            
-        # Apply any scaling and offsetting needed:
-        try:
-	    var_offset = ncvar.add_offset
-        except:
-	    var_offset = 0
-        try:
-	    var_scale = ncvar.scale_factor
-        except:
-	    var_scale = 1	
-            
-        #var = var*var_scale + var_offset    
-        #return var
-        return np.squeeze( var )
 
 def loadfiles(ens, varname, **kwargs):
-        """  
-            Load a variable "varname" from all files in ens, and load it into a matrix
-            where the zeroth dimensions represents an input file and dimensions 1 to n are
-            the dimensions of the input variable. Variable "varname" must have the same shape 
-            in all ifiles. Optionally specify any kwargs valid for loadvar.
-            
-            Requires netCDF4, cdo bindings and numpy 
-            Returns a masked numpy array, varmat.
+    """
+        Load a variable "varname" from all files in ens, and load it into a matrix
+        where the zeroth dimensions represents an input file and dimensions 1 to n are
+        the dimensions of the input variable. Variable "varname" must have the same shape
+        in all ifiles. Optionally specify any kwargs valid for loadvar.
 
-        """
-        # Get all input files from the ensemble
-        ifiles = []
-        for model, experiment, realization, variable, files in ens.iterate():
-           ifiles = ifiles + files	
-           
-        # Determine the dimensions of the matrix.       
-        vst = loadvar( ifiles[0], varname, **kwargs )
-        varmat = np.ones( (len(ifiles),) + vst.shape )*999e99
+        Requires netCDF4, cdo bindings and numpy
+        Returns a dictionary with
+        - a masked numpy array, varmat
+        - the dimensions of the data, dimensions
+    """
+    # Get all input files from the ensemble
+    ifiles = ens.lister('ncfile')
 
-        for i, ifile in enumerate(ifiles):
-	    print ifile
-	    varmat[i,:] = loadvar( ifile, varname, **kwargs ) 
+    datetime = False
+    if 'toDatetime' in kwargs:
+        datetime = kwargs['toDatetime']
+    
+    # if a cdostr is being applied, 
+    # create a temporaryfile to determine the dimensions of the data
+    if 'cdostr' in kwargs:
+        _create_tempfile(ens, varname, ifiles[0], **kwargs)
+        dimensions = get_dimensions('temp123.nc', varname, toDatetime=datetime)
+        os.remove('temp123.nc')
+    else:
+        dimensions = get_dimensions(ifiles[0], varname, toDatetime=datetime)
 
-        varmat = np.ma.masked_equal( varmat, 999e99 )
-        return varmat
+    vst = loadvar(ifiles[0], varname, **kwargs)
+    varmat = np.ones((len(ifiles),) + vst.shape) * 999e99
 
-def loadens(ens, **kwargs):
-        """  
-            Load all variables in all files in ens into a numpy array which is
-            save in the the variable object under variable.data. Currently
-            loadens expects there to only be one filename per variable object 
-            (i.e. per realization).
-            
-            Optionally specify any kwargs valid for loadvar.
+    for i, ifile in enumerate(ifiles):
+        varmat[i, :] = loadvar(ifile, varname, **kwargs)
 
-        """
-        # For each variable, load all the files into a numpy array named varname_startdate_enddate
-        for model, experiment, realization, variable, files in ens.iterate():
-	    for ifile in files:
-	        print ifile
-	        variable.data = loadvar( ifile, variable.name, **kwargs ) 
-	        variable.dimensions = get_dimensions(ifile, variable.name, toDatime=True)
+    varmat = np.ma.masked_equal(varmat, 999e99)
+    return {"data": varmat, "dimensions": dimensions}
 
-        return ens 
-        
+
 def get_dimensions(ifile, varname, toDatetime=False):
-        """Returns the dimensions of variable varname in file ifile as a dictionary.
-        If one of the dimensions begins with lat (Lat, Latitude and Latitudes), it 
-        will be returned with a key of lat, and similarly for lon. If to a Datetime=True, 
-        the time dimension is converted to a datetime. 
-        """
-        
-        # Open the variable using NetCDF4 
-        nc = Dataset( ifile , 'r' )
-        ncvar = nc.variables[ varname ]
-             
-        dimensions={}
-        for dimension in ncvar.dimensions:
-	        if dimension.lower().startswith('lat'):
-		    dimensions['lat'] = nc.variables[ dimension ][:]
-		elif dimension.lower().startswith('lon'):
-		    dimensions['lon'] = nc.variables[ dimension ][:]
-	        elif dimension.lower().startswith('time'):	    
-		    if toDatetime==True:
-	                # Following Phil Austin's slice_nc
-                        nc_time = nc.variables[dimension]
-                        try:
-			    cal = nc_time.calendar
-		        except:
-			    cal = 'standard'
-                        dimensions['time'] = num2date(nc_time[:], nc_time.units, cal)
-                        dimensions['time'] = [datetime.datetime(*item.timetuple()[:6]) for item in dimensions['time'] ]
-                        dimensions['time'] = np.array(dimensions['time'])
-                    else:
-  		        dimensions['time'] = nc.variables[ dimension ][:]    
-	        else:  
-	            dimensions[dimension] = nc.variables[ dimension ][:]
-	    
-	return dimensions
+    """Returns the dimensions of variable varname in file ifile as a dictionary.
+    If one of the dimensions begins with lat (Lat, Latitude and Latitudes), it
+    will be returned with a key of lat, and similarly for lon. If to a Datetime=True,
+    the time dimension is converted to a datetime.
+    """
+
+    # Open the variable using NetCDF4
+    nc = Dataset(ifile, 'r')
+    ncvar = nc.variables[varname]
+
+    dimensions = {}
+    for dimension in ncvar.dimensions:
+        if dimension.lower().startswith('lat'):
+            dimensions['lat'] = nc.variables[dimension][:]
+        elif dimension.lower().startswith('lon'):
+            dimensions['lon'] = nc.variables[dimension][:]
+        elif dimension.lower().startswith('time'):
+            if toDatetime is True:
+                # Following Phil Austin's slice_nc
+                nc_time = nc.variables[dimension]
+                try:
+                    cal = nc_time.calendar
+                except:
+                    cal = 'standard'
+                dimensions['time'] = num2date(nc_time[:], nc_time.units, cal)
+                dimensions['time'] = [datetime.datetime(
+                    *item.timetuple()[:6]) for item in dimensions['time']]
+                dimensions['time'] = np.array(dimensions['time'])
+            else:
+                dimensions['time'] = nc.variables[dimension][:]
+        else:
+            dimensions[dimension] = nc.variables[dimension][:]
+
+    return dimensions
