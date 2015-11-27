@@ -325,11 +325,10 @@ def ens_stats(ens, variable_name):
     variable_name : str
                     The name of the variable to be concatenated.
 
-    delete : boolean
-             If delete=True, delete the individual time-slice files.
 
     Returns
     -------
+    A tuple of lists containing the names of the mean and standard deviation files created
     The ENS-MEAN and ENS-STD files are written to present working directory.
 
     Examples
@@ -352,6 +351,8 @@ def ens_stats(ens, variable_name):
                     realization
                     modfilesall.append(realization.getChild(variable_name).children)
     """
+    meanfiles = []
+    stdevfiles = []
     experiments = {}
     for f in ens.objects('ncfile'):
         table = f.getDictionary()
@@ -395,15 +396,18 @@ def ens_stats(ens, variable_name):
 
         cdo_str = 'cdo ensmean ' + in_files + ' ' + out_file
         os.system(cdo_str)
+        meanfiles.append(out_file)
 
         # Now do the standard deviation
         out_file = 'ENS-STD_' + outfilename.replace('R-MEAN', 'STD')
 
         cdo_str = 'cdo ensstd ' + in_files + ' ' + out_file
         os.system(cdo_str)
+        stdevfiles.append(out_file)
 
         for fname in files_to_mean:
             os.system('rm ' + fname)
+    return meanfiles, stdevfiles
 
 # =========================================================================
 # The operators below this point work on a file-by-file basis and can be chained together
