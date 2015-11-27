@@ -1,6 +1,9 @@
 cmipdata
 ========
 
+.. image:: https://zenodo.org/badge/16109/swartn/cmipdata.svg
+   :target: https://zenodo.org/badge/latestdoi/16109/swartn/cmipdata
+   
 Introduction
 ------------
 
@@ -37,6 +40,7 @@ docs/ directory.
 Contributors
 ------------
 Neil Swart, CCCma, Environment Canada: Neil.Swart@ec.gc.ca
+David Fallis, University of Victoria:  davidwfallis@gmail.com
 
 Pull requests and comments are welcome.
 
