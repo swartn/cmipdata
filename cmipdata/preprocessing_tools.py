@@ -113,7 +113,7 @@ def cat_exp_slices(ensemble, delete=True):
                 for cfile in modfiles:
                     delstr = 'rm ' + cfile
                     os.system(delstr)
-
+    ens.squeeze()
     return ens
 
 
