@@ -401,7 +401,9 @@ def match_ensembles(ens1, ens2):
         if m is not None:
             print 'deleting %s from ens2' % (m.name)
             ens2.delete(m)
-
+    
+    ens1.squeeze()
+    ens2.squeeze()
     return ens1, ens2
 
 
