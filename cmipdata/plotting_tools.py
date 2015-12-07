@@ -29,15 +29,33 @@ def plot_realizations_1d(data, varname, dimension, ax=None, pdf="", png="",
     using loadfiles), plot the realization in color (grey by default)
     for variable varname. Data should be 1-d for each realization, along the
     dimension specified (time, lon, lat etc).
-
-
-    kwargs is a dict of option to pass to plt.
-    e.g.: kwargs={'color':'r'}
-
+    
+    Parameters
+    ----------
+    data : dictionary 
+           returned from loadfiles()
+           has keys 'data' and 'dimensions' which map to numpy arrays
+    varname : str
+              the name of the variable
+    dimension : str
+                variable for the x-axis
+                ex. 'lat', 'time'
+    ax : (optional) pyplot axis
+    pdf : (optional) str
+          name of file to save pdf
+    png : (optional) str
+          name of file to save png
+    xlabel, ylabel, title : (optional) str
+                            to label plot, could also be passed in kwargs
+    kwargs : (optional) dict 
+             options to pass to plt
+             ex. {'color': [0.5, 0.5, 0.5]}
+             
     EXAMPLES:
-
-    # plot the uas data against latitude in red
-    cd.plot_realizations_1d(ens, data, varname='uas', dimension='lat', kwargs={'color':'r'})
+    # first call loadfiles to get the data dictionary
+    data = cd.loadfiles(ens, 'tas', cdostr='-timmean -zonmean ')
+    # plot the tas data against latitude in red
+    cd.plot_realizations_1d(data, 'tas', dimension='lat', kwargs={'color':'r'})
     """
     plotdata = data["data"]
     dimensions = data["dimensions"]
@@ -80,6 +98,36 @@ def ensemble_envelope_timeseries(ens, meanfile, stdfile, varname, ax=None, pdf="
     """ For each realization in ens (and data, which is generated from ens
     using loadfiles), plot the realization in color (grey by default)
     for variable varname.
+    
+    Parameters
+    ----------
+    data : dictionary 
+           returned from loadfiles()
+           has keys 'data' and 'dimensions' which map to numpy arrays
+    meanfile : str
+               name of file with mean data, probably created by ens_stats()
+    stdfile : str
+              name of file with standard deviation data, probably created by ens_stats()
+    varname : str
+              the name of the variable
+
+    ax : (optional) pyplot axis
+    pdf : (optional) str
+          name of file to save pdf
+    png : (optional) str
+          name of file to save png
+    xlabel, ylabel, title : (optional) str
+                            to label plot, could also be passed in kwargs
+    kwargs : (optional) dict 
+             options to pass to plt
+             ex. {'color': [0.5, 0.5, 0.5]}
+
+    EXAMPLES:
+    # first call ens_stas to make the stats files
+    cd. ens_stats(ens, 'ts')
+
+    cd.plot_realizations_1d(data, 'ENS-MEAN_ts_Amon_CanESM2_historical_R-MEAN_195001-200012.nc', 
+                            ENS-STD_ts_Amon_CanESM2_historical_STD_195001-200012.nc', 'ts', kwargs={'color':'r'})
     """
 
     dimensions = get_dimensions(meanfile, varname, toDatetime=True)
