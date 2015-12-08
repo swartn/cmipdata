@@ -366,7 +366,7 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
     return ens
 
 
-def match_ensembles(ens1, ens2):
+def match_models(ens1, ens2):
     """
     Find common models between two ensembles.
 

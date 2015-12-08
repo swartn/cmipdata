@@ -19,7 +19,6 @@ import scipy as sp
 from scipy import stats
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
-from mpl_toolkits.basemap import Basemap
 
 
 def plot_realizations_1d(data, varname, dimension, ax=None, pdf="", png="",

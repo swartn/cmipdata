@@ -9,11 +9,8 @@ remapping, time-slicing, time-averaging and zonal-averaging.
 
 .. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
 """
-try:
-    import cdo as cdo
-    cdo = cdo.Cdo()  # recommended import
-except ImportError:
-    pass
+import cdo as cdo
+cdo = cdo.Cdo()  # recommended import
 import os
 import numpy as np
 from netCDF4 import Dataset, num2date, date2num

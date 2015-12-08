@@ -1,4 +1,3 @@
-###
 """
 cmipdata
 ========
@@ -16,10 +15,10 @@ from preprocessing_tools import *
 try:
     from loading_tools import *
 except ImportError:
-    pass
+    print 'Could not import loading_tools. Check that the correct versions of cdo, numpy, and netCDF4 are installed.'
 
 # Requires matplotlib
 try:
     from plotting_tools import *
 except ImportError:
-    pass
+    print 'Could not import plotting_tools. Check that the correct versions of cdo, numpy, scipy, Basemap, matplotlib and netCDF4 are installed.'
