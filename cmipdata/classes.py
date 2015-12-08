@@ -366,7 +366,7 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
     return ens
 
 
-def match_models(ens1, ens2):
+def match_models(ens1, ens2, delete=False):
     """
     Find common models between two ensembles.
 
@@ -394,11 +394,19 @@ def match_models(ens1, ens2):
     for name in model_misses:
         m = ens1.getChild(name)
         if m is not None:
+            if delete:
+                files = m.lister('ncfile')
+                for f in files:
+                    os.system('rm -f ' + f)
             print 'deleting %s from ens1' % (m.name)
             ens1.delete(m)
 
         m = ens2.getChild(name)
         if m is not None:
+            if delete:
+                files = m.lister('ncfile')
+                for f in files:
+                    os.system('rm -f ' + f)
             print 'deleting %s from ens2' % (m.name)
             ens2.delete(m)
     
@@ -407,7 +415,7 @@ def match_models(ens1, ens2):
     return ens1, ens2
 
 
-def match_realizations(ens1, ens2):
+def match_realizations(ens1, ens2, delete=False):
     """
     Find common realizations between two ensembles.
 
@@ -445,6 +453,10 @@ def match_realizations(ens1, ens2):
     def deleting(items):
         for nm in items:
             if nm[2] in misses:
+                if delete:
+                    files = nm[0].lister('ncfile')
+                    for f in files:
+                        os.system('rm -f ' + f) 
                 nm[1].delete(nm[0])
     deleting(mer_e1)
     deleting(mer_e2)
