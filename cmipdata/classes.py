@@ -169,6 +169,24 @@ class DataNode(object):
                         yield value
         return list(alist(self, genre))
 
+    def parentobject(self, genre):
+        """ Returns the parent DataNode of a particular genre
+
+        Parameters
+        ----------
+        genre : string
+                the genre of returned DataNode
+
+        Return
+        ------
+        DataNode
+        """
+        def check(item):
+            if item.genre == genre:
+                return item
+            else:
+                return check(item.parent)
+        return check(self)
 
 
     def _checkfile(self):
@@ -464,3 +482,14 @@ def match_realizations(ens1, ens2, delete=False):
     ens2.squeeze()
     
     return ens1, ens2
+
+if __name__ == "__main__":
+    import os
+    os.system('ln -s /raid/ra40/CMIP5_OTHER_DOWNLOADS/ts/ts_Amon_CCSM4*historical*.nc .')
+    ens = mkensemble('ts*')
+    for f in ens.objects('ncfile'):
+        print f.name
+    for f in ens.objects('ncfile'):
+        print f.parentobject('realization').name
+    for f in ens.objects('ncfile'):
+        print f.parentobject('model').name
