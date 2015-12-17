@@ -484,12 +484,4 @@ def match_realizations(ens1, ens2, delete=False):
     return ens1, ens2
 
 if __name__ == "__main__":
-    import os
-    os.system('ln -s /raid/ra40/CMIP5_OTHER_DOWNLOADS/ts/ts_Amon_CCSM4*historical*.nc .')
-    ens = mkensemble('ts*')
-    for f in ens.objects('ncfile'):
-        print f.name
-    for f in ens.objects('ncfile'):
-        print f.parentobject('realization').name
-    for f in ens.objects('ncfile'):
-        print f.parentobject('model').name
+    pass

@@ -92,13 +92,20 @@ def loadfiles(ens, varname, **kwargs):
         in all ifiles. Optionally specify any kwargs valid for loadvar.
 
         Requires netCDF4, cdo bindings and numpy
-        Returns a dictionary with
-        - a masked numpy array, varmat
-        - the dimensions of the data, dimensions
+        
+        Returns 
+        -------
+        dictionary with keys data and dimensions
+             data maps to a numpy array containing the data
+             dimensions has keys; models, realizations, 
+                and possibly lat, lon, and time
+        
     """
     # Get all input files from the ensemble
-    ifiles = ens.lister('ncfile')
-
+    files = ens.objects('ncfile')
+    ifiles = []
+    for f in files:
+        ifiles.append(f.name)
     datetime = False
     if 'toDatetime' in kwargs:
         datetime = kwargs['toDatetime']
@@ -119,9 +126,28 @@ def loadfiles(ens, varname, **kwargs):
         varmat[i, :] = loadvar(ifile, varname, **kwargs)
 
     varmat = np.ma.masked_equal(varmat, 999e99)
-    return {"data": varmat, "dimensions": dimensions}
+    
+    models = get_models(files)
+    realizations = get_realizations(files)
+    dimensions['models'] = models
+    dimensions['realizations'] = realizations
+    return {"data": varmat, 
+            "dimensions": dimensions,
+            }
 
+def get_models(files):
+    models = []
+    for f in files:
+        models.append(f.parentobject('model').name)
+    return models
+    
+def get_realizations(files):
+    realizations = []
+    for f in files:
+        realizations.append(f.parentobject('realization').name)
+    return realizations    
 
+        
 def get_dimensions(ifile, varname, toDatetime=False):
     """Returns the dimensions of variable varname in file ifile as a dictionary.
     If one of the dimensions begins with lat (Lat, Latitude and Latitudes), it
@@ -155,5 +181,8 @@ def get_dimensions(ifile, varname, toDatetime=False):
                 dimensions['time'] = nc.variables[dimension][:]
         else:
             dimensions[dimension] = nc.variables[dimension][:]
-
     return dimensions
+
+
+if __name__ == "__main__":
+    pass
