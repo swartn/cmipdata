@@ -1,7 +1,9 @@
+.. _cmipdataAPI:
+
 The cmipdata API
 ================
 
-This section describes the :mod:`cmipdata` Application Programming Interface 
+This section describes the :program:`cmipdata` Application Programming Interface 
 (API). It contains a list of classes and functions, within the three core 
 :mod:`cmipdata` modules: :mod:`classes`, :mod:`preprocessing_tools` and 
 :mod:`loading_tools`. The little developed :mod:`plotting_tools` is also described.
