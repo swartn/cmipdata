@@ -1,0 +1,37 @@
+CCSM4:
+	historical
+		r1i1p1
+			ts
+				ts_Amon_CCSM4_historical_r1i1p1_185001-200512.nc
+		r2i1p1
+			ts
+				ts_Amon_CCSM4_historical_r2i1p1_185001-200512.nc
+		r3i1p1
+			ts
+				ts_Amon_CCSM4_historical_r3i1p1_185001-200512.nc
+		r4i1p1
+			ts
+				ts_Amon_CCSM4_historical_r4i1p1_185001-200512.nc
+		r5i1p1
+			ts
+				ts_Amon_CCSM4_historical_r5i1p1_185001-200512.nc
+		r6i1p1
+			ts
+				ts_Amon_CCSM4_historical_r6i1p1_185001-200512.nc
+CanESM2:
+	historical
+		r1i1p1
+			ts
+				ts_Amon_CanESM2_historical_r1i1p1_185001-200512.nc
+		r2i1p1
+			ts
+				ts_Amon_CanESM2_historical_r2i1p1_185001-200512.nc
+		r3i1p1
+			ts
+				ts_Amon_CanESM2_historical_r3i1p1_185001-200512.nc
+		r4i1p1
+			ts
+				ts_Amon_CanESM2_historical_r4i1p1_185001-200512.nc
+		r5i1p1
+			ts
+				ts_Amon_CanESM2_historical_r5i1p1_185001-200512.nc
