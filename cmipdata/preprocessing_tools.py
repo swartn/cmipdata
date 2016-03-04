@@ -97,7 +97,7 @@ def cat_exp_slices(ensemble, delete=True):
         if len(modfiles) > 1:
             print 'joining files'
             infiles = ' '.join(modfiles)
-            outfile = (files[0].getNameWithoutDates() + '_' +
+            outfile = (os.path.split(files[0].getNameWithoutDates())[1] + '_' +
                        str(min(startdates)) + '-' +
                        str(max(enddates)) + '.nc')
             # join the files
@@ -379,7 +379,7 @@ def ens_stats(ens, variable_name):
             inputfiles = ''
             for f in fnames:
                 inputfiles = inputfiles + ' ' + f
-            outfile = fnames[0].replace(files[0].parent.parent.name, 'R-MEAN')
+            outfile = os.path.split(fnames[0])[1].replace(files[0].parent.parent.name, 'R-MEAN')
             cdostr = 'cdo ensmean ' + inputfiles + ' ' + outfile
 
             if os.path.isfile(outfile):
@@ -391,7 +391,7 @@ def ens_stats(ens, variable_name):
         in_files = ' '.join(files_to_mean)
         print files_to_mean[0]
         print experiments[experimentname][0][1]
-        outfilename = files_to_mean[0].replace(experiments[experimentname][0][1] + '_', "")
+        outfilename = os.path.split(files_to_mean[0])[1].replace(experiments[experimentname][0][1] + '_', "")
         print outfilename
         out_file = 'ENS-MEAN_' + outfilename
 
@@ -452,7 +452,7 @@ def areaint(ensemble, delete=True):
     
     # loop over all files
     for f in ens.objects('ncfile'):
-        outfile = 'area-integral_' + f.name
+        outfile = 'area-integral_' + os.path.split(f.name)[1]
 
         cdostr = 'cdo fldsum -mul ' + f.name + ' -gridarea ' + f.name + ' ' + outfile
         os.system(cdostr)
@@ -506,7 +506,7 @@ def areamean(ensemble, delete=True):
     
     # loop over all files
     for f in ens.objects('ncfile'):
-        outfile = 'area-mean_' + f.name
+        outfile = 'area-mean_' + os.path.split(f.name)[1]
 
         cdostr = 'cdo fldmean ' + f.name + ' ' + outfile
         os.system(cdostr)
@@ -560,7 +560,7 @@ def zonmean(ensemble, delete=True):
     
     # loop over all files
     for f in ens.objects('ncfile'):
-        outfile = 'zonal-mean_' + f.name
+        outfile = 'zonal-mean_' + os.path.split(f.name)[1]
 
         cdostr = 'cdo zonmean ' + f.name + ' ' + outfile
         ex = os.system(cdostr)
@@ -628,7 +628,7 @@ def climatology(ensemble, delete=True):
     
     # loop over all the files
     for f in ens.objects('ncfile'):
-        outfile = 'climatology_' + f.name
+        outfile = 'climatology_' + os.path.split(f.name)[1]
         var = f.parent
         cdostr = 'cdo ymonmean -selvar,' + var.name + ' ' + f.name + ' ' + outfile
         os.system(cdostr)
@@ -690,7 +690,7 @@ def remap(ensemble, remap='r360x180', method='remapdis', delete=True):
     
     # loop over all files
     for f in ens.objects('ncfile'):
-        outfile = 'remap_' + f.name
+        outfile = 'remap_' + os.path.split(f.name)[1]
         var = f.parent
         cdostr = ('cdo ' + method + ',' + remap + ' -selvar,' +
                   var.name + ' ' + f.name + ' ' + outfile)
@@ -768,7 +768,7 @@ def time_slice(ensemble, start_date, end_date, delete=True):
             var = f.parent
             # check that the new date range is within the old date range
             if f.start_date <= start_yyyymm and f.end_date >= end_yyyymm:
-                outfile = f.getNameWithoutDates() + '_' + start_yyyymm + '-' + end_yyyymm + '.nc'
+                outfile = os.path.split(f.getNameWithoutDates())[1] + '_' + start_yyyymm + '-' + end_yyyymm + '.nc'
                 print 'time limiting...'
 
                 cdostr = ('cdo -L seldate,' + date_range + ' -selvar,' +
@@ -851,7 +851,7 @@ def time_anomaly(ensemble, start_date, end_date, delete=False):
         # check the date range is within the file date range
         if f.start_date <= start_yyyymm and f.end_date >= start_yyyymm:
             var = f.parent
-            outfile = 'anomaly_' + f.name
+            outfile = 'anomaly_' + os.path.split(f.name)[1]
             cdostr = ('cdo sub ' + f.name + ' -timmean -seldate,' + date_range +
                       ' -selvar,' + var.name + ' ' + f.name + ' ' + outfile)
             os.system(cdostr)
@@ -923,7 +923,7 @@ def my_operator(ensemble, my_cdo_str="", output_prefix='processed_', delete=Fals
     
     # loop over all files
     for f in ensem.objects('ncfile'):
-        outfile = output_prefix + f.name
+        outfile = output_prefix + os.path.split(f.name)[1]
         values = f.getDictionary()
         values['infile'] = f.name
         values['outfile'] = outfile
