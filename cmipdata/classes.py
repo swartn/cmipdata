@@ -41,9 +41,9 @@ class DataNode(object):
                  List of DataNodees of genre beneath the current DataNode
     parent     : DataNode
                  for genre 'ensemble' the parent is None
-    start_date : int
+    start_date : string
                  for genre 'file'
-    end_date   : int
+    end_date   : string
                  for genre 'file'
     realm      : string
                  for genre 'variable' contains the realm of the varaible
@@ -88,7 +88,7 @@ class DataNode(object):
         -------
         string
         """
-        return self.name.replace('_' + str(self.start_date) + '-' + str(self.end_date) + '.nc', "")
+        return self.name.replace('_' + self.start_date + '-' + self.end_date + '.nc', "")
 
     def getChild(self, input_name):
         """ Returns DataNode given the name of the DataNode
@@ -343,10 +343,8 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
         experiment = name.split(kwargs['separator'])[kwargs['experiment']]
         realization = name.split(kwargs['separator'])[kwargs['realization']]
         dates = name.split(kwargs['separator'])[kwargs['dates']]
-        start_date = int(name.split(kwargs['separator']
-                                    )[kwargs['dates']].split('-')[0])
-        end_date = int(name.split(kwargs['separator']
-                                  )[kwargs['dates']].split('-')[1].split('.')[0])
+        start_date = name.split(kwargs['separator'])[kwargs['dates']].split('-')[0]
+        end_date = name.split(kwargs['separator'])[kwargs['dates']].split('-')[1].split('.')[0]
 
         # create the model if necessary
         m = ens.getChild(modelname)

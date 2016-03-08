@@ -100,7 +100,6 @@ def cat_exp_slices(ensemble, delete=True):
             outfile = (files[0].getNameWithoutDates() + '_' +
                        str(min(startdates)) + '-' +
                        str(max(enddates)) + '.nc')
-            
             # join the files
             catstring = 'cdo mergetime ' + infiles + ' ' + outfile
             os.system(catstring)
@@ -237,8 +236,8 @@ def cat_experiments(ensemble, variable_name, exp1_name, exp2_name, delete=True):
                 outfile = (e1v.name + '_' + e1v.realm + '_' + model.name + '_' +
                            e1.name + '-' + e2.name + '_' +
                            e1r.name + '_' +
-                           str(out_startdate) + '-' +
-                           str(out_enddate) + '.nc')
+                           out_startdate + '-' +
+                           out_enddate + '.nc')
 
                 # do the concatenation using CDO
                 print "\n join " + model.name + '_' + e1r.name + ' ' + e1.name + ' to ' + e2.name
@@ -390,8 +389,10 @@ def ens_stats(ens, variable_name):
                 files_to_mean.append(outfile)
 
         in_files = ' '.join(files_to_mean)
-
+        print files_to_mean[0]
+        print experiments[experimentname][0][1]
         outfilename = files_to_mean[0].replace(experiments[experimentname][0][1] + '_', "")
+        print outfilename
         out_file = 'ENS-MEAN_' + outfilename
 
         cdo_str = 'cdo ensmean ' + in_files + ' ' + out_file
@@ -763,10 +764,10 @@ def time_slice(ensemble, start_date, end_date, delete=True):
     for f in ens.objects('ncfile'):
         print f.name
         # don't proceed if the file already has the correct start date
-        if f.start_date != int(start_yyyymm) or f.start_date != int(end_yyyymm):
+        if f.start_date != start_yyyymm or f.start_date != end_yyyymm:
             var = f.parent
             # check that the new date range is within the old date range
-            if f.start_date <= int(start_yyyymm) and f.end_date >= int(end_yyyymm):
+            if f.start_date <= start_yyyymm and f.end_date >= end_yyyymm:
                 outfile = f.getNameWithoutDates() + '_' + start_yyyymm + '-' + end_yyyymm + '.nc'
                 print 'time limiting...'
 
@@ -783,7 +784,7 @@ def time_slice(ensemble, start_date, end_date, delete=True):
                         pass
                 else:
                     ncfile = dc.DataNode('ncfile', outfile, parent=var,
-                                         start_date=int(start_yyyymm), end_date=int(end_yyyymm))
+                                         start_date=start_yyyymm, end_date=end_yyyymm)
                     var.add(ncfile)
 
             else:
@@ -848,7 +849,7 @@ def time_anomaly(ensemble, start_date, end_date, delete=False):
     for f in ens.objects('ncfile'):
         var = f.parent
         # check the date range is within the file date range
-        if f.start_date <= int(start_yyyymm) and f.end_date >= int(start_yyyymm):
+        if f.start_date <= start_yyyymm and f.end_date >= start_yyyymm:
             var = f.parent
             outfile = 'anomaly_' + f.name
             cdostr = ('cdo sub ' + f.name + ' -timmean -seldate,' + date_range +
@@ -1009,7 +1010,7 @@ def trends(ensemble, start_date, end_date, delete=False):
     for f in ens.objects('ncfile'):
         var = f.parent
         # check the date range is within the file range
-        if f.start_date <= int(start_yyyymm) and f.end_date >= int(end_yyyymm):
+        if f.start_date <= start_yyyymm and f.end_date >= end_yyyymm:
             outfile = f.getNameWithoutDates() + '_' + start_yyyymm + '-' + end_yyyymm + '.nc'
             print 'time limiting...'
             cdostr = ('cdo trend -seldate,' + date_range + ' ' +
