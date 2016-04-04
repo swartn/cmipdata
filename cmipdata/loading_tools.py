@@ -84,12 +84,13 @@ def _create_tempfile(ens, varname, ifileone, cdostr=None, **kwargs):
             os.rename('temporary_0.nc', 'temp123.nc')
 
 
-def loadfiles(ens, varname, **kwargs):
+def loadfiles(ens, varname, toDatetime=False, **kwargs):
     """
         Load a variable "varname" from all files in ens, and load it into a matrix
         where the zeroth dimensions represents an input file and dimensions 1 to n are
         the dimensions of the input variable. Variable "varname" must have the same shape
-        in all ifiles. Optionally specify any kwargs valid for loadvar.
+        in all ifiles. Keyword argument toDatetime (defaults to False) will be passed as 
+        a keyword argument to get_dimensions(). Optionally specify any kwargs valid for loadvar.
 
         Requires netCDF4, cdo bindings and numpy
         
@@ -106,18 +107,15 @@ def loadfiles(ens, varname, **kwargs):
     ifiles = []
     for f in files:
         ifiles.append(f.name)
-    datetime = False
-    if 'toDatetime' in kwargs:
-        datetime = kwargs['toDatetime']
     
     # if a cdostr is being applied, 
     # create a temporaryfile to determine the dimensions of the data
     if 'cdostr' in kwargs:
         _create_tempfile(ens, varname, ifiles[0], **kwargs)
-        dimensions = get_dimensions('temp123.nc', varname, toDatetime=datetime)
+        dimensions = get_dimensions('temp123.nc', varname, toDatetime=toDatetime)
         os.remove('temp123.nc')
     else:
-        dimensions = get_dimensions(ifiles[0], varname, toDatetime=datetime)
+        dimensions = get_dimensions(ifiles[0], varname, toDatetime=toDatetime)
 
     vst = loadvar(ifiles[0], varname, **kwargs)
     varmat = np.ones((len(ifiles),) + vst.shape) * 999e99
@@ -151,7 +149,7 @@ def get_realizations(files):
 def get_dimensions(ifile, varname, toDatetime=False):
     """Returns the dimensions of variable varname in file ifile as a dictionary.
     If one of the dimensions begins with lat (Lat, Latitude and Latitudes), it
-    will be returned with a key of lat, and similarly for lon. If to a Datetime=True,
+    will be returned with a key of lat, and similarly for lon. If toDatetime=True,
     the time dimension is converted to a datetime.
     """
 
