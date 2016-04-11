@@ -101,10 +101,12 @@ def cat_exp_slices(ensemble, delete=True, output_prefix=''):
                        os.path.split(files[0].getNameWithoutDates())[1] + '_' +
                        str(min(startdates)) + '-' +
                        str(max(enddates)) + '.nc')
-            # join the files
-            catstring = 'cdo mergetime ' + infiles + ' ' + outfile
-            os.system(catstring)
-
+            if not os.path.isfile(outfile):
+                # join the files
+                catstring = 'cdo mergetime ' + infiles + ' ' + outfile
+                os.system(catstring)
+            else:
+                print outfile + ' already exists.'
             f = dc.DataNode('ncfile', outfile, parent=var, start_date=min(startdates), end_date=max(enddates))
             var.children = [f]
 
