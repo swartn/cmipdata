@@ -1,7 +1,7 @@
 cmipdata is python based package to processes climate model data in netCDF 
 format.
 
-Copyright (c) 2015 Neil C. Swart (Neil.Swart@ec.gc.ca)
+Copyright (c) 2015 Neil C. Swart (Neil.Swart@canada.ca)
 
 cmipdata is distributed under the GNU General Public License Version 2 (below).
 

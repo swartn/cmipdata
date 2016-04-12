@@ -5,12 +5,14 @@ except ImportError:
 
 setup(
     name='cmipdata',
-    version='0.5',
+    version='0.6',
     author='Neil C. Swart',
-    author_email='Neil.Swart@ec.gc.ca',
+    author_email='Neil.Swart@canada.ca',
     packages=['cmipdata'],
     scripts=[],
-    url='',
+    url='https://github.com/swartn/cmipdata',
+    download_url='https://github.com/swartn/cmipdata/archive/v0.6.zip',
+    keywords = ['climate', 'data', 'CMIP5', 'CMIP6', 'NetCDF', 'analysis', 'processing'],
     license='LICENSE.txt',
     description='Processing tools for large ensembles of CMIP type netcdf data',
     long_description=open('README.rst').read(),
