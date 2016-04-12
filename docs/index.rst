@@ -3,6 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+
+.. toctree::
+   :maxdepth: 1
+   
+   api/api.rst
+
+.. include:: intro.rst
+
 Welcome to the cmipdata documentation!
 ======================================
 
@@ -31,6 +39,7 @@ Contents:
 Contributors
 ------------
 Neil Swart, CCCma, Environment Canada: Neil.Swart@ec.gc.ca
+
 David Fallis: davidwfallis@gmail.com
 
 Pull requests and comments are welcome.

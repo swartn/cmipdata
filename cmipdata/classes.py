@@ -41,9 +41,9 @@ class DataNode(object):
                  List of DataNodees of genre beneath the current DataNode
     parent     : DataNode
                  for genre 'ensemble' the parent is None
-    start_date : int
+    start_date : string
                  for genre 'file'
-    end_date   : int
+    end_date   : string
                  for genre 'file'
     realm      : string
                  for genre 'variable' contains the realm of the varaible
@@ -88,7 +88,7 @@ class DataNode(object):
         -------
         string
         """
-        return self.name.replace('_' + str(self.start_date) + '-' + str(self.end_date) + '.nc', "")
+        return self.name.replace('_' + self.start_date + '-' + self.end_date + '.nc', "")
 
     def getChild(self, input_name):
         """ Returns DataNode given the name of the DataNode
@@ -169,6 +169,24 @@ class DataNode(object):
                         yield value
         return list(alist(self, genre))
 
+    def parentobject(self, genre):
+        """ Returns the parent DataNode of a particular genre
+
+        Parameters
+        ----------
+        genre : string
+                the genre of returned DataNode
+
+        Return
+        ------
+        DataNode
+        """
+        def check(item):
+            if item.genre == genre:
+                return item
+            else:
+                return check(item.parent)
+        return check(self)
 
 
     def _checkfile(self):
@@ -325,10 +343,8 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
         experiment = name.split(kwargs['separator'])[kwargs['experiment']]
         realization = name.split(kwargs['separator'])[kwargs['realization']]
         dates = name.split(kwargs['separator'])[kwargs['dates']]
-        start_date = int(name.split(kwargs['separator']
-                                    )[kwargs['dates']].split('-')[0])
-        end_date = int(name.split(kwargs['separator']
-                                  )[kwargs['dates']].split('-')[1].split('.')[0])
+        start_date = name.split(kwargs['separator'])[kwargs['dates']].split('-')[0]
+        end_date = name.split(kwargs['separator'])[kwargs['dates']].split('-')[1].split('.')[0]
 
         # create the model if necessary
         m = ens.getChild(modelname)
@@ -366,7 +382,7 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
     return ens
 
 
-def match_ensembles(ens1, ens2):
+def match_models(ens1, ens2, delete=False):
     """
     Find common models between two ensembles.
 
@@ -380,7 +396,7 @@ def match_ensembles(ens1, ens2):
     -------
     ens1 : cmipdata ensemble
     ens2 : cmipdata ensemble
-           two ensembles with matching realizations.
+           two ensembles with matching models.
 
     """
     # get lists of the models in both ensembles
@@ -394,18 +410,28 @@ def match_ensembles(ens1, ens2):
     for name in model_misses:
         m = ens1.getChild(name)
         if m is not None:
+            if delete:
+                files = m.lister('ncfile')
+                for f in files:
+                    os.system('rm -f ' + f)
             print 'deleting %s from ens1' % (m.name)
             ens1.delete(m)
 
         m = ens2.getChild(name)
         if m is not None:
+            if delete:
+                files = m.lister('ncfile')
+                for f in files:
+                    os.system('rm -f ' + f)
             print 'deleting %s from ens2' % (m.name)
             ens2.delete(m)
-
+    
+    ens1.squeeze()
+    ens2.squeeze()
     return ens1, ens2
 
 
-def match_realizations(ens1, ens2):
+def match_realizations(ens1, ens2, delete=False):
     """
     Find common realizations between two ensembles.
 
@@ -443,6 +469,10 @@ def match_realizations(ens1, ens2):
     def deleting(items):
         for nm in items:
             if nm[2] in misses:
+                if delete:
+                    files = nm[0].lister('ncfile')
+                    for f in files:
+                        os.system('rm -f ' + f) 
                 nm[1].delete(nm[0])
     deleting(mer_e1)
     deleting(mer_e2)
@@ -450,3 +480,6 @@ def match_realizations(ens1, ens2):
     ens2.squeeze()
     
     return ens1, ens2
+
+if __name__ == "__main__":
+    pass
