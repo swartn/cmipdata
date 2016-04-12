@@ -3,16 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-
-.. toctree::
-   :maxdepth: 1
-   
-   api/api.rst
-
-.. include:: intro.rst
-
 Welcome to the cmipdata documentation!
 ======================================
+
+.. image:: https://zenodo.org/badge/16109/swartn/cmipdata.svg
+   :target: https://zenodo.org/badge/latestdoi/16109/swartn/cmipdata
 
 **cmipdata** is a python package for preprocessing large ensembles of climate 
 model data in standardized NetCDF files, such as those used in the Coupled Model 
@@ -34,7 +29,7 @@ Contents:
   
    quickstart
    examples/index.rst
-   api
+   api/api.rst
    
 Contributors
 ------------
@@ -42,6 +37,7 @@ Neil Swart, CCCma, Environment Canada: Neil.Swart@canada.ca
 
 David Fallis: davidwfallis@gmail.com
 
+The source code is at https://github.com/swartn/cmipdata.
 Pull requests and comments are welcome.
 
 LICENSE

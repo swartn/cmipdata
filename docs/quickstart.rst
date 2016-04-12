@@ -5,43 +5,30 @@ Quickstart
 Installing
 ===========
 
-**Dependencies**
+You can install cmipdata with pip from pypi:
 
-Several external packages are required:
+.. code-block:: bash
 
-`Python 2.7x <http://www.python.org/download/>`_
+    pip install cmipdata
 
-`Climate Data Operators (cdo) <https://code.zmaw.de/projects/cdo>`_ v1.6 or later.
+or the latest version directly from github
 
-`netCDF4 <http://unidata.github.io/netcdf4-python/>`_
+.. code-block:: bash
 
-`numpy 1.2.1 or later 
-<http://sourceforge.net/project/showfiles.php?group_id=1369&package_id=175103>`__
-
-`matplotlib <http://sf.net/projects/matplotlib/>`_ 
+    pip install git+https://github.com/swartn/cmipdata.git
 
 cmipdata has primarily been developed and tested within the 
 `anaconda <http://docs.continuum.io/anaconda/index.html>`_ python distribution on 
 Linux x86/x64 and Mac OSX. Windows is not supported.
 
-**Installation**
-
-To install, first clone the repo from github:
-
-.. code-block:: bash
-
-    git clone https://github.com/swartn/cmipdata.git
-    
-then build and install:
-
-.. code-block:: bash
-
-    cd cmipdata
-    python setup.py install
-    
 You can (should) do this inside a virtual environment. In that case it will work 
 without root privileges. If you are using anaconda see  
 http://conda.pydata.org/docs/faq.html#env.
+
+**Dependencies**
+
+The external package `Climate Data Operators (cdo) <https://code.zmaw.de/projects/cdo>`_ v1.6 or later
+is required. Python dependencies are handled by pip.
 
 Using cmipdata
 ==============
