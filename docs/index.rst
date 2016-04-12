@@ -38,7 +38,7 @@ Contents:
    
 Contributors
 ------------
-Neil Swart, CCCma, Environment Canada: Neil.Swart@ec.gc.ca
+Neil Swart, CCCma, Environment Canada: Neil.Swart@canada.ca
 
 David Fallis: davidwfallis@gmail.com
 
