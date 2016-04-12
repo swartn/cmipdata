@@ -14,7 +14,7 @@
 
 import sys
 import os
-from unittest.mock import MagicMock
+import mock
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -46,10 +46,6 @@ extensions = [
 # Mock interface for importing packages with C-extensions that aren't installed
 # in the docs build environment
 # (especially that on readthedocs.org build servers)
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-            return Mock()
 
 MOCK_MODULES = [
     'matplotlib',
@@ -63,7 +59,8 @@ MOCK_MODULES = [
     'scipy',
 ]
 
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
