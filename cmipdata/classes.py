@@ -268,7 +268,7 @@ class DataNode(object):
                             for filename in variable.children:
                                 f.write('\t\t\t\t' + filename.name + '\n')
 
-def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
+def mkensemble(filepattern, filenames=None, experiment='*', prefix='', kwargs=''):
     """Creates and returns a cmipdata ensemble from a list of
     filenames matching filepattern.
 
@@ -297,6 +297,10 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
                 to reference files not in the current directory, and can also
                 include wildcards.
 
+    filenames : list
+                A list of all files to be used to make the ensemble, as an 
+                altenative to specifying a filepattern
+                
     prefix : string
              A pattern occuring in filepattern before the start of the official
              filename, as defined by the file naming converntion. For instance,
@@ -324,8 +328,9 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
         ens = mkensemble('psl*.nc', **kwargs)
 
     """
-    # find all files matching filepattern
-    filenames = sorted(glob.glob(filepattern))
+    if filenames is None:
+        # find all files matching filepattern
+        filenames = sorted(glob.glob(filepattern))
 
     if kwargs == '':
         kwargs = {'separator': '_', 'variable': 0, 'realm': 1, 'model': 2, 'experiment': 3,
@@ -337,6 +342,7 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
     # Loop over all files and
     for name in filenames:
         name = name.replace(prefix, '')
+        path, name = os.path.split(name)
         variablename = name.split(kwargs['separator'])[kwargs['variable']]
         realm = name.split(kwargs['separator'])[kwargs['realm']]
         modelname = name.split(kwargs['separator'])[kwargs['model']]
@@ -481,5 +487,5 @@ def match_realizations(ens1, ens2, delete=False):
     
     return ens1, ens2
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     pass
