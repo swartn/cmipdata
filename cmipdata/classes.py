@@ -298,8 +298,8 @@ def mkensemble(filepattern, filenames=None, experiment='*', prefix='', kwargs=''
                 include wildcards.
 
     filenames : list
-                A list of all files to be used to make the ensemble, as an 
-                altenative to specifying a filepattern
+                A list of all files to be used to make the ensemble. Can be used 
+                as an altenative to specifying a filepattern.
                 
     prefix : string
              A pattern occuring in filepattern before the start of the official
@@ -487,5 +487,5 @@ def match_realizations(ens1, ens2, delete=False):
     
     return ens1, ens2
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
