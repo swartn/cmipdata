@@ -19,7 +19,24 @@ import datetime
 # clean out tmp to make space for CDO processing.
 os.system('rm -rf /tmp/cdo*')
 
-
+def separate_cdo_string(cdostring):
+    """
+        Seperates a cdostring into its components.
+        
+        Takes in a cdo string and breaks it up into components 
+        to be used by the python cdo wrapper.     
+    """
+    opslist = cdostring.split(' ')
+    opslist = [op for op in opslist if op != ""]
+    raw_baseop = opslist[0]
+    baseop = raw_baseop.split(',')[0].replace('-', '')
+    try:
+        first_argument = (',').join(raw_baseop.split(',')[1:])
+    except IndexError:
+        first_argument = ''
+    inputs = (' ').join(opslist[1:])
+    return baseop, first_argument, inputs
+    
 def loadvar(ifile, varname, cdostr=None, **kwargs):
     """
         Load variables from a NetCDF file with optional pre-processing.
@@ -35,14 +52,9 @@ def loadvar(ifile, varname, cdostr=None, **kwargs):
     
     # apply cdo string if it exists
     if(cdostr):
-        opslist = cdostr.split()
-        base_op = opslist[0].replace('-', '')
-        if len(opslist) > 1:
-            ops_str = ' '.join(opslist[1::]) + ' ' + ifile
-            var = getattr(cdo, base_op)(input=ops_str, returnMaArray=varname)
-        else:
-            var = getattr(cdo, base_op)(input=ifile, returnMaArray=varname)
-
+        baseop, first_argument, inputs = separate_cdo_string(cdostr)
+        full_input = '{} {}'.format(inputs, ifile)
+        var = getattr(cdo, baseop)(first_argument, input=full_input, returnMaArray=varname)
     else:
         var = cdo.readMaArray(ifile, varname=varname)
 
@@ -56,8 +68,6 @@ def loadvar(ifile, varname, cdostr=None, **kwargs):
     except:
         var_scale = 1
 
-    # var = var*var_scale + var_offset
-    # return var
     return np.squeeze(var)
 
 
