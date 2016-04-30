@@ -16,10 +16,10 @@ import itertools
 # ===========================================================================
 # The next three operators work on multiple files across the ensemble,
 # and cannot be chained together.
-# ===========================================================================
+# ===========================================================================  
+    
 
-
-def cat_exp_slices(ensemble, delete=True, output_prefix=''):
+def cat_exp_slices(ensemble, start_date=None, end_date=None, delete=True, output_prefix=''):
     """
     Concatenate multiple time-slice files per experiment.
 
@@ -38,6 +38,12 @@ def cat_exp_slices(ensemble, delete=True, output_prefix=''):
     ----------
     ens : cmipdata Ensemble
           The ensemble on which to do the concatenation.
+    start_date : string
+                 of form yyyy-mm-dd or yyyy-mm
+                 files before this date will not be concatenated
+    end_date : string
+               of form yyyy-mm-dd or yyyy-mm
+               files after this date will not be concatenated
     delete : boolean
              If delete=True, delete the individual time-slice files.
 
@@ -89,11 +95,16 @@ def cat_exp_slices(ensemble, delete=True, output_prefix=''):
     
     # Loop over all variables
     for var in ens.objects('variable'):
-        files = var.children
-        modfiles = [f.name for f in files]
+        all_files = var.children
+        del_files = [f.name for f in all_files]
+        files = [f for f in all_files if _within_daterange(f, start_date=start_date, end_date=end_date)]
         startdates = [f.start_date for f in files]
         enddates = [f.end_date for f in files]
+        modfiles = [f.name for f in files]
+
         # check if there are multiple files
+        if len(modfiles) == 1:
+            del_files = [f for f in del_files if f not in modfiles]
         if len(modfiles) > 1:
             print 'joining files'
             infiles = ' '.join(modfiles)
@@ -111,10 +122,10 @@ def cat_exp_slices(ensemble, delete=True, output_prefix=''):
             var.children = [f]
 
             # delete the old files
-            if delete is True:
-                for cfile in modfiles:
-                    delstr = 'rm ' + cfile
-                    os.system(delstr)
+        if delete is True:
+            for cfile in del_files:
+                os.remove(cfile)
+
     ens.squeeze()
     return ens
 
@@ -1048,3 +1059,48 @@ def trends(ensemble, start_date, end_date, delete=False):
             os.system(delstr)
 
     return ens
+
+# =========================================================================
+# Internal Utilty functions used by preprocessing_tools
+# =========================================================================
+def _within_daterange(ncfile, start_date=None, end_date=None):
+    """
+    Returns True if the date lies outside the start_date and end_date.
+    Returns False otherwise.
+    """
+    if start_date is not None:
+        start_date = start_date.replace('-','')
+    if end_date is not None:
+        end_date = end_date.replace('-','')
+   
+    if start_date is None and end_date is None:
+        return True
+    elif start_date is None:
+        if ncfile.start_date > end_date:
+            return False
+    elif end_date is None:
+        if ncfile.end_date < start_date:
+            return False
+    else:
+        if ncfile.start_date > end_date or ncfile.end_date < start_date:
+            return False
+    return True
+
+def _covers_daterange(ncfile, start_date=None, end_date=None):
+    if start_date is not None:
+        start_date = start_date.replace('-','')
+    if end_date is not None:
+        end_date = end_date.replace('-','')
+   
+    if start_date is None and end_date is None:
+        return True
+    elif start_date is None:
+        if ncfile.start_date > start_date:
+            return False
+    elif end_date is None:
+        if ncfile.end_date < end_date:
+            return False
+    else:
+        if ncfile.start_date > start_date or ncfile.end_date < end_date:
+            return False
+    return True  

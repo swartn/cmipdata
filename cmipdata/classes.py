@@ -194,8 +194,7 @@ class DataNode(object):
         """
         for f in self.objects('ncfile'):
             if not os.path.isfile(f.name):
-                f.parent.delete(f)         
-         
+                f.parent.delete(f)
         
         
     def squeeze(self):
