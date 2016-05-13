@@ -22,9 +22,9 @@ os.system('rm -rf /tmp/cdo*')
 def separate_cdo_string(cdostring):
     """
         Seperates a cdostring into its components.
-        
-        Takes in a cdo string and breaks it up into components 
-        to be used by the python cdo wrapper.     
+
+        Takes in a cdo string and breaks it up into components
+        to be used by the python cdo wrapper.
     """
     opslist = cdostring.split(' ')
     opslist = [op for op in opslist if op != ""]
@@ -36,7 +36,7 @@ def separate_cdo_string(cdostring):
         first_argument = ''
     inputs = (' ').join(opslist[1:])
     return baseop, first_argument, inputs
-    
+
 def loadvar(ifile, varname, cdostr=None, **kwargs):
     """
         Load variables from a NetCDF file with optional pre-processing.
@@ -49,7 +49,7 @@ def loadvar(ifile, varname, cdostr=None, **kwargs):
     # Open the variable using NetCDF4 to get scale and offset attributes.
     nc = Dataset(ifile, 'r')
     ncvar = nc.variables[varname]
-    
+
     # apply cdo string if it exists
     if(cdostr):
         baseop, first_argument, inputs = separate_cdo_string(cdostr)
@@ -99,26 +99,26 @@ def loadfiles(ens, varname, toDatetime=False, **kwargs):
         Load a variable "varname" from all files in ens, and load it into a matrix
         where the zeroth dimensions represents an input file and dimensions 1 to n are
         the dimensions of the input variable. Variable "varname" must have the same shape
-        in all ifiles. Keyword argument toDatetime (defaults to False) will be passed as 
+        in all ifiles. Keyword argument toDatetime (defaults to False) will be passed as
         a keyword argument to get_dimensions(). Optionally specify any kwargs valid for loadvar.
 
         Requires netCDF4, cdo bindings and numpy
-        
-        Returns 
+
+        Returns
         -------
         dictionary with keys data and dimensions
              data maps to a numpy array containing the data
-             dimensions has keys; models, realizations, 
+             dimensions has keys; models, realizations,
                 and possibly lat, lon, and time
-        
+
     """
     # Get all input files from the ensemble
     files = ens.objects('ncfile')
     ifiles = []
     for f in files:
         ifiles.append(f.name)
-    
-    # if a cdostr is being applied, 
+
+    # if a cdostr is being applied,
     # create a temporaryfile to determine the dimensions of the data
     if 'cdostr' in kwargs:
         _create_tempfile(ens, varname, ifiles[0], **kwargs)
@@ -128,18 +128,19 @@ def loadfiles(ens, varname, toDatetime=False, **kwargs):
         dimensions = get_dimensions(ifiles[0], varname, toDatetime=toDatetime)
 
     vst = loadvar(ifiles[0], varname, **kwargs)
-    varmat = np.ones((len(ifiles),) + vst.shape) * 999e99
+    ss = np.atleast_1d(vst).shape
+    varmat = np.ones((len(ifiles),) + ss) * 999e99
 
     for i, ifile in enumerate(ifiles):
         varmat[i, :] = loadvar(ifile, varname, **kwargs)
 
     varmat = np.ma.masked_equal(varmat, 999e99)
-    
+
     models = get_models(files)
     realizations = get_realizations(files)
     dimensions['models'] = models
     dimensions['realizations'] = realizations
-    return {"data": varmat, 
+    return {"data": varmat,
             "dimensions": dimensions,
             }
 
@@ -148,14 +149,14 @@ def get_models(files):
     for f in files:
         models.append(f.parentobject('model').name)
     return models
-    
+
 def get_realizations(files):
     realizations = []
     for f in files:
         realizations.append(f.parentobject('realization').name)
-    return realizations    
+    return realizations
 
-        
+
 def get_dimensions(ifile, varname, toDatetime=False):
     """Returns the dimensions of variable varname in file ifile as a dictionary.
     If one of the dimensions begins with lat (Lat, Latitude and Latitudes), it
