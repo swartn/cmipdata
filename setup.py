@@ -5,7 +5,7 @@ except ImportError:
 
 setup(
     name='cmipdata',
-    version='0.6',
+    version='0.6.1',
     author='Neil C. Swart',
     author_email='Neil.Swart@canada.ca',
     packages=['cmipdata'],
