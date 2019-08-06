@@ -14,7 +14,7 @@ priority.**
   .. moduleauthor:: Neil Swart <neil.swart@ec.gc.ca>
 """
 import matplotlib.pyplot as plt
-from loading_tools import loadvar, get_dimensions
+from .loading_tools import loadvar, get_dimensions
 import scipy as sp
 from scipy import stats
 import numpy as np
