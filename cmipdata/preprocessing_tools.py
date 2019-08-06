@@ -9,7 +9,7 @@
 """
 import os
 import glob
-import classes as dc
+from . import classes as dc
 import copy
 import itertools
 
@@ -95,7 +95,7 @@ def cat_exp_slices(ensemble, delete=True, output_prefix=''):
         enddates = [f.end_date for f in files]
         # check if there are multiple files
         if len(modfiles) > 1:
-            print 'joining files'
+            print('joining files')
             infiles = ' '.join(modfiles)
             outfile = (output_prefix + 
                        os.path.split(files[0].getNameWithoutDates())[1] + '_' +
@@ -106,7 +106,7 @@ def cat_exp_slices(ensemble, delete=True, output_prefix=''):
                 catstring = 'cdo mergetime ' + infiles + ' ' + outfile
                 os.system(catstring)
             else:
-                print outfile + ' already exists.'
+                print(outfile + ' already exists.')
             f = dc.DataNode('ncfile', outfile, parent=var, start_date=min(startdates), end_date=max(enddates))
             var.children = [f]
 
@@ -244,7 +244,7 @@ def cat_experiments(ensemble, variable_name, exp1_name, exp2_name, delete=True, 
                            out_enddate + '.nc')
 
                 # do the concatenation using CDO
-                print "\n join " + model.name + '_' + e1r.name + ' ' + e1.name + ' to ' + e2.name
+                print("\n join " + model.name + '_' + e1r.name + ' ' + e1.name + ' to ' + e2.name)
                 catstring = ('cdo mergetime ' + infiles + ' ' + outfile)
 
                 os.system(catstring)
@@ -283,17 +283,17 @@ def cat_experiments(ensemble, variable_name, exp1_name, exp2_name, delete=True, 
             os.system(delstr)
 
     # Remove models with missing experiments from ens, and then return ens
-    print ' \n\n Models deleted from ensemble (missing one experiment completely): \n'
-    print '\t Model \t Experiment \n'
+    print(' \n\n Models deleted from ensemble (missing one experiment completely): \n')
+    print('\t Model \t Experiment \n')
 
-    for model_name, missing_experiment in models_to_delete.iteritems():
+    for model_name, missing_experiment in models_to_delete.items():
         ens.delete(ens.getChild(model_name))
-        print '\t %s \t %s' % (model_name, missing_experiment)
+        print('\t %s \t %s' % (model_name, missing_experiment))
 
-    print ' \n\n Realizations deleted (missing from one experiment): \n'
-    print '\t Model \t Realizations \n'
-    for key, value in realizations_to_delete.iteritems():
-        print '\t %s \t %s' % (key, ' '.join(value))
+    print(' \n\n Realizations deleted (missing from one experiment): \n')
+    print('\t Model \t Realizations \n')
+    for key, value in realizations_to_delete.items():
+        print('\t %s \t %s' % (key, ' '.join(value)))
 
     ens.squeeze()
     return ens
@@ -393,10 +393,10 @@ def ens_stats(ens, variable_name, output_prefix=''):
                 files_to_mean.append(outfile)
 
         in_files = ' '.join(files_to_mean)
-        print files_to_mean[0]
-        print experiments[experimentname][0][1]
+        print(files_to_mean[0])
+        print(experiments[experimentname][0][1])
         outfilename = os.path.split(files_to_mean[0])[1].replace(experiments[experimentname][0][1] + '_', "")
-        print outfilename
+        print(outfilename)
         out_file = output_prefix + 'ENS-MEAN_' + outfilename
 
         cdo_str = 'cdo ensmean ' + in_files + ' ' + out_file
@@ -574,7 +574,7 @@ def zonmean(ensemble, delete=True, output_prefix=''):
         # if zonalmean is not succesful, delete the new file
         if ex != 0:
             try:
-                print 'deleting ' + outfile
+                print('deleting ' + outfile)
                 os.system('rm -f ' + outfile)
             except:
                 pass
@@ -703,7 +703,7 @@ def remap(ensemble, remap='r360x180', method='remapdis', delete=True, output_pre
         # if remapping is not successful delete the new file
         if ex != 0:
             try:
-                print 'deleting ' + outfile
+                print('deleting ' + outfile)
                 os.system('rm -f ' + outfile)
             except:
                 pass
@@ -766,14 +766,14 @@ def time_slice(ensemble, start_date, end_date, delete=True, output_prefix=''):
     end_yyyymm = end_date.replace('-', '')[0:6]
 
     for f in ens.objects('ncfile'):
-        print f.name
+        print(f.name)
         # don't proceed if the file already has the correct start date
         if f.start_date != start_yyyymm or f.start_date != end_yyyymm:
             var = f.parent
             # check that the new date range is within the old date range
             if f.start_date <= start_yyyymm and f.end_date >= end_yyyymm:
                 outfile = output_prefix + os.path.split(f.getNameWithoutDates())[1] + '_' + start_yyyymm + '-' + end_yyyymm + '.nc'
-                print 'time limiting...'
+                print('time limiting...')
 
                 cdostr = ('cdo -L seldate,' + date_range + ' -selvar,' +
                           var.name + ' ' + f.name + ' ' + outfile)
@@ -782,7 +782,7 @@ def time_slice(ensemble, start_date, end_date, delete=True, output_prefix=''):
                 # if the time silcing is unsuccesful, remove the new file
                 if ex != 0:
                     try:
-                        print 'deleting ' + outfile
+                        print('deleting ' + outfile)
                         os.system('rm -f ' + outfile)
                     except:
                         pass
@@ -792,7 +792,7 @@ def time_slice(ensemble, start_date, end_date, delete=True, output_prefix=''):
                     var.add(ncfile)
 
             else:
-                print "%s %s is not in the date-range" % (var.parent.parent.parent.name, var.parent.name)
+                print("%s %s is not in the date-range" % (var.parent.parent.parent.name, var.parent.name))
 
             var.delete(f)
             
@@ -938,7 +938,7 @@ def my_operator(ensemble, my_cdo_str="", output_prefix='processed_', delete=Fals
         # if the operation is unsuccessful, delete the new file
         if ex != 0:
             try:
-                print 'Failed processing... deleting ' + outfile
+                print('Failed processing... deleting ' + outfile)
                 os.system('rm -f ' + outfile)
             except:
                 pass
@@ -1016,7 +1016,7 @@ def trends(ensemble, start_date, end_date, delete=False):
         # check the date range is within the file range
         if f.start_date <= start_yyyymm and f.end_date >= end_yyyymm:
             outfile = f.getNameWithoutDates() + '_' + start_yyyymm + '-' + end_yyyymm + '.nc'
-            print 'time limiting...'
+            print('time limiting...')
             cdostr = ('cdo trend -seldate,' + date_range + ' ' +
                       '-selvar,' + var.name + ' ' + f.name + ' ' +
                       'intercept_' + outfile + ' ' +
@@ -1027,7 +1027,7 @@ def trends(ensemble, start_date, end_date, delete=False):
             # if the trands are not successful the new file is deleted
             if ex != 0:
                 try:
-                    print 'Failed processing... deleting ' + outfile
+                    print('Failed processing... deleting ' + outfile)
                     os.system('rm -f ' + outfile)
                     os.system('rm -f intercept_' + outfile)
                     os.system('rm -f slope_' + outfile)

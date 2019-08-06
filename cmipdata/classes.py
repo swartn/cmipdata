@@ -60,7 +60,7 @@ class DataNode(object):
         self.name = name
         self.children = []
         self.parent = parent
-        for k,v in kwargs.items():
+        for k,v in list(kwargs.items()):
             setattr(self, k, v)
 
     def add(self, child):
@@ -208,7 +208,7 @@ class DataNode(object):
                 if node.genre != 'ensemble':
                     node = node.parent
                     node.delete(delete)
-                    print 'Removing ' + delete.name + ' from ' + delete.parent.name
+                    print('Removing ' + delete.name + ' from ' + delete.parent.name)
                     sq(node)
             for n in node.children:
                 sq(n)
@@ -230,27 +230,27 @@ class DataNode(object):
     def sinfo(self, listOfGenres=['variable', 'model', 'experiment', 'realization', 'ncfile']):
         """ Returns the number of models, experiments, realizations, variables and files
         in the DataNode"""
-        print "This ensemble contains:"
+        print("This ensemble contains:")
         for key in listOfGenres:
             if key == 'realization':
-                print str(len(list(self.objects(key)))) + " " + key + "s"
+                print(str(len(list(self.objects(key)))) + " " + key + "s")
             else:
-                print str(len(self.lister(key))) + " " + key + "s"    
+                print(str(len(self.lister(key))) + " " + key + "s")    
                   
     def fulldetails(self):
         """  prints information about the number of models,
              experiments, variables and files ina DataNode tree.
         """
         for model in self.children:
-            print model.name + ':'
+            print(model.name + ':')
             for experiment in model.children:
-                print '\t' + experiment.name
+                print('\t' + experiment.name)
                 for realization in experiment.children:
-                    print '\t\t' + realization.name
+                    print('\t\t' + realization.name)
                     for variable in realization.children:
-                        print '\t\t\t' + variable.name
+                        print('\t\t\t' + variable.name)
                         for filename in variable.children:
-                            print '\t\t\t\t' + filename.name
+                            print('\t\t\t\t' + filename.name)
 
     def fulldetails_tofile(self, fi):
         """  prints information about the number of models,
@@ -414,7 +414,7 @@ def match_models(ens1, ens2, delete=False):
                 files = m.lister('ncfile')
                 for f in files:
                     os.system('rm -f ' + f)
-            print 'deleting %s from ens1' % (m.name)
+            print('deleting %s from ens1' % (m.name))
             ens1.delete(m)
 
         m = ens2.getChild(name)
@@ -423,7 +423,7 @@ def match_models(ens1, ens2, delete=False):
                 files = m.lister('ncfile')
                 for f in files:
                     os.system('rm -f ' + f)
-            print 'deleting %s from ens2' % (m.name)
+            print('deleting %s from ens2' % (m.name))
             ens2.delete(m)
     
     ens1.squeeze()
@@ -463,7 +463,7 @@ def match_realizations(ens1, ens2, delete=False):
     matches = set(mer_string_e1).intersection(mer_string_e2)
     misses = set(mer_string_e1).symmetric_difference(mer_string_e2)
 
-    print 'misses:', len(misses), 'matches:', len(matches)
+    print('misses:', len(misses), 'matches:', len(matches))
 
     # delete realizations not in both ensembles
     def deleting(items):
