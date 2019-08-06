@@ -329,7 +329,7 @@ def mkensemble(filepattern, experiment='*', prefix='', kwargs=''):
 
     if kwargs == '':
         kwargs = {'separator': '_', 'variable': 0, 'realm': 1, 'model': 2, 'experiment': 3,
-                  'realization': 4, 'dates': 5}
+                  'realization': 4, 'grid': 5, 'dates': 6}
 
     # Initialize the ensemble object
     ens = DataNode('ensemble', 'ensemble')
